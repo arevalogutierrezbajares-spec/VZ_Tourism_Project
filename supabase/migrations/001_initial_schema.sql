@@ -3,15 +3,29 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
--- Enum types
-CREATE TYPE user_role AS ENUM ('tourist', 'provider', 'admin', 'creator');
-CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed', 'refunded');
-CREATE TYPE listing_category AS ENUM ('beaches', 'mountains', 'cities', 'eco-tours', 'gastronomy', 'adventure', 'wellness', 'cultural');
-CREATE TYPE safety_level AS ENUM ('green', 'yellow', 'orange', 'red');
-CREATE TYPE notification_type AS ENUM ('booking_confirmed', 'booking_cancelled', 'booking_completed', 'payment_received', 'review_received', 'new_message', 'safety_alert', 'promotion');
+-- Enum types (idempotent)
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('tourist', 'provider', 'admin', 'creator');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed', 'refunded');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE listing_category AS ENUM ('beaches', 'mountains', 'cities', 'eco-tours', 'gastronomy', 'adventure', 'wellness', 'cultural');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE safety_level AS ENUM ('green', 'yellow', 'orange', 'red');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE notification_type AS ENUM ('booking_confirmed', 'booking_cancelled', 'booking_completed', 'payment_received', 'review_received', 'new_message', 'safety_alert', 'promotion');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Users table (extends auth.users)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
   full_name TEXT NOT NULL,
@@ -25,8 +39,8 @@ CREATE TABLE users (
 );
 
 -- Providers table
-CREATE TABLE providers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS providers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   business_name TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
@@ -47,8 +61,8 @@ CREATE TABLE providers (
 );
 
 -- Listings table
-CREATE TABLE listings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS listings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   provider_id UUID NOT NULL REFERENCES providers(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -86,8 +100,8 @@ CREATE TABLE listings (
 );
 
 -- Listing photos
-CREATE TABLE listing_photos (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS listing_photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   url TEXT NOT NULL,
   alt TEXT,
@@ -96,8 +110,8 @@ CREATE TABLE listing_photos (
 );
 
 -- Availability
-CREATE TABLE availability (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS availability (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   date DATE NOT NULL,
   slots INTEGER NOT NULL DEFAULT 1,
@@ -109,8 +123,8 @@ CREATE TABLE availability (
 );
 
 -- Bookings
-CREATE TABLE bookings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS bookings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id UUID NOT NULL REFERENCES listings(id),
   tourist_id UUID NOT NULL REFERENCES users(id),
   provider_id UUID NOT NULL REFERENCES providers(id),
@@ -135,8 +149,8 @@ CREATE TABLE bookings (
 );
 
 -- Reviews
-CREATE TABLE reviews (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE UNIQUE,
   tourist_id UUID NOT NULL REFERENCES users(id),
@@ -151,8 +165,8 @@ CREATE TABLE reviews (
 );
 
 -- Itineraries
-CREATE TABLE itineraries (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS itineraries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -173,8 +187,8 @@ CREATE TABLE itineraries (
 );
 
 -- Itinerary stops
-CREATE TABLE itinerary_stops (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS itinerary_stops (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   itinerary_id UUID NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
   listing_id UUID REFERENCES listings(id) ON DELETE SET NULL,
   day INTEGER NOT NULL,
@@ -195,8 +209,8 @@ CREATE TABLE itinerary_stops (
 );
 
 -- Safety zones
-CREATE TABLE safety_zones (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS safety_zones (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   level safety_level NOT NULL,
@@ -209,8 +223,8 @@ CREATE TABLE safety_zones (
 );
 
 -- Notifications
-CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   type notification_type NOT NULL,
   title TEXT NOT NULL,
@@ -221,8 +235,8 @@ CREATE TABLE notifications (
 );
 
 -- Instagram mentions
-CREATE TABLE ig_mentions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS ig_mentions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   provider_id UUID NOT NULL REFERENCES providers(id) ON DELETE CASCADE,
   listing_id UUID REFERENCES listings(id) ON DELETE SET NULL,
   instagram_post_url TEXT NOT NULL,
@@ -236,8 +250,8 @@ CREATE TABLE ig_mentions (
 );
 
 -- Guides
-CREATE TABLE guides (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS guides (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   provider_id UUID REFERENCES providers(id) ON DELETE SET NULL,
   full_name TEXT NOT NULL,
@@ -256,8 +270,8 @@ CREATE TABLE guides (
 );
 
 -- Creator profiles
-CREATE TABLE creator_profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS creator_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   username TEXT NOT NULL UNIQUE,
   bio TEXT NOT NULL DEFAULT '',
@@ -275,41 +289,41 @@ CREATE TABLE creator_profiles (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Indexes
-CREATE INDEX idx_listings_provider ON listings(provider_id);
-CREATE INDEX idx_listings_category ON listings(category);
-CREATE INDEX idx_listings_region ON listings(region);
-CREATE INDEX idx_listings_safety ON listings(safety_level);
-CREATE INDEX idx_listings_published ON listings(is_published);
-CREATE INDEX idx_listings_featured ON listings(is_featured);
-CREATE INDEX idx_listings_price ON listings(price_usd);
-CREATE INDEX idx_listings_rating ON listings(rating DESC);
-CREATE INDEX idx_listings_geo ON listings USING GIST(geo_point);
-CREATE INDEX idx_listings_title_trgm ON listings USING GIN(title gin_trgm_ops);
-CREATE INDEX idx_listings_description_trgm ON listings USING GIN(description gin_trgm_ops);
+-- Indexes (idempotent)
+CREATE INDEX IF NOT EXISTS idx_listings_provider ON listings(provider_id);
+CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category);
+CREATE INDEX IF NOT EXISTS idx_listings_region ON listings(region);
+CREATE INDEX IF NOT EXISTS idx_listings_safety ON listings(safety_level);
+CREATE INDEX IF NOT EXISTS idx_listings_published ON listings(is_published);
+CREATE INDEX IF NOT EXISTS idx_listings_featured ON listings(is_featured);
+CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price_usd);
+CREATE INDEX IF NOT EXISTS idx_listings_rating ON listings(rating DESC);
+CREATE INDEX IF NOT EXISTS idx_listings_geo ON listings USING GIST(geo_point);
+CREATE INDEX IF NOT EXISTS idx_listings_title_trgm ON listings USING GIN(title gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_listings_description_trgm ON listings USING GIN(description gin_trgm_ops);
 
-CREATE INDEX idx_bookings_listing ON bookings(listing_id);
-CREATE INDEX idx_bookings_tourist ON bookings(tourist_id);
-CREATE INDEX idx_bookings_provider ON bookings(provider_id);
-CREATE INDEX idx_bookings_status ON bookings(status);
-CREATE INDEX idx_bookings_check_in ON bookings(check_in);
+CREATE INDEX IF NOT EXISTS idx_bookings_listing ON bookings(listing_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_tourist ON bookings(tourist_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_provider ON bookings(provider_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_check_in ON bookings(check_in);
 
-CREATE INDEX idx_reviews_listing ON reviews(listing_id);
-CREATE INDEX idx_reviews_tourist ON reviews(tourist_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_listing ON reviews(listing_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_tourist ON reviews(tourist_id);
 
-CREATE INDEX idx_itineraries_user ON itineraries(user_id);
-CREATE INDEX idx_itineraries_public ON itineraries(is_public) WHERE is_public = TRUE;
+CREATE INDEX IF NOT EXISTS idx_itineraries_user ON itineraries(user_id);
+CREATE INDEX IF NOT EXISTS idx_itineraries_public ON itineraries(is_public) WHERE is_public = TRUE;
 
-CREATE INDEX idx_itinerary_stops_itinerary ON itinerary_stops(itinerary_id);
-CREATE INDEX idx_itinerary_stops_listing ON itinerary_stops(listing_id);
+CREATE INDEX IF NOT EXISTS idx_itinerary_stops_itinerary ON itinerary_stops(itinerary_id);
+CREATE INDEX IF NOT EXISTS idx_itinerary_stops_listing ON itinerary_stops(listing_id);
 
-CREATE INDEX idx_availability_listing_date ON availability(listing_id, date);
+CREATE INDEX IF NOT EXISTS idx_availability_listing_date ON availability(listing_id, date);
 
-CREATE INDEX idx_notifications_user ON notifications(user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
 
-CREATE INDEX idx_safety_zones_geo ON safety_zones USING GIST(geometry);
-CREATE INDEX idx_safety_zones_region ON safety_zones(region);
-CREATE INDEX idx_safety_zones_level ON safety_zones(level);
+CREATE INDEX IF NOT EXISTS idx_safety_zones_geo ON safety_zones USING GIST(geometry);
+CREATE INDEX IF NOT EXISTS idx_safety_zones_region ON safety_zones(region);
+CREATE INDEX IF NOT EXISTS idx_safety_zones_level ON safety_zones(level);
 
 -- Trigger to update geo_point from lat/lng
 CREATE OR REPLACE FUNCTION update_listing_geo_point()
@@ -320,9 +334,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER listings_geo_point_trigger
-  BEFORE INSERT OR UPDATE OF latitude, longitude ON listings
-  FOR EACH ROW EXECUTE FUNCTION update_listing_geo_point();
+DO $$ BEGIN
+  CREATE TRIGGER listings_geo_point_trigger
+    BEFORE INSERT OR UPDATE OF latitude, longitude ON listings
+    FOR EACH ROW EXECUTE FUNCTION update_listing_geo_point();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Trigger to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -333,12 +349,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_listings_updated_at BEFORE UPDATE ON listings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER update_providers_updated_at BEFORE UPDATE ON providers FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER update_itineraries_updated_at BEFORE UPDATE ON itineraries FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_listings_updated_at BEFORE UPDATE ON listings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_providers_updated_at BEFORE UPDATE ON providers FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_itineraries_updated_at BEFORE UPDATE ON itineraries FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Trigger to create user profile on auth signup
 CREATE OR REPLACE FUNCTION handle_new_user()
@@ -355,9 +388,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+DO $$ BEGIN
+  CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- RLS Policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -376,98 +411,193 @@ ALTER TABLE guides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE creator_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Users policies
-CREATE POLICY "Users can read own profile" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admins can read all users" ON users FOR SELECT USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can read own profile" ON users FOR SELECT USING (auth.uid() = id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can read all users" ON users FOR SELECT USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Providers policies
-CREATE POLICY "Public can view approved providers" ON providers FOR SELECT USING (is_approved = TRUE);
-CREATE POLICY "Providers can manage own profile" ON providers FOR ALL USING (user_id = auth.uid());
-CREATE POLICY "Admins can manage all providers" ON providers FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can view approved providers" ON providers FOR SELECT USING (is_approved = TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can manage own profile" ON providers FOR ALL USING (user_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage all providers" ON providers FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Listings policies
-CREATE POLICY "Public can view published listings" ON listings FOR SELECT USING (is_published = TRUE);
-CREATE POLICY "Providers can manage own listings" ON listings FOR ALL USING (
-  provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
-);
-CREATE POLICY "Admins can manage all listings" ON listings FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can view published listings" ON listings FOR SELECT USING (is_published = TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can manage own listings" ON listings FOR ALL USING (
+    provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage all listings" ON listings FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Listing photos policies
-CREATE POLICY "Public can view listing photos" ON listing_photos FOR SELECT USING (
-  listing_id IN (SELECT id FROM listings WHERE is_published = TRUE)
-);
-CREATE POLICY "Providers can manage own listing photos" ON listing_photos FOR ALL USING (
-  listing_id IN (SELECT id FROM listings WHERE provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can view listing photos" ON listing_photos FOR SELECT USING (
+    listing_id IN (SELECT id FROM listings WHERE is_published = TRUE)
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can manage own listing photos" ON listing_photos FOR ALL USING (
+    listing_id IN (SELECT id FROM listings WHERE provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid()))
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Availability policies
-CREATE POLICY "Public can view availability" ON availability FOR SELECT USING (TRUE);
-CREATE POLICY "Providers can manage own availability" ON availability FOR ALL USING (
-  listing_id IN (SELECT id FROM listings WHERE provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can view availability" ON availability FOR SELECT USING (TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can manage own availability" ON availability FOR ALL USING (
+    listing_id IN (SELECT id FROM listings WHERE provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid()))
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Bookings policies
-CREATE POLICY "Tourists can view own bookings" ON bookings FOR SELECT USING (tourist_id = auth.uid());
-CREATE POLICY "Tourists can create bookings" ON bookings FOR INSERT WITH CHECK (tourist_id = auth.uid());
-CREATE POLICY "Providers can view bookings for their listings" ON bookings FOR SELECT USING (
-  provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
-);
-CREATE POLICY "Providers can update booking status" ON bookings FOR UPDATE USING (
-  provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
-);
-CREATE POLICY "Admins can manage all bookings" ON bookings FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Tourists can view own bookings" ON bookings FOR SELECT USING (tourist_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Tourists can create bookings" ON bookings FOR INSERT WITH CHECK (tourist_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can view bookings for their listings" ON bookings FOR SELECT USING (
+    provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Providers can update booking status" ON bookings FOR UPDATE USING (
+    provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage all bookings" ON bookings FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Reviews policies
-CREATE POLICY "Public can read approved reviews" ON reviews FOR SELECT USING (is_approved = TRUE);
-CREATE POLICY "Tourists can create reviews for completed bookings" ON reviews FOR INSERT WITH CHECK (
-  tourist_id = auth.uid() AND
-  booking_id IN (SELECT id FROM bookings WHERE tourist_id = auth.uid() AND status = 'completed')
-);
-CREATE POLICY "Tourists can update own reviews" ON reviews FOR UPDATE USING (tourist_id = auth.uid());
-CREATE POLICY "Admins can manage all reviews" ON reviews FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can read approved reviews" ON reviews FOR SELECT USING (is_approved = TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Tourists can create reviews for completed bookings" ON reviews FOR INSERT WITH CHECK (
+    tourist_id = auth.uid() AND
+    booking_id IN (SELECT id FROM bookings WHERE tourist_id = auth.uid() AND status = 'completed')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Tourists can update own reviews" ON reviews FOR UPDATE USING (tourist_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage all reviews" ON reviews FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Itineraries policies
-CREATE POLICY "Public can view public itineraries" ON itineraries FOR SELECT USING (is_public = TRUE);
-CREATE POLICY "Users can manage own itineraries" ON itineraries FOR ALL USING (user_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Public can view public itineraries" ON itineraries FOR SELECT USING (is_public = TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can manage own itineraries" ON itineraries FOR ALL USING (user_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Itinerary stops policies
-CREATE POLICY "Public can view stops of public itineraries" ON itinerary_stops FOR SELECT USING (
-  itinerary_id IN (SELECT id FROM itineraries WHERE is_public = TRUE OR user_id = auth.uid())
-);
-CREATE POLICY "Users can manage own itinerary stops" ON itinerary_stops FOR ALL USING (
-  itinerary_id IN (SELECT id FROM itineraries WHERE user_id = auth.uid())
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can view stops of public itineraries" ON itinerary_stops FOR SELECT USING (
+    itinerary_id IN (SELECT id FROM itineraries WHERE is_public = TRUE OR user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can manage own itinerary stops" ON itinerary_stops FOR ALL USING (
+    itinerary_id IN (SELECT id FROM itineraries WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Safety zones policies
-CREATE POLICY "Public can read safety zones" ON safety_zones FOR SELECT USING (TRUE);
-CREATE POLICY "Admins can manage safety zones" ON safety_zones FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Public can read safety zones" ON safety_zones FOR SELECT USING (TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage safety zones" ON safety_zones FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Notifications policies
-CREATE POLICY "Users can read own notifications" ON notifications FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "System can create notifications" ON notifications FOR INSERT WITH CHECK (TRUE);
+DO $$ BEGIN
+  CREATE POLICY "Users can read own notifications" ON notifications FOR SELECT USING (user_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (user_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "System can create notifications" ON notifications FOR INSERT WITH CHECK (TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- IG Mentions policies
-CREATE POLICY "Providers can view own mentions" ON ig_mentions FOR SELECT USING (
-  provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
-);
-CREATE POLICY "Public can view approved mentions" ON ig_mentions FOR SELECT USING (is_approved = TRUE);
-CREATE POLICY "Admins can manage mentions" ON ig_mentions FOR ALL USING (
-  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Providers can view own mentions" ON ig_mentions FOR SELECT USING (
+    provider_id IN (SELECT id FROM providers WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Public can view approved mentions" ON ig_mentions FOR SELECT USING (is_approved = TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage mentions" ON ig_mentions FOR ALL USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Creator profiles policies
-CREATE POLICY "Public can read creator profiles" ON creator_profiles FOR SELECT USING (TRUE);
-CREATE POLICY "Creators can manage own profile" ON creator_profiles FOR ALL USING (user_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Public can read creator profiles" ON creator_profiles FOR SELECT USING (TRUE);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Creators can manage own profile" ON creator_profiles FOR ALL USING (user_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
