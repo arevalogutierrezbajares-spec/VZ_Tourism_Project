@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
             let q = supabase
               .from('listings')
               .select(
-                'id, title, slug, category, price_usd, rating, latitude, longitude, location_name, location_city, location_state, region, tags, cover_image_url, provider:providers(business_name, is_verified)'
+                'id, title, slug, category, price_usd, rating, latitude, longitude, location_name, region, tags, cover_image_url, provider:providers(business_name, is_verified)'
               )
               .eq('is_published', true)
               .limit((input.limit as number) || 10);
