@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createPayout, getPayouts, type PayoutMethod } from '@/lib/payouts-store';
 import { getAllBookings } from '@/lib/bookings-store';
+import { requireAdminAuth } from '@/lib/admin-auth';
 
 const INSTANT_PAYOUT_FEE_RATE = 0.015; // 1.5%
 
@@ -13,8 +14,11 @@ const createPayoutSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   const { searchParams } = new URL(request.url);
-  const provider_id = searchParams.get('provider_id') || 'prov_001';
+  const provider_id = searchParams.get('provider_id') || 'prov_001'; // TODO: derive from real session
 
   const payouts = getPayouts(provider_id);
   const sorted = [...payouts].sort(
@@ -31,6 +35,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   let body: unknown;
   try {
     body = await request.json();

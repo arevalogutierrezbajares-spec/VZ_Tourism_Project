@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cd83c8df-512c-4b2c-8d27-18cc70745a31",
+    "business_id": "35da929e-6e02-42e1-adf2-cc61625194a6",
+    "slug": "hotel-eurobuilding",
+    "step": 7,
+    "started_at": "2026-04-03T08:58:51.642Z",
+    "status": "completed",
+    "verified_via": "phone",
+    "owner_phone": "+582129021111",
+    "owner_name": "Carlos Perez",
+    "verification_status": "verified",
+    "listing_name": "Hotel Eurobuilding",
+    "listing_description": "A prestigious hotel in Caracas.",
+    "listing_category": "hotel",
+    "amenities": [
+      "wifi",
+      "ac",
+      "hot_water",
+      "generator",
+      "pool",
+      "parking"
+    ],
+    "rooms": [
+      {
+        "id": "1",
+        "name": "Standard Room",
+        "max_guests": 2,
+        "price_usd": 75
+      },
+      {
+        "id": "2",
+        "name": "Suite",
+        "max_guests": 4,
+        "price_usd": 120
+      }
+    ],
+    "availability_type": "always",
+    "blocked_dates": [],
+    "min_stay": 2,
+    "max_guests_total": 20,
+    "booking_type": "instant",
+    "cancellation_policy": "flexible",
+    "checkin_time": "14:00",
+    "checkout_time": "11:00",
+    "payment_methods": [
+      {
+        "type": "zelle",
+        "details": "carlos@email.com"
+      },
+      {
+        "type": "cash",
+        "details": "Cash on arrival"
+      }
+    ],
+    "completed_at": "2026-04-03T09:11:18.448Z"
+  }
+]

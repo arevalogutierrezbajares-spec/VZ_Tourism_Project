@@ -17,6 +17,7 @@ type ProviderForm = z.infer<typeof providerSchema>;
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
+  // TODO: replace with real provider session once auth is implemented
   const [providerId, setProviderId] = useState<string>('prov_001');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProviderForm>({

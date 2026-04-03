@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { requireAdminAuth } from '@/lib/admin-auth';
 
 const SETTINGS_PATH = path.join(process.cwd(), 'data', 'provider-settings.json');
 
@@ -35,14 +36,20 @@ function writeSettings(data: Record<string, ProviderPaymentSettings>): void {
 }
 
 export async function GET(request: NextRequest) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   const { searchParams } = new URL(request.url);
-  const provider_id = searchParams.get('provider_id') || 'prov_001';
+  const provider_id = searchParams.get('provider_id') || 'prov_001'; // TODO: derive from real session
   const all = readSettings();
   const settings = all[provider_id] ?? null;
   return NextResponse.json({ data: settings });
 }
 
 export async function POST(request: NextRequest) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -50,7 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { provider_id = 'prov_001', ...rest } = body as Record<string, unknown>;
+  const { provider_id = 'prov_001', ...rest } = body as Record<string, unknown>; // TODO: derive provider_id from real session
   const all = readSettings();
   all[provider_id as string] = {
     ...(all[provider_id as string] || {}),

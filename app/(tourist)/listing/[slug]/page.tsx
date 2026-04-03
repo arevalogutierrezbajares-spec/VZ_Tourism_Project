@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ListingDetail } from '@/components/listing/ListingDetail';
+import { ScrapedListingView } from '@/components/listing/ScrapedListingView';
 import { createClient } from '@/lib/supabase/server';
-import { getListingBySlug, mapTypeToCategory } from '@/lib/local-listings';
+import { getListingBySlug, mapTypeToCategory, isOnboarded } from '@/lib/local-listings';
 import type { Listing, Review } from '@/types/database';
 
 interface Props {
@@ -86,6 +87,12 @@ export default async function ListingPage({ params }: Props) {
   const scraped = getListingBySlug(slug);
   if (!scraped) notFound();
 
+  // Tier 1: not yet onboarded — show info-only view
+  if (!isOnboarded(scraped)) {
+    return <ScrapedListingView listing={scraped} />;
+  }
+
+  // Tier 2: verified/founding_partner — show full booking experience
   const listing: Listing = {
     id: scraped.id,
     provider_id: scraped.provider_id,
@@ -107,7 +114,7 @@ export default async function ListingPage({ params }: Props) {
     max_guests: 1,
     min_guests: 1,
     is_published: true,
-    is_featured: false,
+    is_featured: scraped.platform_status === 'founding_partner',
     safety_level: 'yellow',
     rating: scraped.avg_rating || 0,
     total_reviews: scraped.review_count,
@@ -118,7 +125,7 @@ export default async function ListingPage({ params }: Props) {
     excludes: [],
     cancellation_policy: '',
     meeting_point: null,
-    cover_image_url: null,
+    cover_image_url: scraped.cover_image_url,
     created_at: scraped.created_at || new Date().toISOString(),
     updated_at: scraped.updated_at || new Date().toISOString(),
   };

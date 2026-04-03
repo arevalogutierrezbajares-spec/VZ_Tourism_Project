@@ -9,6 +9,33 @@ import {
 import { PLATFORM_COMMISSION_RATE } from '@/lib/constants';
 import { createCheckoutSession } from '@/lib/stripe/server';
 
+/**
+ * Estimates a nightly/per-person price for a listing based on type and rating.
+ * Used when no explicit price_usd is stored (scraped data often lacks pricing).
+ */
+function estimatePrice(listing: Record<string, unknown> | undefined): number {
+  if (!listing) return 60;
+  const type = String(listing.type ?? '').toLowerCase();
+  const rating = Number(listing.avg_rating ?? listing.rating ?? 0);
+
+  if (type === 'restaurante' || type === 'restaurant') {
+    // Restaurants: $15-40/person
+    return rating >= 4.5 ? 35 : rating >= 4 ? 27 : 18;
+  }
+  if (type === 'posada' || type === 'alojamiento' || type === 'hospedaje') {
+    // Posadas: $40-80/night
+    return rating >= 4.5 ? 75 : rating >= 4 ? 60 : 40;
+  }
+  if (type === 'hotel') {
+    // Hotels: $60-250/night based on rating
+    return rating >= 4.5 ? 185 : rating >= 4 ? 110 : rating >= 3 ? 80 : 60;
+  }
+  if (type === 'tours' || type === 'experience') {
+    return rating >= 4.5 ? 45 : 30;
+  }
+  return 60;
+}
+
 // Load scraped listings for price/capacity lookups
 let _listings: Record<string, unknown>[] | null = null;
 function getListings() {
@@ -102,7 +129,7 @@ export async function POST(request: NextRequest) {
   const listing_name = listing?.title ?? listing?.name ?? `Experience ${listing_id}`;
   const listing_slug = (listing as { slug?: string } | undefined)?.slug;
   const provider_id = listing?.provider_id;
-  const base_price_usd = listing?.price_usd ?? listing?.price ?? 50;
+  const base_price_usd = listing?.price_usd ?? listing?.price ?? estimatePrice(listing);
   const max_guests = listing?.max_guests ?? 99;
   const min_guests = listing?.min_guests ?? 1;
 
@@ -186,9 +213,15 @@ export async function POST(request: NextRequest) {
       instructions: `Send exactly $${total_usd.toFixed(2)} via Zelle to the email above. Use your booking code "${booking.confirmation_code}" as the memo. Your booking will be confirmed once payment is verified.`,
     };
   } else if (payment_method === 'usdt') {
+    if (!process.env.PAYMENT_USDT_ADDRESS) {
+      return NextResponse.json(
+        { error: 'USDT payment is not currently available. Please choose another payment method.' },
+        { status: 400 }
+      );
+    }
     payment_details = {
       method: 'USDT (TRC-20)',
-      address: process.env.PAYMENT_USDT_ADDRESS || 'TRx9vZtourismPlatformAddressHere',
+      address: process.env.PAYMENT_USDT_ADDRESS,
       network: process.env.PAYMENT_USDT_NETWORK || 'TRC-20',
       amount: `${total_usd.toFixed(2)} USDT`,
       reference: booking.confirmation_code,

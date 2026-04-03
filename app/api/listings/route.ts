@@ -36,8 +36,10 @@ export async function GET(request: NextRequest) {
     website: l.website,
     instagram_handle: l.instagram_handle,
     google_place_id: l.google_place_id,
+    cover_image_url: (l as any).cover_image_url ?? null,
     provider_id: l.provider_id,
     status: l.status,
+    platform_status: l.platform_status || 'scraped',
   }));
 
   return NextResponse.json({ data, count, offset, limit });

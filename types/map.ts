@@ -21,6 +21,7 @@ export interface MapPin {
   region?: string;
   isSelected?: boolean;
   isHighlighted?: boolean;
+  isVerified?: boolean;
 }
 
 export interface MapCluster {

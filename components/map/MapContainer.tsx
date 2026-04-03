@@ -61,6 +61,8 @@ const SOURCE_ID = 'listings-source';
 const CLUSTER_LAYER = 'clusters';
 const CLUSTER_COUNT_LAYER = 'cluster-count';
 const POINT_LAYER = 'unclustered-point';
+const VERIFIED_RING_LAYER = 'verified-ring';
+const VERIFIED_CHECK_LAYER = 'verified-check';
 
 function buildGeoJSON(pins: MapPin[], hiddenCategories: Set<string>) {
   return {
@@ -79,6 +81,7 @@ function buildGeoJSON(pins: MapPin[], hiddenCategories: Set<string>) {
           city: pin.city ?? '',
           region: pin.region ?? '',
           listingId: pin.listingId ?? null,
+          isVerified: pin.isVerified ? 1 : 0,
           pinJson: JSON.stringify(pin),
         },
       })),
@@ -189,6 +192,42 @@ export function MapContainer({
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.9,
+        },
+      });
+
+      // Verified ring: white border glow around verified pins
+      map.addLayer({
+        id: VERIFIED_RING_LAYER,
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'isVerified'], 1]],
+        paint: {
+          'circle-color': 'transparent',
+          'circle-radius': 10,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0,
+          'circle-stroke-opacity': 1,
+        },
+      });
+
+      // Verified check label: ✓ symbol on verified pins
+      map.addLayer({
+        id: VERIFIED_CHECK_LAYER,
+        type: 'symbol',
+        source: SOURCE_ID,
+        filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'isVerified'], 1]],
+        layout: {
+          'text-field': '✓',
+          'text-size': 8,
+          'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+          'text-offset': [0, 0],
+          'text-allow-overlap': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': 'rgba(0,0,0,0.2)',
+          'text-halo-width': 0.5,
         },
       });
 

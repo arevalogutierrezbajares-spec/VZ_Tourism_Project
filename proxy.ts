@@ -2,14 +2,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
-  // Skip auth middleware when Supabase is not configured
+  const pathname = request.nextUrl.pathname;
+
+  // Skip Supabase auth middleware when Supabase is not configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next({ request });
   }
 
   const { supabaseResponse, user } = await updateSession(request);
-
-  const pathname = request.nextUrl.pathname;
 
   // Protect dashboard routes - require provider or admin role
   if (pathname.startsWith('/dashboard')) {
@@ -21,14 +21,9 @@ export async function proxy(request: NextRequest) {
     // Role check happens in layout via server component
   }
 
-  // Protect admin routes - require admin role
+  // Admin routes use client-side password auth in the layout — skip Supabase redirect
   if (pathname.startsWith('/admin')) {
-    if (!user) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirectTo', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    // Role check happens in layout
+    return supabaseResponse;
   }
 
   // Redirect authenticated users away from auth pages

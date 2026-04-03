@@ -34,6 +34,7 @@ function getNextFriday(): string {
 }
 
 export default function PayoutsPage() {
+  // TODO: replace with real provider session once auth is implemented
   const PROVIDER_ID = 'prov_001';
 
   const bookings = getAllBookings();

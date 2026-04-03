@@ -1,0 +1,211 @@
+[
+  {
+    "id": "pp_001",
+    "business_id": "c3f39fef-2fe6-408b-8e92-a4af56cf8e10",
+    "business_name": "Hotel Ritz Carlton Caracas",
+    "type": "hotel",
+    "region": "caracas",
+    "stage": "lead",
+    "tier": "A",
+    "entered_stage_at": "2026-03-25T10:00:00.000Z",
+    "phone": "+582127937811",
+    "cover_image_url": "https://lh3.googleusercontent.com/gps-cs-s/AHVAwepxwudDQJnG56GjyQBjVU8jvhIr_piXh3OT0feIKmCko71NQneTv23EO6jI-PNY6-nWiaoYV0QUSpT-rTs3AsTqcgZpMgk_m8MWhp1mk31aHrtOurMkm17cS5KQofn1G6YUVcFa=w408-h725-k-no",
+    "avg_rating": 3.8,
+    "notes": [],
+    "contact_history": [],
+    "assigned_to": null,
+    "created_at": "2026-03-25T10:00:00.000Z"
+  },
+  {
+    "id": "pp_002",
+    "business_id": "d5de4c77-17c9-4fd1-8e9b-b9e03467165d",
+    "business_name": "Lidotel Caracas",
+    "type": "hotel",
+    "region": "caracas",
+    "stage": "contacted",
+    "tier": "A",
+    "entered_stage_at": "2026-03-22T09:00:00.000Z",
+    "phone": "+582122121177",
+    "cover_image_url": "https://lh3.googleusercontent.com/gps-cs-s/AHVAweo9XOi0_5BqkmlgoYdpD11HYQUoQg1WJtrg7pvSLQbhjKeZi2ZMjRXfoL8akhPsRBSzKOfY4Vnztui-M-_R1jRM2Anj05QQ2s-T_A8lLmjNM1DsUKDe0uDcwVRt0K1kB0VbiAZaGEHyUCM=w408-h408-k-no",
+    "avg_rating": 4.5,
+    "notes": [
+      {"id": "n1", "text": "Emailed GM Maria Fuentes. Awaiting reply.", "created_at": "2026-03-22T09:30:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-03-22T09:30:00.000Z", "note": "Initial outreach email sent to maria.fuentes@lidotel.com"}
+    ],
+    "assigned_to": "Carlos",
+    "created_at": "2026-03-20T08:00:00.000Z"
+  },
+  {
+    "id": "pp_003",
+    "business_id": "e228ad0b-5748-40aa-b448-49af97778320",
+    "business_name": "HOTEL CCT CARACAS",
+    "type": "hotel",
+    "region": "caracas",
+    "stage": "interested",
+    "tier": "A",
+    "entered_stage_at": "2026-03-18T14:00:00.000Z",
+    "phone": "+582127008000",
+    "cover_image_url": "https://lh3.googleusercontent.com/gps-cs-s/AHVAwepWNoGCZjcsrZc4ektrzgXw50bv8p5O-_9q4RlIlb1Gj_2iSHc6uuzYq_vdiZM8VlugbTnEf2kkETm3jXiJM5BWEPUbUadCoFjLGhE_3rKU7o1eYG51MWbK_29LslI9K6sSN4YF=w408-h408-k-no",
+    "avg_rating": 4.5,
+    "notes": [
+      {"id": "n1", "text": "Very interested in partnership. Wants to discuss commission structure.", "created_at": "2026-03-18T15:00:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-03-15T10:00:00.000Z", "note": "Initial email sent"},
+      {"type": "whatsapp", "date": "2026-03-18T14:00:00.000Z", "note": "Positive reply via WhatsApp — interested in moving forward"}
+    ],
+    "assigned_to": "Sofia",
+    "created_at": "2026-03-15T10:00:00.000Z"
+  },
+  {
+    "id": "pp_004",
+    "business_id": "56dccffb-f5c6-49f0-9552-4fef977d6cdb",
+    "business_name": "Hotel Chacao Suites",
+    "type": "hotel",
+    "region": "caracas",
+    "stage": "call_scheduled",
+    "tier": "B",
+    "entered_stage_at": "2026-03-28T11:00:00.000Z",
+    "phone": "+582129566900",
+    "cover_image_url": "https://images.trvl-media.com/lodging/109000000/108290000/108281400/108281304/d6f1d351_z.jpg",
+    "avg_rating": 4.3,
+    "notes": [
+      {"id": "n1", "text": "Call scheduled for April 3rd at 2pm VET.", "created_at": "2026-03-28T11:30:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-03-24T09:00:00.000Z", "note": "Initial outreach"},
+      {"type": "phone", "date": "2026-03-28T11:00:00.000Z", "note": "Brief call — agreed to schedule full demo"}
+    ],
+    "assigned_to": "Carlos",
+    "created_at": "2026-03-24T09:00:00.000Z"
+  },
+  {
+    "id": "pp_005",
+    "business_id": "merida-posada-001",
+    "business_name": "Posada Los Andes Mérida",
+    "type": "hotel",
+    "region": "merida",
+    "stage": "onboarding",
+    "tier": "B",
+    "entered_stage_at": "2026-03-10T09:00:00.000Z",
+    "phone": "+584145559001",
+    "cover_image_url": null,
+    "avg_rating": 4.2,
+    "notes": [
+      {"id": "n1", "text": "Contract signed. Working on photo upload and listing description.", "created_at": "2026-03-10T10:00:00.000Z"},
+      {"id": "n2", "text": "Owner Pedro uploading photos this week.", "created_at": "2026-03-20T14:00:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-02-28T09:00:00.000Z", "note": "Cold outreach"},
+      {"type": "whatsapp", "date": "2026-03-05T10:00:00.000Z", "note": "Replied — very interested"},
+      {"type": "phone", "date": "2026-03-08T15:00:00.000Z", "note": "30-min call, went through platform demo"},
+      {"type": "email", "date": "2026-03-10T09:00:00.000Z", "note": "Contract sent and signed same day"}
+    ],
+    "assigned_to": "Sofia",
+    "created_at": "2026-02-28T09:00:00.000Z"
+  },
+  {
+    "id": "pp_006",
+    "business_id": "merida-tour-001",
+    "business_name": "Andes Adventures Tours",
+    "type": "tour",
+    "region": "merida",
+    "stage": "live",
+    "tier": "A",
+    "entered_stage_at": "2026-03-01T09:00:00.000Z",
+    "phone": "+584165551234",
+    "cover_image_url": null,
+    "avg_rating": 4.8,
+    "notes": [
+      {"id": "n1", "text": "Live! First booking received within 48 hours.", "created_at": "2026-03-03T10:00:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-02-10T09:00:00.000Z", "note": "Initial email"},
+      {"type": "whatsapp", "date": "2026-02-12T11:00:00.000Z", "note": "Positive reply"},
+      {"type": "phone", "date": "2026-02-15T14:00:00.000Z", "note": "Call — agreed to onboard"},
+      {"type": "email", "date": "2026-02-20T09:00:00.000Z", "note": "Contract signed"},
+      {"type": "email", "date": "2026-03-01T09:00:00.000Z", "note": "Listing published!"}
+    ],
+    "assigned_to": "Carlos",
+    "created_at": "2026-02-10T09:00:00.000Z"
+  },
+  {
+    "id": "pp_007",
+    "business_id": "los-roques-001",
+    "business_name": "Los Roques Dive Center",
+    "type": "experience",
+    "region": "los-roques",
+    "stage": "lead",
+    "tier": "A",
+    "entered_stage_at": "2026-03-30T08:00:00.000Z",
+    "phone": "+584121112233",
+    "cover_image_url": null,
+    "avg_rating": 4.7,
+    "notes": [],
+    "contact_history": [],
+    "assigned_to": null,
+    "created_at": "2026-03-30T08:00:00.000Z"
+  },
+  {
+    "id": "pp_008",
+    "business_id": "canaima-lodge-001",
+    "business_name": "Canaima Paradise Lodge",
+    "type": "hotel",
+    "region": "gran-sabana",
+    "stage": "contacted",
+    "tier": "B",
+    "entered_stage_at": "2026-03-26T10:00:00.000Z",
+    "phone": "+584168884455",
+    "cover_image_url": null,
+    "avg_rating": 4.4,
+    "notes": [
+      {"id": "n1", "text": "Sent WhatsApp message. No reply yet — remote area, may take time.", "created_at": "2026-03-26T10:30:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "whatsapp", "date": "2026-03-26T10:00:00.000Z", "note": "Sent intro message via WhatsApp"}
+    ],
+    "assigned_to": "Sofia",
+    "created_at": "2026-03-26T10:00:00.000Z"
+  },
+  {
+    "id": "pp_009",
+    "business_id": "margarita-resort-001",
+    "business_name": "Margarita Coral Beach Resort",
+    "type": "hotel",
+    "region": "isla-margarita",
+    "stage": "interested",
+    "tier": "A",
+    "entered_stage_at": "2026-03-19T13:00:00.000Z",
+    "phone": "+582957662200",
+    "cover_image_url": null,
+    "avg_rating": 4.6,
+    "notes": [
+      {"id": "n1", "text": "GM very keen. Wants exclusivity clause — need legal review.", "created_at": "2026-03-19T14:00:00.000Z"}
+    ],
+    "contact_history": [
+      {"type": "email", "date": "2026-03-14T09:00:00.000Z", "note": "Cold email to reservations@coralbeach.com.ve"},
+      {"type": "phone", "date": "2026-03-19T13:00:00.000Z", "note": "15-min call with GM — very interested, flagged exclusivity ask"}
+    ],
+    "assigned_to": "Carlos",
+    "created_at": "2026-03-14T09:00:00.000Z"
+  },
+  {
+    "id": "pp_010",
+    "business_id": "orinoco-ecolodge-001",
+    "business_name": "Orinoco River Ecolodge",
+    "type": "hotel",
+    "region": "llanos",
+    "stage": "lead",
+    "tier": "C",
+    "entered_stage_at": "2026-04-01T07:00:00.000Z",
+    "phone": "+584141119988",
+    "cover_image_url": null,
+    "avg_rating": 4.1,
+    "notes": [],
+    "contact_history": [],
+    "assigned_to": null,
+    "created_at": "2026-04-01T07:00:00.000Z"
+  }
+]

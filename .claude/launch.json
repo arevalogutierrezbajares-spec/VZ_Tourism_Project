@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "zealous-swanson",
+      "runtimeExecutable": "node_modules/.bin/next",
+      "runtimeArgs": ["dev", "--port", "3111", "/private/tmp/vz-tourism-app/.claude/worktrees/zealous-swanson"],
+      "port": 3111
+    }
+  ]
+}
