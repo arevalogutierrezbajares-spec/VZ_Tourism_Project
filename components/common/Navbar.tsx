@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles } from 'lucide-react';
+import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles, Luggage, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -69,43 +69,68 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {getInitials(profile?.full_name || 'U')}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{profile?.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{profile?.email}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                {isProvider && (
-                  <DropdownMenuItem onClick={() => window.location.href = '/dashboard'}>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
+            <>
+              <Link
+                href="/trips"
+                className={`hidden md:flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/trips') ? 'text-primary' : 'text-muted-foreground'}`}
+              >
+                <Luggage className="w-4 h-4" />
+                My Trips
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-sky-500 text-white text-xs">
+                      {getInitials(profile?.full_name || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{profile?.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => window.location.href = '/account'}>
+                    <User className="mr-2 h-4 w-4" />
+                    My Account
                   </DropdownMenuItem>
-                )}
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Admin Panel
+                  <DropdownMenuItem onClick={() => window.location.href = '/trips'}>
+                    <Luggage className="mr-2 h-4 w-4" />
+                    My Trips
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-red-600">
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuItem onClick={() => window.location.href = '/trips#bookings'}>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    My Bookings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/trips#saved'}>
+                    <Heart className="mr-2 h-4 w-4" />
+                    Saved Places
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/messages'}>
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Messages
+                  </DropdownMenuItem>
+                  {isProvider && (
+                    <DropdownMenuItem onClick={() => window.location.href = '/dashboard'}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-red-600">
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</Link>
