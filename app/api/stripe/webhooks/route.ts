@@ -10,27 +10,21 @@ function getSupabase() {
   return createClient(url, key);
 }
 
-async function updateSupabaseBooking(
-  supabase: ReturnType<typeof createClient>,
-  id: string,
-  status: string,
-  extra: Record<string, unknown> = {}
-) {
-  return supabase
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function updateSupabaseBooking(supabase: any, id: string, status: string, extra: Record<string, unknown> = {}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
     .from('guest_bookings')
-    .update({ status, updated_at: new Date().toISOString(), ...extra } as any)
+    .update({ status, updated_at: new Date().toISOString(), ...extra })
     .eq('id', id);
 }
 
-async function updateSupabaseBookingBySession(
-  supabase: ReturnType<typeof createClient>,
-  sessionId: string,
-  status: string,
-  extra: Record<string, unknown> = {}
-) {
-  return supabase
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function updateSupabaseBookingBySession(supabase: any, sessionId: string, status: string, extra: Record<string, unknown> = {}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
     .from('guest_bookings')
-    .update({ status, updated_at: new Date().toISOString(), ...extra } as any)
+    .update({ status, updated_at: new Date().toISOString(), ...extra })
     .eq('stripe_checkout_session_id', sessionId);
 }
 
@@ -82,7 +76,8 @@ export async function POST(request: NextRequest) {
         if (bookingId) {
           // Only cancel if still pending
           if (supabase) {
-            await supabase
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any)
               .from('guest_bookings')
               .update({ status: 'cancelled', updated_at: new Date().toISOString() })
               .eq('id', bookingId)
