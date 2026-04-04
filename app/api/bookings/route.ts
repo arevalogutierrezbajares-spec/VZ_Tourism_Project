@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
 import {
   createBooking,
   getAllBookings,
@@ -8,6 +9,17 @@ import {
 } from '@/lib/bookings-store';
 import { PLATFORM_COMMISSION_RATE } from '@/lib/constants';
 import { createCheckoutSession } from '@/lib/stripe/server';
+
+/**
+ * Returns a Supabase service-role client, or null if env vars are not set.
+ * Uses the service role key to bypass RLS for server-side booking writes.
+ */
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
 
 /**
  * Estimates a nightly/per-person price for a listing based on type and rating.
@@ -19,15 +31,12 @@ function estimatePrice(listing: Record<string, unknown> | undefined): number {
   const rating = Number(listing.avg_rating ?? listing.rating ?? 0);
 
   if (type === 'restaurante' || type === 'restaurant') {
-    // Restaurants: $15-40/person
     return rating >= 4.5 ? 35 : rating >= 4 ? 27 : 18;
   }
   if (type === 'posada' || type === 'alojamiento' || type === 'hospedaje') {
-    // Posadas: $40-80/night
     return rating >= 4.5 ? 75 : rating >= 4 ? 60 : 40;
   }
   if (type === 'hotel') {
-    // Hotels: $60-250/night based on rating
     return rating >= 4.5 ? 185 : rating >= 4 ? 110 : rating >= 3 ? 80 : 60;
   }
   if (type === 'tours' || type === 'experience') {
@@ -53,7 +62,6 @@ const createBookingSchema = z.object({
   listing_id: z.string().min(1),
   check_in: z.string().min(1),
   check_out: z.string().optional(),
-  // Accept both 'guests' (old) and 'guest_count' (new)
   guests: z.number().int().positive().optional(),
   guest_count: z.number().int().positive().optional(),
   guest_name: z.string().min(1),
@@ -69,14 +77,29 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status');
   const email = searchParams.get('email');
 
+  // Try Supabase first
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      let query = supabase.from('guest_bookings').select('*').order('created_at', { ascending: false });
+      if (email) query = query.eq('guest_email', email);
+      if (status) query = query.eq('status', status);
+      const { data, error } = await query;
+      if (!error && data) {
+        return NextResponse.json({ data, count: data.length });
+      }
+      console.error('Supabase GET bookings error:', error);
+    } catch (err) {
+      console.error('Supabase GET bookings exception:', err);
+    }
+  }
+
+  // JSON fallback
   let bookings = email ? getBookingsByEmail(email) : getAllBookings();
   if (status) bookings = bookings.filter((b) => b.status === status);
-
-  // Sort newest first
   bookings = [...bookings].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
-
   return NextResponse.json({ data: bookings, count: bookings.length });
 }
 
@@ -107,7 +130,6 @@ export async function POST(request: NextRequest) {
 
   const guest_count = parsed.data.guest_count ?? parsed.data.guests ?? 1;
 
-  // Look up listing for price + capacity info
   const listings = getListings();
   const listing = listings.find(
     (l) =>
@@ -153,7 +175,12 @@ export async function POST(request: NextRequest) {
   const commission_usd = service_fee_usd;
   const net_provider_usd = Math.round((total_usd - commission_usd) * 100) / 100;
 
-  const booking = createBooking({
+  // Generate confirmation code upfront so it's consistent across Supabase + JSON paths
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let confirmation_code = 'VZ-';
+  for (let i = 0; i < 6; i++) confirmation_code += chars[Math.floor(Math.random() * chars.length)];
+
+  const bookingBase = {
     listing_id,
     listing_name,
     listing_slug,
@@ -171,11 +198,37 @@ export async function POST(request: NextRequest) {
     total_usd,
     commission_usd,
     net_provider_usd,
-    status: 'pending',
+    status: 'pending' as const,
     payment_method: payment_method as PaymentMethod,
     special_requests,
     notes,
-  });
+  };
+
+  // Try Supabase first
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let booking: any = null;
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('guest_bookings')
+        .insert({ ...bookingBase, confirmation_code })
+        .select()
+        .single();
+      if (!error && data) {
+        booking = data;
+      } else {
+        console.error('Supabase insert booking error:', error);
+      }
+    } catch (err) {
+      console.error('Supabase insert booking exception:', err);
+    }
+  }
+
+  // JSON fallback if Supabase unavailable or failed
+  if (!booking) {
+    booking = createBooking(bookingBase);
+  }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3111';
   let checkout_url: string | null = null;
@@ -195,13 +248,18 @@ export async function POST(request: NextRequest) {
       checkout_url = session.url;
 
       // Store session ID on booking
+      if (supabase) {
+        await supabase
+          .from('guest_bookings')
+          .update({ stripe_checkout_session_id: session.id })
+          .eq('id', booking.id);
+      }
       const { updateBookingStatus } = await import('@/lib/bookings-store');
       updateBookingStatus(booking.id, 'pending', {
         stripe_checkout_session_id: session.id,
       });
     } catch (err) {
       console.error('Stripe checkout creation failed:', err);
-      // Don't fail the booking — tourist can retry payment from confirmation page
     }
   } else if (payment_method === 'zelle') {
     payment_details = {
@@ -209,7 +267,7 @@ export async function POST(request: NextRequest) {
       email: process.env.PAYMENT_ZELLE_EMAIL || 'payments@vz-tourism.com',
       name: process.env.PAYMENT_ZELLE_NAME || 'VZ Tourism Platform',
       amount: `$${total_usd.toFixed(2)} USD`,
-      reference: booking.confirmation_code,
+      reference: booking.confirmation_code as string,
       instructions: `Send exactly $${total_usd.toFixed(2)} via Zelle to the email above. Use your booking code "${booking.confirmation_code}" as the memo. Your booking will be confirmed once payment is verified.`,
     };
   } else if (payment_method === 'usdt') {
@@ -224,14 +282,14 @@ export async function POST(request: NextRequest) {
       address: process.env.PAYMENT_USDT_ADDRESS,
       network: process.env.PAYMENT_USDT_NETWORK || 'TRC-20',
       amount: `${total_usd.toFixed(2)} USDT`,
-      reference: booking.confirmation_code,
+      reference: booking.confirmation_code as string,
       instructions: `Send exactly ${total_usd.toFixed(2)} USDT on the TRC-20 network to the address above. Your booking code is "${booking.confirmation_code}". Screenshot your transfer and contact us on WhatsApp to confirm.`,
     };
   } else if (payment_method === 'arrival') {
     payment_details = {
       method: 'Pay on Arrival',
       amount: `$${total_usd.toFixed(2)} USD`,
-      reference: booking.confirmation_code,
+      reference: booking.confirmation_code as string,
       instructions: `Your booking is reserved. Pay $${total_usd.toFixed(2)} in cash on arrival. Show your booking code "${booking.confirmation_code}" to the provider.`,
     };
   }
