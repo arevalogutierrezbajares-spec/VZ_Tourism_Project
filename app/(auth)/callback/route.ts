@@ -8,7 +8,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    if (supabase) {
+    if (!supabase) {
+      console.error('[Auth] callback: createClient() returned null — check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    } else {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
         return NextResponse.redirect(`${origin}${next}`);

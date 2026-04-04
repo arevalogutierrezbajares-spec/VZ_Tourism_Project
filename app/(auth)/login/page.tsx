@@ -56,7 +56,7 @@ function LoginForm() {
     if (!supabase) { toast.error('Authentication is not configured'); return; }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}` },
+      options: { redirectTo: `${window.location.origin}/callback?next=${redirectTo}` },
     });
   };
 

@@ -66,13 +66,7 @@ export function useAuth() {
 
           // Fetch full DB profile with retry (handles first-login race condition).
           const dbProfile = await fetchProfileWithRetry(supabase, authUser.id);
-          if (dbProfile) {
-            setUser(dbProfile);
-            setProfile(dbProfile);
-          } else {
-            // No DB row yet — keep the minimal user so isAuthenticated stays true.
-            setProfile(null);
-          }
+          setProfile(dbProfile);
         } else {
           setUser(null);
           setProfile(null);
@@ -107,12 +101,7 @@ export function useAuth() {
         setUser(minimalUser);
 
         const dbProfile = await fetchProfileWithRetry(supabase, authUser.id);
-        if (dbProfile) {
-          setUser(dbProfile);
-          setProfile(dbProfile);
-        } else {
-          setProfile(null);
-        }
+        setProfile(dbProfile);
       } else {
         setUser(null);
         setProfile(null);

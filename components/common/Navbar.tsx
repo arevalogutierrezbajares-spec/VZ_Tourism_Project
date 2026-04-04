@@ -130,13 +130,9 @@ export function Navbar() {
               </DropdownMenu>
             </>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-                <LogIn className="w-4 h-4 mr-1.5" />
-                Sign in
-              </Link>
-              <Link href="/register" className={buttonVariants({ size: 'sm' })}>Get started</Link>
-            </div>
+            <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'icon' })} aria-label="Sign in">
+              <User className="w-5 h-5" />
+            </Link>
           )}
         </div>
       </div>
