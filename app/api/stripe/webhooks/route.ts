@@ -18,7 +18,7 @@ async function updateSupabaseBooking(
 ) {
   return supabase
     .from('guest_bookings')
-    .update({ status, updated_at: new Date().toISOString(), ...extra })
+    .update({ status, updated_at: new Date().toISOString(), ...extra } as any)
     .eq('id', id);
 }
 
@@ -30,7 +30,7 @@ async function updateSupabaseBookingBySession(
 ) {
   return supabase
     .from('guest_bookings')
-    .update({ status, updated_at: new Date().toISOString(), ...extra })
+    .update({ status, updated_at: new Date().toISOString(), ...extra } as any)
     .eq('stripe_checkout_session_id', sessionId);
 }
 
