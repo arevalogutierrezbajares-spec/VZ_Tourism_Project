@@ -76,7 +76,7 @@ function mapLocalToApiListing(l: ReturnType<typeof searchListings>[0]) {
     longitude: l.longitude,
     region: l.region,
     city: l.city ?? (l.region ?? '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    address: (l as Record<string, unknown>).address as string | null ?? null,
+    address: (l as unknown as Record<string, unknown>).address as string | null ?? null,
     rating: l.avg_rating,
     review_count: l.review_count,
     phone: l.phone,
