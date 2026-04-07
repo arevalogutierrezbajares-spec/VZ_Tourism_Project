@@ -3,9 +3,18 @@
   "configurations": [
     {
       "name": "vz-tourism-app",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/Users/tomas/.nvm/versions/node/v24.12.0/bin/node",
+      "runtimeArgs": ["node_modules/.bin/next", "dev"],
+      "env": { "PATH": "/Users/tomas/.nvm/versions/node/v24.12.0/bin:/usr/local/bin:/usr/bin:/bin" },
+      "cwd": "/Users/tomas/vz-tourism-app/.claude/worktrees/nice-grothendieck",
       "port": 3000
+    },
+    {
+      "name": "ruta-security",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3001"],
+      "cwd": "/Users/tomas/Transport/ruta-security",
+      "port": 3001
     }
   ]
 }
