@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { requireRutaRole } from '@/lib/ruta/auth'
 
-// Dispatch data API - uses service role to bypass RLS
-// In production, this should validate dispatcher role via auth header
 export async function GET(request: NextRequest) {
+  const auth = await requireRutaRole(['ruta_dispatcher', 'ruta_admin'])
+  if (auth.error) return auth.error
+
   const filter = request.nextUrl.searchParams.get('filter') || 'active'
 
   const supabase = await createServiceClient()

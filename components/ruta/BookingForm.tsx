@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { RutaRideType, RutaVehicleClass } from '@/types/ruta'
+import type { RutaRideType, RutaVehicleClass, RutaPaymentMethod } from '@/types/ruta'
 import { RUTA_MIN_LEAD_TIMES } from '@/types/ruta'
 import { AirportSelect, type LocationResult } from './AirportSelect'
 import { LocationInput } from './LocationInput'
@@ -47,6 +47,15 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [quoteError, setQuoteError] = useState<string | null>(null)
+
+  // Checkout state
+  const [passengerName, setPassengerName] = useState('')
+  const [passengerEmail, setPassengerEmail] = useState('')
+  const [passengerPhone, setPassengerPhone] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<RutaPaymentMethod>('stripe')
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false)
 
   const getMinDateTime = useCallback(() => {
     const leadMinutes = RUTA_MIN_LEAD_TIMES[activeService]
@@ -107,6 +116,64 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       )
     } finally {
       setQuoteLoading(false)
+    }
+  }
+
+  const handleBookNow = async () => {
+    if (!quote || !pickupLocation || !dropoffLocation) return
+
+    if (!passengerName.trim() || !passengerEmail.trim() || !passengerPhone.trim()) {
+      setBookingError('Please fill in your name, email, and phone number.')
+      return
+    }
+
+    setBookingLoading(true)
+    setBookingError(null)
+
+    const pickup = pickupLocation
+    const dropoff = dropoffLocation
+
+    try {
+      const res = await fetch('/api/ruta/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ride_type: activeService,
+          pickup_lat: pickup.lat,
+          pickup_lng: pickup.lng,
+          pickup_address: pickup.address,
+          dropoff_lat: dropoff.lat,
+          dropoff_lng: dropoff.lng,
+          dropoff_address: dropoff.address,
+          vehicle_class: vehicleClass,
+          scheduled_at: new Date(`${date}T${time}:00-04:00`).toISOString(),
+          passengers: Number(passengers),
+          passenger_name: passengerName.trim(),
+          passenger_email: passengerEmail.trim(),
+          passenger_phone: passengerPhone.trim(),
+          payment_method: paymentMethod,
+          price_quoted_usd: quote.price_usd,
+          hours: undefined,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create booking')
+      }
+
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+      } else if (data.payment_method === 'zelle') {
+        window.location.href = `/ruta/book/confirmation?ride_id=${data.ride_id}&token=${data.access_token}&zelle=true`
+      }
+    } catch (err) {
+      setBookingError(
+        err instanceof Error ? err.message : 'Booking failed. Please try again.'
+      )
+    } finally {
+      setBookingLoading(false)
     }
   }
 
@@ -406,12 +473,97 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               </div>
             )}
           </div>
-          <button
-            className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
-            style={{ background: '#c9a96e', color: '#0a0a0a' }}
-          >
-            Book Now - Pay ${quote.price_usd.toFixed(2)}
-          </button>
+          {!showCheckoutForm ? (
+            <button
+              onClick={() => setShowCheckoutForm(true)}
+              className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
+              style={{ background: '#c9a96e', color: '#0a0a0a' }}
+            >
+              Book Now - ${quote.price_usd.toFixed(2)} USD
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={passengerName}
+                onChange={(e) => setPassengerName(e.target.value)}
+                className="w-full py-3 px-4 text-sm outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={passengerEmail}
+                onChange={(e) => setPassengerEmail(e.target.value)}
+                className="w-full py-3 px-4 text-sm outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+              <input
+                type="tel"
+                placeholder="Phone (with country code)"
+                value={passengerPhone}
+                onChange={(e) => setPassengerPhone(e.target.value)}
+                className="w-full py-3 px-4 text-sm outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                {(['stripe', 'zelle'] as const).map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className="py-3 px-2 text-center text-xs uppercase tracking-wider transition-all"
+                    style={{
+                      background: paymentMethod === method ? 'rgba(201,169,110,0.05)' : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${paymentMethod === method ? '#c9a96e' : 'rgba(255,255,255,0.08)'}`,
+                      color: paymentMethod === method ? '#c9a96e' : '#888',
+                    }}
+                  >
+                    {method === 'stripe' ? 'Card Payment' : 'Zelle Transfer'}
+                  </button>
+                ))}
+              </div>
+              {bookingError && (
+                <div className="text-xs p-2" style={{ color: '#f87171' }} role="alert">
+                  {bookingError}
+                </div>
+              )}
+              <button
+                onClick={handleBookNow}
+                disabled={bookingLoading}
+                className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: '#c9a96e', color: '#0a0a0a' }}
+              >
+                {bookingLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  `Confirm & Pay $${quote.price_usd.toFixed(2)}`
+                )}
+              </button>
+              <button
+                onClick={() => setShowCheckoutForm(false)}
+                className="w-full py-2 text-xs"
+                style={{ color: '#666' }}
+              >
+                Back to quote
+              </button>
+            </div>
+          )}
         </div>
       )}
 

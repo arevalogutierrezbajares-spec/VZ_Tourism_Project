@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyRutaWebhook } from '@/lib/ruta/stripe'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -24,7 +24,11 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
+  if (!supabase) {
+    console.error('RUTA webhook: database not configured')
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object

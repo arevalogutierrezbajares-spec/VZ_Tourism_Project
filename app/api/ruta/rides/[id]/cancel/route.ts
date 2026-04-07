@@ -99,6 +99,15 @@ export async function POST(
     )
   }
 
+  // Release driver if ride was assigned
+  if (ride.driver_id) {
+    await dbClient
+      .from('ruta_drivers')
+      .update({ status: 'available' })
+      .eq('id', ride.driver_id)
+      .eq('status', 'on_ride')
+  }
+
   // TODO: Trigger Stripe refund if payment_method === 'stripe' && refund.refund_amount_usd > 0
   // TODO: Send cancellation notification
 
