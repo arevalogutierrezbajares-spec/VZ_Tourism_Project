@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getListingBySlug } from '@/lib/local-listings';
 import { getSession, updateSession } from '@/lib/onboarding-store';
 
 interface Params {
   params: Promise<{ slug: string }>;
 }
+
+const verifySchema = z.object({
+  method: z.enum(['phone', 'instagram', 'photo']),
+  value: z.string().min(1).max(200),
+  owner_name: z.string().min(1).max(200).optional(),
+});
 
 type ScrapedListingWithPhotos = ReturnType<typeof getListingBySlug> & { photos?: string[] };
 
@@ -21,17 +28,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'No active session' }, { status: 400 });
   }
 
-  const body = await req.json() as {
-    method: 'phone' | 'instagram' | 'photo';
-    value: string;
-    owner_name?: string;
-  };
+  const parseResult = verifySchema.safeParse(await req.json());
+  if (!parseResult.success) {
+    return NextResponse.json({ error: 'Invalid request body', details: parseResult.error.flatten() }, { status: 400 });
+  }
 
-  const { method, value, owner_name } = body;
+  const { method, value, owner_name } = parseResult.data;
 
   if (method === 'phone') {
-    // Normalize phone: strip non-digits and compare last 8+ digits
-    const normalize = (p: string) => p.replace(/\D/g, '').slice(-8);
+    // Normalize phone: strip non-digits and compare last 10 digits for Venezuela numbers
+    const normalize = (p: string) => p.replace(/\D/g, '').slice(-10);
     const storedPhone = listing.phone ?? '';
     const matches = normalize(storedPhone) === normalize(value);
 

@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, X, Check, Sparkles, Edit2, Archive,
   Star, AlertTriangle, Tag, FileText, Loader2, Eye, RefreshCw,
   Command, Zap, MoreHorizontal, CheckSquare, Square,
-  MessageCircle, AtSign, Mail, Send,
+  MessageCircle, AtSign, Mail, Send, Link2,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -1683,6 +1683,18 @@ function AdminListingsInner() {
                           <Zap className="w-3.5 h-3.5 text-green-500" />
                         </button>
                       )}
+                      <button
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-cyan-100 transition-colors"
+                        title="Copy Invite Link"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const url = `${window.location.origin}/join/${l.slug}`;
+                          await navigator.clipboard.writeText(url);
+                          setToast({ msg: `Invite link copied for "${l.name}"`, type: 'success' });
+                        }}
+                      >
+                        <Link2 className="w-3.5 h-3.5 text-cyan-600" />
+                      </button>
                       <button
                         className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-blue-100 transition-colors"
                         title="Edit"

@@ -11,7 +11,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const user = supabase ? (await supabase.auth.getUser()).data.user : null;
 
-  if (!user) {
+  if (!supabase || !user) {
     return (
       <div className="container px-4 py-16 max-w-md mx-auto text-center">
         <p className="text-lg font-medium mb-2">Sign in to view your profile</p>

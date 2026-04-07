@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { trackerPingSchema, isWithinVenezuela, isAnomalousPing } from '@/lib/ruta/tracker'
+import { trackerPingSchema, isWithinVenezuela, isAnomalousPing, hashTrackerKey } from '@/lib/ruta/tracker'
 
 // Simple in-memory rate limiter (per-device, 5-second window)
 const lastPingTimes = new Map<string, number>()
@@ -54,15 +54,14 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Authenticate: find vehicle with matching tracker_device_id
-  // Uses service role to bypass RLS (tracker devices are not authenticated users)
+  // Authenticate: find vehicle with matching tracker_device_id and verify API key
   const supabase = await createServiceClient()
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   }
   const { data: vehicle, error: vehicleError } = await supabase
     .from('ruta_vehicles')
-    .select('id, tracker_device_id')
+    .select('id, tracker_device_id, tracker_api_key_hash')
     .eq('tracker_device_id', ping.device_id)
     .single()
 
@@ -71,6 +70,17 @@ export async function POST(request: NextRequest) {
       { error: 'Unknown device' },
       { status: 401 }
     )
+  }
+
+  // Verify API key against stored hash
+  if (vehicle.tracker_api_key_hash) {
+    const keyHash = hashTrackerKey(apiKey)
+    if (keyHash !== vehicle.tracker_api_key_hash) {
+      return NextResponse.json(
+        { error: 'Invalid tracker key' },
+        { status: 401 }
+      )
+    }
   }
 
   // Find active ride for this vehicle

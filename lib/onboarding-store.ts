@@ -37,6 +37,12 @@ export interface OnboardingSession {
   listing_category?: string;
   selected_photos?: string[];
   amenities?: string[];
+  // Step 2: Contact info
+  contact_phone?: string;
+  contact_whatsapp?: string;
+  contact_email?: string;
+  contact_website?: string;
+  contact_instagram?: string;
   // Step 3: Rooms & pricing
   rooms?: RoomType[];
   // Step 4: Availability
@@ -144,6 +150,12 @@ function promoteToPlatform(slug: string, session: OnboardingSession): void {
     if (session.min_stay) listing.min_stay = session.min_stay;
     if (session.max_guests_total) listing.max_guests = session.max_guests_total;
     if (session.cancellation_policy) listing.cancellation_policy = session.cancellation_policy;
+    if (session.selected_photos?.length) listing.selected_photos = session.selected_photos;
+    if (session.contact_phone) listing.contact_phone = session.contact_phone;
+    if (session.contact_whatsapp) listing.contact_whatsapp = session.contact_whatsapp;
+    if (session.contact_email) listing.contact_email = session.contact_email;
+    if (session.contact_website) listing.contact_website = session.contact_website;
+    if (session.contact_instagram) listing.contact_instagram = session.contact_instagram;
 
     fs.writeFileSync(listingsFile, JSON.stringify(listings, null, 2), 'utf-8');
     invalidateCache();
