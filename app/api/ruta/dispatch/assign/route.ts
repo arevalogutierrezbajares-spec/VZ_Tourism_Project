@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { requireRutaRole } from '@/lib/ruta/auth'
 
 export async function POST(request: NextRequest) {
+  const auth = await requireRutaRole(['ruta_dispatcher', 'ruta_admin'])
+  if (auth.error) return auth.error
+
   const { ride_id, driver_id, vehicle_id } = await request.json()
 
   if (!ride_id || !driver_id || !vehicle_id) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { createRutaCheckoutSession } from '@/lib/ruta/stripe'
 import { generateAccessToken } from '@/lib/ruta/access-token'
+import { calculateQuote } from '@/lib/ruta/pricing'
 import type { RutaBookingRequest } from '@/types/ruta'
 import { RUTA_MIN_LEAD_TIMES } from '@/types/ruta'
 
@@ -40,6 +41,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Server-side price validation: recalculate and compare
+    if (body.pickup_lat && body.pickup_lng && body.dropoff_lat && body.dropoff_lng) {
+      try {
+        const serverQuote = await calculateQuote({
+          ride_type: body.ride_type,
+          pickup_lat: body.pickup_lat,
+          pickup_lng: body.pickup_lng,
+          pickup_address: body.pickup_address,
+          dropoff_lat: body.dropoff_lat,
+          dropoff_lng: body.dropoff_lng,
+          dropoff_address: body.dropoff_address,
+          vehicle_class: body.vehicle_class,
+          hours: body.hours,
+        })
+        // Allow 1% tolerance for floating point rounding
+        const tolerance = serverQuote.price_usd * 0.01
+        if (Math.abs(serverQuote.price_usd - body.price_quoted_usd) > tolerance) {
+          return NextResponse.json(
+            { error: 'Price has changed. Please get a new quote.', server_price: serverQuote.price_usd },
+            { status: 409 }
+          )
+        }
+      } catch {
+        // If price recalculation fails, reject rather than trust client price
+        return NextResponse.json(
+          { error: 'Unable to verify price. Please try again.' },
+          { status: 500 }
+        )
+      }
+    }
+
     const supabase = await createClient()
     const serviceClient = await createServiceClient()
 
@@ -57,6 +89,35 @@ export async function POST(request: NextRequest) {
     const dbClient = serviceClient || supabase
     if (!dbClient) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+    }
+
+    // Idempotency: check for duplicate booking (same email + same scheduled_at within 5 min)
+    const { data: existingRide } = await dbClient
+      .from('ruta_rides')
+      .select('id, passenger_access_token, stripe_checkout_session_id, status, payment_method')
+      .eq('passenger_email', body.passenger_email)
+      .eq('scheduled_at', body.scheduled_at)
+      .in('status', ['requested', 'pending_payment', 'confirmed'])
+      .limit(1)
+      .single()
+
+    if (existingRide) {
+      // Return existing ride info instead of creating a duplicate
+      if (existingRide.payment_method === 'stripe' && existingRide.stripe_checkout_session_id) {
+        return NextResponse.json({
+          ride_id: existingRide.id,
+          access_token: existingRide.passenger_access_token,
+          duplicate: true,
+          message: 'A booking for this time already exists.',
+        })
+      }
+      return NextResponse.json({
+        ride_id: existingRide.id,
+        access_token: existingRide.passenger_access_token,
+        payment_method: existingRide.payment_method,
+        duplicate: true,
+        message: 'A booking for this time already exists.',
+      })
     }
 
     // Create ride record (service role bypasses RLS)
