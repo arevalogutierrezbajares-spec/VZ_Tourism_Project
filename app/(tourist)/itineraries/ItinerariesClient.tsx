@@ -67,7 +67,24 @@ export function ItinerariesClient({
       params.set('limit', '20');
 
       const res = await fetch(`/api/itineraries?${params}`);
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        // If service unavailable (no Supabase), fall back to client-side filtering
+        if (res.status === 503) {
+          let filtered = [...initialItineraries];
+          if (f.region) filtered = filtered.filter(i => i.regions?.includes(f.region!));
+          if (f.durationMin) filtered = filtered.filter(i => i.total_days >= f.durationMin!);
+          if (f.durationMax) filtered = filtered.filter(i => i.total_days <= f.durationMax!);
+          if (f.budgetMin) filtered = filtered.filter(i => i.estimated_cost_usd >= f.budgetMin!);
+          if (f.budgetMax) filtered = filtered.filter(i => i.estimated_cost_usd <= f.budgetMax!);
+          if (f.sort === 'newest') filtered.sort((a, b) => b.created_at.localeCompare(a.created_at));
+          else if (f.sort === 'price') filtered.sort((a, b) => a.estimated_cost_usd - b.estimated_cost_usd);
+          else filtered.sort((a, b) => (b.saves + b.likes) - (a.saves + a.likes));
+          setItineraries(filtered);
+          setTotalCount(filtered.length);
+          return;
+        }
+        throw new Error();
+      }
       const { data, count } = await res.json();
       setItineraries(data || []);
       setTotalCount(count || 0);
@@ -76,7 +93,7 @@ export function ItinerariesClient({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [initialItineraries]);
 
   useEffect(() => {
     if (hasActiveFilters) {
