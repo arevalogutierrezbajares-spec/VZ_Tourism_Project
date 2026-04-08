@@ -6,6 +6,7 @@ import { Search, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryFeedCard } from '@/components/social/ItineraryFeedCard';
 import { InfluencerCard } from './InfluencerCard';
+import { ItineraryDetail } from './ItineraryDetail';
 import { FilterBar, type Filters } from './FilterBar';
 import type { Itinerary } from '@/types/database';
 
@@ -50,6 +51,7 @@ export function ItinerariesClient({
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
 
   const hasActiveFilters = filters.region || filters.durationMin || filters.budgetMin || filters.sort !== 'popular';
 
@@ -190,7 +192,9 @@ export function ItinerariesClient({
             ) : itineraries.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {itineraries.map((it) => (
-                  <ItineraryFeedCard key={it.id} itinerary={it} showActions />
+                  <div key={it.id} onClick={() => setSelectedItinerary(it)} className="cursor-pointer">
+                    <ItineraryFeedCard itinerary={it} showActions />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -230,6 +234,14 @@ export function ItinerariesClient({
           <Link href="/map">Build My Itinerary with AI</Link>
         </Button>
       </div>
+
+      {/* Itinerary Detail Modal */}
+      {selectedItinerary && (
+        <ItineraryDetail
+          itinerary={selectedItinerary}
+          onClose={() => setSelectedItinerary(null)}
+        />
+      )}
     </div>
   );
 }
