@@ -19,7 +19,7 @@ interface ItineraryFeedCardProps {
 
 export function ItineraryFeedCard({ itinerary, showActions = false, className }: ItineraryFeedCardProps) {
   const router = useRouter();
-  const recommendCount = (itinerary as Record<string, unknown>).recommendation_count as number
+  const recommendCount = (itinerary as unknown as Record<string, unknown>).recommendation_count as number
     ?? (itinerary.saves + itinerary.likes);
 
   const handleCustomize = async () => {
