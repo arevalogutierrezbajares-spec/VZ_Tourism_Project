@@ -60,11 +60,14 @@ export async function createRutaCheckoutSession({
 
 export async function createRutaRefund(
   paymentIntentId: string,
-  amountUsd: number
+  amountUsd: number,
+  rideId: string
 ): Promise<Stripe.Refund> {
   return stripe.refunds.create({
     payment_intent: paymentIntentId,
     amount: Math.round(amountUsd * 100),
+  }, {
+    idempotencyKey: `ruta-refund-${rideId}`,
   })
 }
 

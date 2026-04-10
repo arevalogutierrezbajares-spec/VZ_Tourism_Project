@@ -37,12 +37,11 @@ export async function POST(
 
   // Determine who is cancelling
   const isOwner = user && ride.passenger_user_id === user.id
-  const userMeta = user?.user_metadata as Record<string, unknown> | undefined
+  const userMeta = user?.app_metadata as Record<string, unknown> | undefined
   const rutaRole = userMeta?.ruta_role as string | undefined
   const isDispatcher = rutaRole === 'ruta_dispatcher' || rutaRole === 'ruta_admin'
 
-  const isDev = process.env.NODE_ENV === 'development'
-  if (!isOwner && !isDispatcher && !isDev) {
+  if (!isOwner && !isDispatcher) {
     return NextResponse.json(
       { error: 'Forbidden: you can only cancel your own rides' },
       { status: 403 }
@@ -107,7 +106,7 @@ export async function POST(
     ride.stripe_payment_intent_id
   ) {
     try {
-      await createRutaRefund(ride.stripe_payment_intent_id, refund.refund_amount_usd)
+      await createRutaRefund(ride.stripe_payment_intent_id, refund.refund_amount_usd, rideId)
       await dbClient
         .from('ruta_rides')
         .update({ payment_status: 'refunded' })
@@ -118,12 +117,13 @@ export async function POST(
     }
   }
 
-  // Reset driver status if a driver was assigned
+  // Reset driver status if a driver was assigned and currently on_ride
   if (ride.driver_id) {
     await dbClient
       .from('ruta_drivers')
       .update({ status: 'available' })
       .eq('id', ride.driver_id)
+      .eq('status', 'on_ride')
   }
 
   return NextResponse.json({
