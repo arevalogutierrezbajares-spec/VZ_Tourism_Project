@@ -58,13 +58,14 @@ export async function POST(request: NextRequest, { params }: Params) {
     });
 
   // Increment views on the itinerary
-  await supabase.rpc('increment_views', { row_id: id }).catch(() => {
+  const { error: rpcError } = await supabase.rpc('increment_views', { row_id: id });
+  if (rpcError) {
     // If RPC doesn't exist, do a manual update
-    return supabase
+    await supabase
       .from('itineraries')
-      .update({ views: (itinerary as Record<string, unknown>).views as number || 0 })
+      .update({ views: ((itinerary as unknown as Record<string, unknown>).views as number || 0) + 1 })
       .eq('id', id);
-  });
+  }
 
   return NextResponse.json({ tracked: true });
 }
