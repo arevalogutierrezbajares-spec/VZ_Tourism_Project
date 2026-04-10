@@ -76,7 +76,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
             )}
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="text-primary font-semibold">
-                {((itinerary as Record<string, unknown>).recommendation_count as number || itinerary.saves + itinerary.likes).toLocaleString()} recommend
+                {((itinerary as unknown as Record<string, unknown>).recommendation_count as number || itinerary.saves + itinerary.likes).toLocaleString()} recommend
               </span>
               <span>{itinerary.views.toLocaleString()} views</span>
             </div>
