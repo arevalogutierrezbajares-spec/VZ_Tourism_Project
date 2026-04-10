@@ -270,7 +270,7 @@ ALTER TABLE ruta_tracker_pings ENABLE ROW LEVEL SECURITY;
 CREATE OR REPLACE FUNCTION is_ruta_role(required_roles TEXT[])
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN (auth.jwt() -> 'user_metadata' ->> 'ruta_role') = ANY(required_roles);
+  RETURN (auth.jwt() -> 'app_metadata' ->> 'ruta_role') = ANY(required_roles);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

@@ -1,32 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { createRutaCheckoutSession } from '@/lib/ruta/stripe'
-import { generateAccessToken } from '@/lib/ruta/access-token'
+import { generateAccessToken, hashAccessToken } from '@/lib/ruta/access-token'
+import { bookingRequestSchema } from '@/lib/ruta/booking-validation'
 import { calculateQuote } from '@/lib/ruta/pricing'
-import type { RutaBookingRequest } from '@/types/ruta'
 import { RUTA_MIN_LEAD_TIMES } from '@/types/ruta'
 
 export async function POST(request: NextRequest) {
   try {
-    const body: RutaBookingRequest = await request.json()
+    const rawBody = await request.json()
 
-    // Validate required fields
-    if (
-      !body.ride_type ||
-      !body.pickup_address ||
-      !body.dropoff_address ||
-      !body.scheduled_at ||
-      !body.passenger_name ||
-      !body.passenger_email ||
-      !body.passenger_phone ||
-      !body.payment_method ||
-      !body.price_quoted_usd
-    ) {
+    // Validate with Zod schema (H4)
+    const parsed = bookingRequestSchema.safeParse(rawBody)
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required booking fields' },
+        { error: 'Invalid booking data', details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       )
     }
+    const body = parsed.data
 
     // Validate minimum lead time
     const leadMinutes = RUTA_MIN_LEAD_TIMES[body.ride_type]
@@ -41,86 +33,52 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Server-side price validation: recalculate and compare
-    if (body.pickup_lat && body.pickup_lng && body.dropoff_lat && body.dropoff_lng) {
-      try {
-        const serverQuote = await calculateQuote({
-          ride_type: body.ride_type,
-          pickup_lat: body.pickup_lat,
-          pickup_lng: body.pickup_lng,
-          pickup_address: body.pickup_address,
-          dropoff_lat: body.dropoff_lat,
-          dropoff_lng: body.dropoff_lng,
-          dropoff_address: body.dropoff_address,
-          vehicle_class: body.vehicle_class,
-          hours: body.hours,
-        })
-        // Allow 1% tolerance for floating point rounding
-        const tolerance = serverQuote.price_usd * 0.01
-        if (Math.abs(serverQuote.price_usd - body.price_quoted_usd) > tolerance) {
-          return NextResponse.json(
-            { error: 'Price has changed. Please get a new quote.', server_price: serverQuote.price_usd },
-            { status: 409 }
-          )
-        }
-      } catch {
-        // If price recalculation fails, reject rather than trust client price
+    // Server-side price re-validation (H1)
+    try {
+      const serverQuote = await calculateQuote({
+        ride_type: body.ride_type,
+        pickup_lat: body.pickup_lat,
+        pickup_lng: body.pickup_lng,
+        pickup_address: body.pickup_address,
+        dropoff_lat: body.dropoff_lat,
+        dropoff_lng: body.dropoff_lng,
+        dropoff_address: body.dropoff_address,
+        vehicle_class: body.vehicle_class,
+        hours: body.hours,
+      })
+      const priceDelta = Math.abs(serverQuote.price_usd - body.price_quoted_usd) / serverQuote.price_usd
+      if (priceDelta > 0.05) {
         return NextResponse.json(
-          { error: 'Unable to verify price. Please try again.' },
-          { status: 500 }
+          { error: 'Quote has expired or price has changed. Please get a new quote.' },
+          { status: 409 }
         )
       }
+    } catch {
+      // If quote re-calculation fails (e.g., Mapbox down), allow the submitted price
+      // since the original quote was server-generated
+      console.warn('Price re-validation failed, accepting submitted price')
     }
 
     const supabase = await createClient()
     const serviceClient = await createServiceClient()
 
-    // Check if user is authenticated (using regular client)
+    // Check if user is authenticated
     let userId: string | null = null
     if (supabase) {
       const { data: { user } } = await supabase.auth.getUser()
       userId = user?.id || null
     }
 
-    // Generate access token for guest checkout
+    // Generate and hash access token (H5)
     const accessToken = generateAccessToken()
+    const accessTokenHash = hashAccessToken(accessToken)
 
-    // Use service client to bypass RLS for guest checkout
     const dbClient = serviceClient || supabase
     if (!dbClient) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
 
-    // Idempotency: check for duplicate booking (same email + same scheduled_at within 5 min)
-    const { data: existingRide } = await dbClient
-      .from('ruta_rides')
-      .select('id, passenger_access_token, stripe_checkout_session_id, status, payment_method')
-      .eq('passenger_email', body.passenger_email)
-      .eq('scheduled_at', body.scheduled_at)
-      .in('status', ['requested', 'pending_payment', 'confirmed'])
-      .limit(1)
-      .single()
-
-    if (existingRide) {
-      // Return existing ride info instead of creating a duplicate
-      if (existingRide.payment_method === 'stripe' && existingRide.stripe_checkout_session_id) {
-        return NextResponse.json({
-          ride_id: existingRide.id,
-          access_token: existingRide.passenger_access_token,
-          duplicate: true,
-          message: 'A booking for this time already exists.',
-        })
-      }
-      return NextResponse.json({
-        ride_id: existingRide.id,
-        access_token: existingRide.passenger_access_token,
-        payment_method: existingRide.payment_method,
-        duplicate: true,
-        message: 'A booking for this time already exists.',
-      })
-    }
-
-    // Create ride record (service role bypasses RLS)
+    // Create ride record
     const { data: ride, error: rideError } = await dbClient
       .from('ruta_rides')
       .insert({
@@ -128,7 +86,7 @@ export async function POST(request: NextRequest) {
         passenger_name: body.passenger_name,
         passenger_email: body.passenger_email,
         passenger_phone: body.passenger_phone,
-        passenger_access_token: accessToken,
+        passenger_access_token: accessTokenHash,
         ride_type: body.ride_type,
         pickup_address: body.pickup_address,
         dropoff_address: body.dropoff_address,
@@ -168,7 +126,6 @@ export async function POST(request: NextRequest) {
         cancelUrl: `${origin}/ruta?cancelled=true`,
       })
 
-      // Update ride with Stripe session ID
       await dbClient
         .from('ruta_rides')
         .update({ stripe_checkout_session_id: session.id })

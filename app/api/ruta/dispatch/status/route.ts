@@ -56,8 +56,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  // If ride completed, set driver back to available
-  if (new_status === 'completed' && ride.driver_id) {
+  // Reset driver to available on completion or cancellation
+  const driverResetStatuses = ['completed', 'cancelled_by_ops']
+  if (driverResetStatuses.includes(new_status) && ride.driver_id) {
     await supabase
       .from('ruta_drivers')
       .update({ status: 'available' })

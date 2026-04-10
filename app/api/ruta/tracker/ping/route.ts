@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { trackerPingSchema, isWithinVenezuela, isAnomalousPing, hashTrackerKey } from '@/lib/ruta/tracker'
-
-// Simple in-memory rate limiter (per-device, 5-second window)
-const lastPingTimes = new Map<string, number>()
+import { trackerPingSchema, isWithinVenezuela, isAnomalousPing } from '@/lib/ruta/tracker'
+import { createHash, timingSafeEqual } from 'crypto'
 
 export async function POST(request: NextRequest) {
   const apiKey = request.headers.get('x-tracker-key')
@@ -35,17 +33,6 @@ export async function POST(request: NextRequest) {
 
   const ping = parsed.data
 
-  // Rate limit: 1 ping per 5 seconds per device
-  const lastPing = lastPingTimes.get(ping.device_id)
-  const now = Date.now()
-  if (lastPing && now - lastPing < 5000) {
-    return NextResponse.json(
-      { error: 'Rate limited: max 1 ping per 5 seconds' },
-      { status: 429 }
-    )
-  }
-  lastPingTimes.set(ping.device_id, now)
-
   // Venezuela bounding box check
   if (!isWithinVenezuela(ping.lat, ping.lng)) {
     return NextResponse.json(
@@ -54,11 +41,12 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Authenticate: find vehicle with matching tracker_device_id and verify API key
   const supabase = await createServiceClient()
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   }
+
+  // Authenticate: find vehicle with matching tracker_device_id + verify API key (H2)
   const { data: vehicle, error: vehicleError } = await supabase
     .from('ruta_vehicles')
     .select('id, tracker_device_id, tracker_api_key_hash')
@@ -74,13 +62,31 @@ export async function POST(request: NextRequest) {
 
   // Verify API key against stored hash
   if (vehicle.tracker_api_key_hash) {
-    const keyHash = hashTrackerKey(apiKey)
-    if (keyHash !== vehicle.tracker_api_key_hash) {
+    const providedHash = createHash('sha256').update(apiKey).digest('hex')
+    const storedHash = Buffer.from(vehicle.tracker_api_key_hash, 'hex')
+    const providedBuf = Buffer.from(providedHash, 'hex')
+    if (storedHash.length !== providedBuf.length || !timingSafeEqual(storedHash, providedBuf)) {
       return NextResponse.json(
-        { error: 'Invalid tracker key' },
+        { error: 'Invalid tracker API key' },
         { status: 401 }
       )
     }
+  }
+
+  // DB-based rate limit: 1 ping per 5 seconds per device (H3)
+  const { data: recentPing } = await supabase
+    .from('ruta_tracker_pings')
+    .select('id')
+    .eq('device_id', ping.device_id)
+    .gte('timestamp', new Date(Date.now() - 5000).toISOString())
+    .limit(1)
+    .maybeSingle()
+
+  if (recentPing) {
+    return NextResponse.json(
+      { error: 'Rate limited: max 1 ping per 5 seconds' },
+      { status: 429 }
+    )
   }
 
   // Find active ride for this vehicle
@@ -90,7 +96,7 @@ export async function POST(request: NextRequest) {
     .eq('vehicle_id', vehicle.id)
     .in('status', ['assigned', 'driver_en_route', 'pickup', 'in_progress'])
     .limit(1)
-    .single()
+    .maybeSingle()
 
   // Check for anomalous ping
   const anomaly = isAnomalousPing(ping)
@@ -117,23 +123,6 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to store ping' },
       { status: 500 }
     )
-  }
-
-  // Broadcast via Supabase Realtime (if ride is active)
-  if (activeRide) {
-    const channel = supabase.channel(`ride-${activeRide.id}`)
-    await channel.send({
-      type: 'broadcast',
-      event: 'tracker_ping',
-      payload: {
-        lat: ping.lat,
-        lng: ping.lng,
-        speed: ping.speed,
-        heading: ping.heading,
-        timestamp: ping.timestamp,
-        device_id: ping.device_id,
-      },
-    })
   }
 
   return NextResponse.json({ ok: true, ride_id: activeRide?.id || null })

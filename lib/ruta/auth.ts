@@ -7,6 +7,14 @@ export async function requireRutaRole(
   roles: RutaRole[]
 ): Promise<{ user: { id: string; email: string; ruta_role: string }; error?: never } | { user?: never; error: NextResponse }> {
   const supabase = await createClient()
+  if (!supabase) {
+    return {
+      error: NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      ),
+    }
+  }
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error || !user) {
@@ -18,7 +26,7 @@ export async function requireRutaRole(
     }
   }
 
-  const rutaRole = (user.user_metadata as Record<string, unknown>)?.ruta_role as string | undefined
+  const rutaRole = (user.app_metadata as Record<string, unknown>)?.ruta_role as string | undefined
 
   if (!rutaRole || !roles.includes(rutaRole as RutaRole)) {
     return {
@@ -42,6 +50,7 @@ export async function getAuthUser(): Promise<{
   user: { id: string; email: string } | null
 }> {
   const supabase = await createClient()
+  if (!supabase) return { user: null }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { user: null }
   return { user: { id: user.id, email: user.email ?? '' } }

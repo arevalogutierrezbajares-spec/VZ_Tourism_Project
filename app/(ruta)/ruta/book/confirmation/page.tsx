@@ -168,10 +168,9 @@ export default function BookingConfirmation() {
                 What happens next
               </h3>
               <ul className="space-y-2 text-xs" style={{ color: '#999' }}>
-                <li>Your driver will be assigned shortly.</li>
-                <li>You'll receive driver details (name, photo, vehicle, plate) via email and WhatsApp.</li>
-                <li>24 hours before pickup: a reminder with full details.</li>
-                <li>2 hours before: WhatsApp with a live tracking link.</li>
+                <li>Our dispatch team will assign a driver and vehicle to your ride.</li>
+                <li>Save this page for reference. You can check your ride status here anytime.</li>
+                <li>For updates or questions, contact our ops team via WhatsApp below.</li>
               </ul>
             </div>
           )}

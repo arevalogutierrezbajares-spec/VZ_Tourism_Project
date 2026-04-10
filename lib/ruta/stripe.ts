@@ -52,10 +52,23 @@ export async function createRutaCheckoutSession({
       passenger_name: passengerName,
       scheduled_at: scheduledAt,
     },
-    expires_after: 1800, // 30 minutes
+    expires_at: Math.floor(Date.now() / 1000) + 1800, // 30 minutes from now
   })
 
   return session
+}
+
+export async function createRutaRefund(
+  paymentIntentId: string,
+  amountUsd: number,
+  rideId: string
+): Promise<Stripe.Refund> {
+  return stripe.refunds.create({
+    payment_intent: paymentIntentId,
+    amount: Math.round(amountUsd * 100),
+  }, {
+    idempotencyKey: `ruta-refund-${rideId}`,
+  })
 }
 
 export async function verifyRutaWebhook(

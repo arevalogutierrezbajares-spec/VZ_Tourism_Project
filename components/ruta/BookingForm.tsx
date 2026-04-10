@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import type { RutaRideType, RutaVehicleClass, RutaPaymentMethod } from '@/types/ruta'
 import { RUTA_MIN_LEAD_TIMES } from '@/types/ruta'
 import { AirportSelect, type LocationResult } from './AirportSelect'
@@ -38,6 +39,7 @@ interface QuoteResult {
 }
 
 export function BookingForm({ activeService, onServiceChange }: BookingFormProps) {
+  const router = useRouter()
   const [pickupLocation, setPickupLocation] = useState<LocationResult | null>(null)
   const [dropoffLocation, setDropoffLocation] = useState<LocationResult | null>(null)
   const [date, setDate] = useState('')
@@ -48,14 +50,14 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [quoteError, setQuoteError] = useState<string | null>(null)
 
-  // Checkout state
+  // Checkout step state
+  const [showCheckout, setShowCheckout] = useState(false)
   const [passengerName, setPassengerName] = useState('')
   const [passengerEmail, setPassengerEmail] = useState('')
   const [passengerPhone, setPassengerPhone] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<RutaPaymentMethod>('stripe')
-  const [bookingLoading, setBookingLoading] = useState(false)
-  const [bookingError, setBookingError] = useState<string | null>(null)
-  const [showCheckoutForm, setShowCheckoutForm] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const getMinDateTime = useCallback(() => {
     const leadMinutes = RUTA_MIN_LEAD_TIMES[activeService]
@@ -87,6 +89,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
     setQuote(null)
 
     try {
+      if (!pickupLocation || !dropoffLocation) return
       const params = new URLSearchParams({
         ride_type: activeService,
         pickup_lat: String(pickupLocation.lat),
@@ -119,19 +122,19 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
     }
   }
 
-  const handleBookNow = async () => {
-    if (!quote || !pickupLocation || !dropoffLocation) return
-
+  const handleCheckout = async () => {
     if (!passengerName.trim() || !passengerEmail.trim() || !passengerPhone.trim()) {
-      setBookingError('Please fill in your name, email, and phone number.')
+      setCheckoutError('Please fill in all passenger details.')
       return
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(passengerEmail)) {
+      setCheckoutError('Please enter a valid email address.')
+      return
+    }
+    if (!quote || !pickupLocation || !dropoffLocation) return
 
-    setBookingLoading(true)
-    setBookingError(null)
-
-    const pickup = pickupLocation
-    const dropoff = dropoffLocation
+    setCheckoutLoading(true)
+    setCheckoutError(null)
 
     try {
       const res = await fetch('/api/ruta/checkout', {
@@ -139,12 +142,12 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ride_type: activeService,
-          pickup_lat: pickup.lat,
-          pickup_lng: pickup.lng,
-          pickup_address: pickup.address,
-          dropoff_lat: dropoff.lat,
-          dropoff_lng: dropoff.lng,
-          dropoff_address: dropoff.address,
+          pickup_lat: pickupLocation.lat,
+          pickup_lng: pickupLocation.lng,
+          pickup_address: pickupLocation.address,
+          dropoff_lat: dropoffLocation.lat,
+          dropoff_lng: dropoffLocation.lng,
+          dropoff_address: dropoffLocation.address,
           vehicle_class: vehicleClass,
           scheduled_at: new Date(`${date}T${time}:00-04:00`).toISOString(),
           passengers: Number(passengers),
@@ -153,27 +156,25 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           passenger_phone: passengerPhone.trim(),
           payment_method: paymentMethod,
           price_quoted_usd: quote.price_usd,
-          hours: undefined,
         }),
       })
 
       const data = await res.json()
-
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create booking')
+        throw new Error(data.error || 'Checkout failed')
       }
 
       if (data.checkout_url) {
         window.location.href = data.checkout_url
-      } else if (data.payment_method === 'zelle') {
-        window.location.href = `/ruta/book/confirmation?ride_id=${data.ride_id}&token=${data.access_token}&zelle=true`
+      } else {
+        router.push(`/ruta/book/confirmation?ride_id=${data.ride_id}&token=${data.access_token}`)
       }
     } catch (err) {
-      setBookingError(
-        err instanceof Error ? err.message : 'Booking failed. Please try again.'
+      setCheckoutError(
+        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
       )
     } finally {
-      setBookingLoading(false)
+      setCheckoutLoading(false)
     }
   }
 
@@ -473,19 +474,22 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               </div>
             )}
           </div>
-          {!showCheckoutForm ? (
+          {!showCheckout ? (
             <button
-              onClick={() => setShowCheckoutForm(true)}
+              onClick={() => setShowCheckout(true)}
               className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
               style={{ background: '#c9a96e', color: '#0a0a0a' }}
             >
-              Book Now - ${quote.price_usd.toFixed(2)} USD
+              Book Now - ${quote.price_usd.toFixed(2)}
             </button>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: '#999' }}>
+                Passenger Details
+              </p>
               <input
                 type="text"
-                placeholder="Full Name"
+                placeholder="Full Name *"
                 value={passengerName}
                 onChange={(e) => setPassengerName(e.target.value)}
                 className="w-full py-3 px-4 text-sm outline-none"
@@ -495,58 +499,70 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                   color: '#e8e8e8',
                 }}
               />
-              <input
-                type="email"
-                placeholder="Email"
-                value={passengerEmail}
-                onChange={(e) => setPassengerEmail(e.target.value)}
-                className="w-full py-3 px-4 text-sm outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#e8e8e8',
-                }}
-              />
-              <input
-                type="tel"
-                placeholder="Phone (with country code)"
-                value={passengerPhone}
-                onChange={(e) => setPassengerPhone(e.target.value)}
-                className="w-full py-3 px-4 text-sm outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#e8e8e8',
-                }}
-              />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="email"
+                  placeholder="Email *"
+                  value={passengerEmail}
+                  onChange={(e) => setPassengerEmail(e.target.value)}
+                  className="w-full py-3 px-4 text-sm outline-none"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#e8e8e8',
+                  }}
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone *"
+                  value={passengerPhone}
+                  onChange={(e) => setPassengerPhone(e.target.value)}
+                  className="w-full py-3 px-4 text-sm outline-none"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#e8e8e8',
+                  }}
+                />
+              </div>
+
+              <p className="text-xs uppercase tracking-wider mt-2" style={{ color: '#999' }}>
+                Payment Method
+              </p>
+              <div className="grid grid-cols-2 gap-3">
                 {(['stripe', 'zelle'] as const).map((method) => (
                   <button
                     key={method}
                     onClick={() => setPaymentMethod(method)}
-                    className="py-3 px-2 text-center text-xs uppercase tracking-wider transition-all"
+                    className="py-3 px-4 text-xs uppercase tracking-wider text-center transition-all"
                     style={{
                       background: paymentMethod === method ? 'rgba(201,169,110,0.05)' : 'rgba(255,255,255,0.02)',
                       border: `1px solid ${paymentMethod === method ? '#c9a96e' : 'rgba(255,255,255,0.08)'}`,
                       color: paymentMethod === method ? '#c9a96e' : '#888',
                     }}
                   >
-                    {method === 'stripe' ? 'Card Payment' : 'Zelle Transfer'}
+                    {method === 'stripe' ? 'Credit Card' : 'Zelle'}
                   </button>
                 ))}
               </div>
-              {bookingError && (
-                <div className="text-xs p-2" style={{ color: '#f87171' }} role="alert">
-                  {bookingError}
+
+              {checkoutError && (
+                <div className="p-3 text-xs" role="alert" style={{
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  color: '#f87171',
+                }}>
+                  {checkoutError}
                 </div>
               )}
+
               <button
-                onClick={handleBookNow}
-                disabled={bookingLoading}
-                className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={handleCheckout}
+                disabled={checkoutLoading}
+                className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40"
                 style={{ background: '#c9a96e', color: '#0a0a0a' }}
               >
-                {bookingLoading ? (
+                {checkoutLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     Processing...
@@ -554,13 +570,6 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                 ) : (
                   `Confirm & Pay $${quote.price_usd.toFixed(2)}`
                 )}
-              </button>
-              <button
-                onClick={() => setShowCheckoutForm(false)}
-                className="w-full py-2 text-xs"
-                style={{ color: '#666' }}
-              >
-                Back to quote
               </button>
             </div>
           )}

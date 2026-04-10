@@ -18,11 +18,9 @@ export default function DispatchLayout({
     )
 
     supabase.auth.getUser().then(({ data: { user } }) => {
-      const meta = user?.user_metadata as Record<string, unknown> | undefined
+      const meta = user?.app_metadata as Record<string, unknown> | undefined
       const role = meta?.ruta_role as string | undefined
-      // Dev bypass: allow access in development when no user is authenticated
-      const isDev = process.env.NODE_ENV === 'development'
-      setAuthorized(role === 'ruta_dispatcher' || role === 'ruta_admin' || isDev)
+      setAuthorized(role === 'ruta_dispatcher' || role === 'ruta_admin')
     })
   }, [])
 

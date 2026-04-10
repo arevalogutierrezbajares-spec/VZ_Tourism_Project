@@ -1,19 +1,21 @@
-import { randomBytes } from 'crypto'
+import { randomBytes, createHash, timingSafeEqual } from 'crypto'
 
 export function generateAccessToken(): string {
   return randomBytes(32).toString('hex')
 }
 
+export function hashAccessToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
+
 export function validateAccessToken(
   provided: string | null,
-  stored: string | null
+  storedHash: string | null
 ): boolean {
-  if (!provided || !stored) return false
-  if (provided.length !== stored.length) return false
-  // Timing-safe comparison
-  let result = 0
-  for (let i = 0; i < provided.length; i++) {
-    result |= provided.charCodeAt(i) ^ stored.charCodeAt(i)
-  }
-  return result === 0
+  if (!provided || !storedHash) return false
+  const providedHash = hashAccessToken(provided)
+  const storedBuf = Buffer.from(storedHash, 'hex')
+  const providedBuf = Buffer.from(providedHash, 'hex')
+  if (storedBuf.length !== providedBuf.length) return false
+  return timingSafeEqual(storedBuf, providedBuf)
 }

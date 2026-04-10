@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { calculateRefund } from '@/lib/ruta/cancellation'
+import { createRutaRefund } from '@/lib/ruta/stripe'
 import { isValidTransition } from '@/lib/ruta/ride-status'
 import type { RutaRideStatus } from '@/types/ruta'
 
@@ -36,12 +37,11 @@ export async function POST(
 
   // Determine who is cancelling
   const isOwner = user && ride.passenger_user_id === user.id
-  const userMeta = user?.user_metadata as Record<string, unknown> | undefined
+  const userMeta = user?.app_metadata as Record<string, unknown> | undefined
   const rutaRole = userMeta?.ruta_role as string | undefined
   const isDispatcher = rutaRole === 'ruta_dispatcher' || rutaRole === 'ruta_admin'
 
-  const isDev = process.env.NODE_ENV === 'development'
-  if (!isOwner && !isDispatcher && !isDev) {
+  if (!isOwner && !isDispatcher) {
     return NextResponse.json(
       { error: 'Forbidden: you can only cancel your own rides' },
       { status: 403 }
@@ -99,7 +99,25 @@ export async function POST(
     )
   }
 
-  // Release driver if ride was assigned
+  // Execute Stripe refund if applicable
+  if (
+    ride.payment_method === 'stripe' &&
+    refund.refund_amount_usd > 0 &&
+    ride.stripe_payment_intent_id
+  ) {
+    try {
+      await createRutaRefund(ride.stripe_payment_intent_id, refund.refund_amount_usd, rideId)
+      await dbClient
+        .from('ruta_rides')
+        .update({ payment_status: 'refunded' })
+        .eq('id', rideId)
+    } catch (refundErr) {
+      console.error('Stripe refund failed:', refundErr)
+      // Continue with cancellation even if refund fails — log for manual followup
+    }
+  }
+
+  // Reset driver status if a driver was assigned and currently on_ride
   if (ride.driver_id) {
     await dbClient
       .from('ruta_drivers')
@@ -107,9 +125,6 @@ export async function POST(
       .eq('id', ride.driver_id)
       .eq('status', 'on_ride')
   }
-
-  // TODO: Trigger Stripe refund if payment_method === 'stripe' && refund.refund_amount_usd > 0
-  // TODO: Send cancellation notification
 
   return NextResponse.json({
     success: true,
