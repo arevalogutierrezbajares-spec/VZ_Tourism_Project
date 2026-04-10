@@ -150,6 +150,8 @@ export interface Itinerary {
   end_date: string | null;
   is_public: boolean;
   is_template: boolean;
+  is_influencer_pick: boolean;
+  referral_code: string | null;
   total_days: number;
   estimated_cost_usd: number;
   regions: string[];
@@ -161,6 +163,19 @@ export interface Itinerary {
   updated_at: string;
   stops?: ItineraryStop[];
   user?: User;
+}
+
+export interface ItineraryReferral {
+  id: string;
+  itinerary_id: string;
+  creator_id: string;
+  referral_code: string;
+  ip_hash: string;
+  booking_id: string | null;
+  clicked_at: string;
+  converted_at: string | null;
+  commission_rate: number;
+  commission_amount_usd: number | null;
 }
 
 export interface ItineraryStop {

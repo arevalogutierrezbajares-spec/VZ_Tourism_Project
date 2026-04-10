@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles, Luggage, Heart, LogIn } from 'lucide-react';
+import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles, Luggage, Heart, LogIn, Route } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -41,6 +41,13 @@ export function Navbar() {
           >
             <BookOpen className="w-4 h-4" />
             Explore
+          </Link>
+          <Link
+            href="/itineraries"
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/itineraries' ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <Route className="w-4 h-4" />
+            Itineraries
           </Link>
           <Link
             href="/discover"

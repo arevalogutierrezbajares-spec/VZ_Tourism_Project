@@ -512,7 +512,12 @@
     "checkout_time": "11:00",
     "min_stay": 2,
     "max_guests": 20,
-    "cancellation_policy": "flexible"
+    "cancellation_policy": "flexible",
+    "contact_phone": "+582129021111",
+    "contact_whatsapp": "+582129021111",
+    "contact_email": "reservations@hoteleuro.com",
+    "contact_website": "http://www.hoteleuro.com/",
+    "contact_instagram": "@hoteleurobuilding"
   },
   {
     "id": "297d70a5-2f48-44ee-9655-27aaaaa1a080",

@@ -1,5 +1,10 @@
 import { z } from 'zod'
+import { createHash } from 'crypto'
 import { VZ_BBOX } from '@/types/ruta'
+
+export function hashTrackerKey(key: string): string {
+  return createHash('sha256').update(key).digest('hex')
+}
 
 export const trackerPingSchema = z.object({
   device_id: z.string().min(1),

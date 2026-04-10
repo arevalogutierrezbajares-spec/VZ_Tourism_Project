@@ -1,11 +1,14 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { MapPin, Calendar, DollarSign, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { ItineraryStopCard } from '@/components/itinerary/ItineraryStopCard';
+import { ReferralTracker } from '@/components/itinerary/ReferralTracker';
+import { BookActions } from '@/components/itinerary/BookActions';
 import { ReactionBar } from '@/components/social/ReactionBar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate, formatCurrency, getInitials } from '@/lib/utils';
@@ -54,6 +57,10 @@ export default async function ItineraryPage({ params }: Props) {
 
   return (
     <div className="container px-4 py-8 max-w-3xl mx-auto">
+      <Suspense fallback={null}>
+        <ReferralTracker itineraryId={it.id} />
+      </Suspense>
+
       {/* Header */}
       <div className="mb-6 space-y-3">
         <h1 className="text-3xl font-bold">{it.title}</h1>
@@ -97,6 +104,9 @@ export default async function ItineraryPage({ params }: Props) {
         </div>
 
         <ReactionBar likes={it.likes} saves={it.saves} className="-ml-2" />
+
+        {/* Book CTA */}
+        <BookActions itineraryId={it.id} itineraryTitle={it.title} />
       </div>
 
       {/* Days */}

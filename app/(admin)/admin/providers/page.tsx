@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import {
-  MapPin, Phone, Mail, MessageSquare, Star, Plus, X, ChevronDown,
+  MapPin, Phone, Mail, MessageSquare, Star, Plus, X, ChevronDown, Link2,
   Calendar, Clock, Building2, User, StickyNote, ArrowRight,
   CheckCircle2, Loader2, Filter,
 } from 'lucide-react';
@@ -135,7 +135,7 @@ function ProviderCard({
           </span>
         </div>
 
-        {/* Contact icons + rating */}
+        {/* Contact icons + invite link + rating */}
         <div className="flex items-center justify-between pt-1 border-t border-gray-100">
           <div className="flex items-center gap-2">
             {provider.phone && (
@@ -145,6 +145,18 @@ function ProviderCard({
               <MessageSquare className="w-3.5 h-3.5 text-green-500" />
             )}
             <Mail className="w-3.5 h-3.5 text-gray-400" />
+            <button
+              title="Copy Invite Link"
+              onClick={(e) => {
+                e.stopPropagation();
+                const slug = provider.business_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                const url = `${window.location.origin}/join/${slug}`;
+                navigator.clipboard.writeText(url);
+              }}
+              className="hover:bg-cyan-100 rounded p-0.5 transition-colors"
+            >
+              <Link2 className="w-3.5 h-3.5 text-cyan-600" />
+            </button>
           </div>
           {provider.avg_rating && (
             <span className="text-[11px] text-gray-500 flex items-center gap-0.5">
@@ -277,6 +289,16 @@ function ProviderModal({
                   WhatsApp
                 </a>
               )}
+              <button
+                onClick={() => {
+                  const slug = provider.business_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                  navigator.clipboard.writeText(`${window.location.origin}/join/${slug}`);
+                }}
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-cyan-200 text-cyan-700 hover:bg-cyan-50"
+              >
+                <Link2 className="w-3.5 h-3.5" />
+                Copy Invite Link
+              </button>
               {nextStage && (
                 <button
                   onClick={() => handleMove(nextStage.id)}

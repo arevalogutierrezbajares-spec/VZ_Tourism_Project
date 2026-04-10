@@ -146,7 +146,11 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
-  const [verifyResult, setVerifyResult] = useState<{ verified: boolean; manual_review?: boolean } | null>(null);
+  const [verifyResult, setVerifyResult] = useState<{ verified: boolean; manual_review?: boolean } | null>(
+    initialSession?.verification_status === 'verified' ? { verified: true } :
+    initialSession?.verification_status === 'manual_review' ? { verified: false, manual_review: true } :
+    null
+  );
   const [aiLoading, setAiLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(!!initialSession);
@@ -284,16 +288,7 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
   const completeListing = useCallback(async () => {
     setSaving(true);
     try {
-      // Final save
-      await saveStep({
-        payment_methods: data.payment_methods,
-        booking_type: data.booking_type,
-        cancellation_policy: data.cancellation_policy,
-        checkin_time: data.checkin_time,
-        checkout_time: data.checkout_time,
-        step: 6,
-      });
-      // Complete
+      // Complete onboarding — all step data already saved via goNext
       await fetch(`/api/onboard/${slug}`, { method: 'PUT' });
       setStep(7);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -402,6 +397,9 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
         {step === 5 && (
           <Step5Booking data={data} update={update} />
         )}
+        {step === 6 && (
+          <Step6Review data={data} listing={listing} allPhotos={allPhotos} />
+        )}
       </div>
 
       {/* Footer CTA */}
@@ -416,31 +414,29 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                {step === 1 ? 'Verify & Continue' : 'Continue'}
+                {step === 1 ? 'Verify & Continue' : step === 5 ? 'Review Before Going Live' : 'Continue'}
                 <ChevronRight className="w-5 h-5" />
               </>
             )}
           </button>
+          {step === 5 && data.payment_methods.length === 0 && (
+            <p className="text-center text-xs text-gray-400 mt-2">Add at least one payment method to continue</p>
+          )}
         </div>
       )}
-      {step === 5 && (
+      {step === 6 && (
         <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-4 max-w-lg mx-auto w-full">
           <button
             onClick={completeListing}
-            disabled={saving || data.payment_methods.length === 0}
+            disabled={saving}
             className="w-full bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-green-700"
           >
             {saving ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <>
-                🚀 Go Live!
-              </>
+              'Publish My Listing'
             )}
           </button>
-          {data.payment_methods.length === 0 && (
-            <p className="text-center text-xs text-gray-400 mt-2">Add at least one payment method to continue</p>
-          )}
         </div>
       )}
     </div>
@@ -467,6 +463,7 @@ function canProceed(
     return data.rooms.length > 0 && data.rooms.every((r) => r.name.trim() && r.price_usd > 0);
   }
   if (step === 4) return true;
+  if (step === 5) return data.payment_methods.length > 0;
   return true;
 }
 
@@ -491,6 +488,11 @@ function buildStepPayload(step: number, data: WizardData, nextStep: number): Par
       listing_category: data.listing_category,
       selected_photos: data.selected_photos,
       amenities: data.amenities,
+      contact_phone: data.contact_phone,
+      contact_whatsapp: data.contact_whatsapp,
+      contact_email: data.contact_email,
+      contact_website: data.contact_website,
+      contact_instagram: data.contact_instagram,
     };
   }
   if (step === 3) {
@@ -503,6 +505,16 @@ function buildStepPayload(step: number, data: WizardData, nextStep: number): Par
       blocked_dates: data.blocked_dates,
       min_stay: data.min_stay,
       max_guests_total: data.max_guests_total,
+    };
+  }
+  if (step === 5) {
+    return {
+      ...base,
+      payment_methods: data.payment_methods,
+      booking_type: data.booking_type,
+      cancellation_policy: data.cancellation_policy,
+      checkin_time: data.checkin_time,
+      checkout_time: data.checkout_time,
     };
   }
   return base;
@@ -961,10 +973,11 @@ function Step3Rooms({
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                     <input
                       type="number"
-                      min="0"
-                      placeholder="0"
+                      min="1"
+                      step="0.01"
+                      placeholder="50"
                       value={room.price_usd || ''}
-                      onChange={(e) => updateRoom(room.id, 'price_usd', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateRoom(room.id, 'price_usd', Math.max(0, parseFloat(e.target.value) || 0))}
                       className="w-full pl-7 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -1382,6 +1395,94 @@ function Step5Booking({
           })}
         </div>
       </section>
+    </div>
+  );
+}
+
+// ─── Step 6: Review & Confirm ────────────────────────────────────────────────
+
+function Step6Review({
+  data,
+  listing,
+  allPhotos,
+}: {
+  data: WizardData;
+  listing: ListingWithPhotos;
+  allPhotos: string[];
+}) {
+  const displayPhotos = data.selected_photos.length > 0 ? data.selected_photos : allPhotos.slice(0, 3);
+  const avgPrice = data.rooms.length > 0
+    ? Math.round(data.rooms.reduce((sum, r) => sum + r.price_usd, 0) / data.rooms.length)
+    : 0;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">Review & Confirm</h2>
+        <p className="text-sm text-gray-500 mt-1">Everything looks good? Hit publish to go live.</p>
+      </div>
+
+      {/* Listing preview card */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {displayPhotos[0] && (
+          <div className="relative h-40">
+            <Image src={displayPhotos[0]} alt={data.listing_name} fill className="object-cover" />
+            <div className="absolute top-2 left-2 inline-flex items-center gap-1 bg-amber-400 text-amber-900 text-xs font-semibold px-2 py-0.5 rounded-full">
+              <Star className="w-3 h-3 fill-amber-900" />
+              Founding Partner
+            </div>
+          </div>
+        )}
+        <div className="p-4 space-y-3">
+          <div>
+            <h3 className="font-bold text-gray-900">{data.listing_name}</h3>
+            {listing.city && (
+              <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3 h-3" />
+                {listing.city}, Venezuela
+              </p>
+            )}
+          </div>
+          <p className="text-sm text-gray-600 line-clamp-2">{data.listing_description}</p>
+        </div>
+      </div>
+
+      {/* Summary sections */}
+      <div className="space-y-3">
+        <SummaryRow label="Category" value={data.listing_category} />
+        <SummaryRow label="Photos" value={`${data.selected_photos.length} selected`} />
+        <SummaryRow
+          label="Amenities"
+          value={data.amenities.length > 0 ? data.amenities.join(', ') : 'None selected'}
+        />
+        <SummaryRow
+          label="Rooms"
+          value={`${data.rooms.length} type${data.rooms.length !== 1 ? 's' : ''} (avg $${avgPrice}/night)`}
+        />
+        <SummaryRow label="Availability" value={data.availability_type === 'always' ? 'Always open' : `${data.blocked_dates.length} dates blocked`} />
+        <SummaryRow label="Min stay" value={`${data.min_stay} night${data.min_stay !== 1 ? 's' : ''}`} />
+        <SummaryRow label="Booking type" value={data.booking_type === 'instant' ? 'Instant Book' : 'Request to Book'} />
+        <SummaryRow label="Cancellation" value={data.cancellation_policy} />
+        <SummaryRow label="Check-in / out" value={`${data.checkin_time} / ${data.checkout_time}`} />
+        <SummaryRow
+          label="Payment"
+          value={data.payment_methods.map((p) => p.type).join(', ') || 'None'}
+        />
+      </div>
+
+      <div className="p-4 bg-green-50 rounded-xl border border-green-200 text-sm text-green-800">
+        <Check className="w-4 h-4 inline mr-1" />
+        Your listing is ready to publish. You can edit it anytime from your dashboard after going live.
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className="text-sm font-medium text-gray-900 capitalize">{value}</span>
     </div>
   );
 }

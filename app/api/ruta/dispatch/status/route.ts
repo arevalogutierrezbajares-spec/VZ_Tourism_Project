@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { requireRutaRole } from '@/lib/ruta/auth'
 import { isValidTransition } from '@/lib/ruta/ride-status'
 import type { RutaRideStatus } from '@/types/ruta'
 
 export async function POST(request: NextRequest) {
+  const auth = await requireRutaRole(['ruta_dispatcher', 'ruta_admin'])
+  if (auth.error) return auth.error
+
   const { ride_id, new_status } = await request.json()
 
   if (!ride_id || !new_status) {

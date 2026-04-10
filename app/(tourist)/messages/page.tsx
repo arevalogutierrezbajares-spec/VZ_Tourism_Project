@@ -44,7 +44,7 @@ export default function MessagesPage() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
 
-  if (loading) {
+  if (fetching) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />

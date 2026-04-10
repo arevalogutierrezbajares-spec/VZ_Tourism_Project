@@ -99,6 +99,8 @@ export const itinerarySchema = z.object({
   end_date: z.string().optional(),
   is_public: z.boolean().default(false),
   is_template: z.boolean().default(false),
+  is_influencer_pick: z.boolean().optional(),
+  referral_code: z.string().max(100).optional(),
   tags: z.array(z.string()).max(10).default([]),
 });
 

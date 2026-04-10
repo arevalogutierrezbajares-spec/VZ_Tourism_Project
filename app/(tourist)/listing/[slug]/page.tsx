@@ -93,6 +93,17 @@ export default async function ListingPage({ params }: Props) {
   }
 
   // Tier 2: verified/founding_partner — show full booking experience
+  // Promoted listings have enriched fields from onboarding written to scraped-listings.json
+  const enriched = scraped as unknown as Record<string, unknown>;
+  const rooms = (enriched.rooms as Array<{ price_usd: number; max_guests: number }>) ?? [];
+  const minPrice = rooms.length > 0 ? Math.min(...rooms.map((r) => r.price_usd)) : 0;
+  const maxGuests = (enriched.max_guests as number) ?? (rooms.length > 0 ? Math.max(...rooms.map((r) => r.max_guests)) : 1);
+  const onboardedAmenities = (enriched.amenities as string[]) ?? [];
+  const cancellation = (enriched.cancellation_policy as string) ?? '';
+  const selectedPhotos = (enriched.selected_photos as string[]) ?? [];
+  const scrapedPhotos = (enriched.photos as string[]) ?? [];
+  const photoUrls = selectedPhotos.length > 0 ? selectedPhotos : scrapedPhotos;
+
   const listing: Listing = {
     id: scraped.id,
     provider_id: scraped.provider_id,
@@ -107,11 +118,11 @@ export default async function ListingPage({ params }: Props) {
     latitude: scraped.latitude,
     longitude: scraped.longitude,
     address: scraped.address || null,
-    price_usd: 0,
+    price_usd: minPrice,
     price_ves: null,
     currency: 'USD',
     duration_hours: null,
-    max_guests: 1,
+    max_guests: maxGuests,
     min_guests: 1,
     is_published: true,
     is_featured: scraped.platform_status === 'founding_partner',
@@ -119,13 +130,14 @@ export default async function ListingPage({ params }: Props) {
     rating: scraped.avg_rating || 0,
     total_reviews: scraped.review_count,
     total_bookings: 0,
-    amenities: [],
+    amenities: onboardedAmenities,
     languages: ['es'],
     includes: [],
     excludes: [],
-    cancellation_policy: '',
+    cancellation_policy: cancellation,
     meeting_point: null,
     cover_image_url: scraped.cover_image_url,
+    photos: photoUrls.map((url, i) => ({ id: `photo-${i}`, listing_id: scraped.id, url, alt: scraped.name, order: i, created_at: scraped.created_at || new Date().toISOString() })),
     created_at: scraped.created_at || new Date().toISOString(),
     updated_at: scraped.updated_at || new Date().toISOString(),
   };

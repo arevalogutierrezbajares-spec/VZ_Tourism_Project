@@ -186,6 +186,8 @@ export const mockItinerary: Itinerary = {
   estimated_cost_usd: 850,
   is_public: false,
   is_template: false,
+  is_influencer_pick: false,
+  referral_code: null,
   regions: ['Mérida', 'Los Roques'],
   tags: ['adventure', 'nature'],
   likes: 0,

@@ -21,6 +21,11 @@
       "pool",
       "parking"
     ],
+    "contact_phone": "+582129021111",
+    "contact_whatsapp": "+582129021111",
+    "contact_email": "reservations@hoteleuro.com",
+    "contact_website": "http://www.hoteleuro.com/",
+    "contact_instagram": "@hoteleurobuilding",
     "rooms": [
       {
         "id": "1",

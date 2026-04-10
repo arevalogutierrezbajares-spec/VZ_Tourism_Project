@@ -17,6 +17,7 @@ import {
   CalendarCheck,
   Send,
   Lock,
+  Route,
 } from 'lucide-react';
 
 // SHA-256 of 'vzadmin2026' — update this hash together with ADMIN_PASSWORD in .env.local
@@ -47,6 +48,7 @@ const navItems = [
   { href: '/admin/providers', label: 'Providers', icon: GitPullRequest },
   { href: '/admin/outreach', label: 'Outreach', icon: Send },
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
+  { href: '/admin/itineraries', label: 'Itineraries', icon: Route },
   { href: '/admin/creators', label: 'Creators', icon: Users },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/scraper', label: 'Scraper', icon: Cpu },

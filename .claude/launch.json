@@ -6,7 +6,7 @@
       "runtimeExecutable": "/Users/tomas/.nvm/versions/node/v24.12.0/bin/node",
       "runtimeArgs": ["node_modules/.bin/next", "dev"],
       "env": { "PATH": "/Users/tomas/.nvm/versions/node/v24.12.0/bin:/usr/local/bin:/usr/bin:/bin" },
-      "cwd": "/Users/tomas/vz-tourism-app/.claude/worktrees/nice-grothendieck",
+      "cwd": "/Users/tomas/vz-tourism-app/.claude/worktrees/distracted-mcclintock",
       "port": 3000
     },
     {
