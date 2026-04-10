@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { requireRutaRole } from '@/lib/ruta/auth'
 import { isValidTransition } from '@/lib/ruta/ride-status'
 import type { RutaRideStatus } from '@/types/ruta'
 
 export async function POST(request: NextRequest) {
+  const auth = await requireRutaRole(['ruta_dispatcher', 'ruta_admin'])
+  if (auth.error) return auth.error
+
   const { ride_id, new_status } = await request.json()
 
   if (!ride_id || !new_status) {
@@ -52,8 +56,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  // If ride completed, set driver back to available
-  if (new_status === 'completed' && ride.driver_id) {
+  // Reset driver to available on completion or cancellation
+  const driverResetStatuses = ['completed', 'cancelled_by_ops']
+  if (driverResetStatuses.includes(new_status) && ride.driver_id) {
     await supabase
       .from('ruta_drivers')
       .update({ status: 'available' })

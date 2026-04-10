@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 // Called by Vercel Cron every 15 minutes
 // vercel.json: { "crons": [{ "path": "/api/ruta/cron/expire-zelle", "schedule": "*/15 * * * *" }] }
@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
 
   // Find Zelle rides older than 4 hours in pending_payment
   const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()

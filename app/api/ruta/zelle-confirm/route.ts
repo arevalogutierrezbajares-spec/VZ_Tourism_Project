@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRutaRole } from '@/lib/ruta/auth'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   // Require dispatcher or admin role
@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = await createServiceClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+    }
 
     // Get ride and validate state
     const { data: ride, error: fetchError } = await supabase
