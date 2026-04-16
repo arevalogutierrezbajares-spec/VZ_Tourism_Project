@@ -48,6 +48,8 @@ export interface Provider {
   updated_at: string;
 }
 
+export type ListingSource = 'manual' | 'creator_import' | 'scraped' | 'admin' | 'google_places';
+
 export interface Listing {
   id: string;
   provider_id: string;
@@ -62,6 +64,7 @@ export interface Listing {
   latitude: number;
   longitude: number;
   address: string | null;
+  google_place_id?: string | null;
   price_usd: number;
   price_ves: number | null;
   currency: 'USD' | 'VES';
@@ -81,6 +84,8 @@ export interface Listing {
   cancellation_policy: string;
   meeting_point: string | null;
   cover_image_url: string | null;
+  source?: ListingSource;
+  added_by_user_id?: string | null;
   created_at: string;
   updated_at: string;
   provider?: Provider;
@@ -140,6 +145,8 @@ export interface Review {
   tourist?: User;
 }
 
+export type ItineraryCreationMethod = 'social_import' | 'document_import' | 'conversation' | 'scratch' | 'clone';
+
 export interface Itinerary {
   id: string;
   user_id: string;
@@ -159,6 +166,7 @@ export interface Itinerary {
   likes: number;
   saves: number;
   views: number;
+  creation_method?: ItineraryCreationMethod;
   created_at: string;
   updated_at: string;
   stops?: ItineraryStop[];
@@ -178,6 +186,8 @@ export interface ItineraryReferral {
   commission_amount_usd: number | null;
 }
 
+export type StopSourceType = 'social_import' | 'document_import' | 'ai_suggested' | 'manual' | 'google_places';
+
 export interface ItineraryStop {
   id: string;
   itinerary_id: string;
@@ -196,8 +206,29 @@ export interface ItineraryStop {
   transport_to_next: string | null;
   transport_duration_minutes: number | null;
   notes: string | null;
+  source_url?: string | null;
+  source_type?: StopSourceType;
+  video_embed_url?: string | null;
   created_at: string;
   listing?: Listing;
+}
+
+// itinerary_conversations table exists in DB (migration 009) for future use.
+// The current conversation route uses stateless SSE streaming.
+// These types are defined here for when conversation persistence is implemented.
+export interface ItineraryConversation {
+  id: string;
+  itinerary_id: string | null;
+  user_id: string;
+  messages: ConversationMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
 }
 
 export interface Guide {
