@@ -1,12 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Share2, Save, Map, Sparkles, Loader2 } from 'lucide-react';
+import { X, Plus, Share2, Save, Map, Sparkles, Loader2, Link2, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ItineraryDaySection } from './ItineraryDaySection';
 import { CostEstimator } from './CostEstimator';
 import { AddStopModal } from './AddStopModal';
+import { FillItineraryModal } from './FillItineraryModal';
+import { ImportLinksModal } from './ImportLinksModal';
+import { ExtractFromTextModal } from './ExtractFromTextModal';
+import { PlanningChatPanel } from './PlanningChatPanel';
 import { useItinerary } from '@/hooks/use-itinerary';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +20,10 @@ interface ItineraryPanelProps {
 
 export function ItineraryPanel({ className }: ItineraryPanelProps) {
   const [addStopDay, setAddStopDay] = useState<number | null>(null);
+  const [showFillModal, setShowFillModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExtractTextModal, setShowExtractTextModal] = useState(false);
+  const [showPlanningChat, setShowPlanningChat] = useState(false);
   const {
     current,
     days,
@@ -41,6 +49,8 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
     amount: day.stops.reduce((sum, s) => sum + (s.cost_usd || 0), 0),
   }));
 
+  const isEmpty = days.every((d) => d.stops.length === 0);
+
   return (
     <>
       <div
@@ -59,7 +69,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               <p className="text-xs text-muted-foreground">
                 {days.length} day{days.length !== 1 ? 's' : ''}
                 {isDirty && (
-                  <span className="ml-1 text-amber-500">• unsaved</span>
+                  <span className="ml-1 text-amber-500">&bull; unsaved</span>
                 )}
               </p>
             </div>
@@ -69,8 +79,35 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               variant="ghost"
               size="icon"
               className="w-7 h-7"
+              onClick={() => setShowPlanningChat(!showPlanningChat)}
+              title="Chat with AI planner"
+            >
+              <MessageSquare className={cn('w-3.5 h-3.5', showPlanningChat && 'text-primary')} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-7 h-7"
+              onClick={() => setShowExtractTextModal(true)}
+              title="Import from notes"
+            >
+              <FileText className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-7 h-7"
+              onClick={() => setShowImportModal(true)}
+              title="Import from social media"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-7 h-7"
               onClick={() => optimizeItinerary()}
-              disabled={isOptimizing || days.every((d) => d.stops.length === 0)}
+              disabled={isOptimizing || isEmpty}
               title="Optimize route with AI"
             >
               {isOptimizing ? (
@@ -117,6 +154,61 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
 
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-5">
+            {/* Empty state — creation options */}
+            {isEmpty && (
+              <div className="rounded-xl border-2 border-dashed border-primary/20 bg-primary/5 p-5 text-center space-y-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">How do you want to start?</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Generate with AI, import from social media, or add stops manually.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => setShowPlanningChat(true)}
+                    className="w-full"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                    Chat with AI Planner
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFillModal(true)}
+                    className="w-full"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Quick Generate
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExtractTextModal(true)}
+                    className="w-full"
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1.5" />
+                    Upload Trip Notes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImportModal(true)}
+                    className="w-full"
+                  >
+                    <Link2 className="w-3.5 h-3.5 mr-1.5" />
+                    Import from TikTok / YouTube
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  or add stops manually below
+                </p>
+              </div>
+            )}
+
             {days.map((day) => (
               <ItineraryDaySection
                 key={day.day}
@@ -170,6 +262,26 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
           onClose={() => setAddStopDay(null)}
         />
       )}
+
+      <FillItineraryModal
+        isOpen={showFillModal}
+        onClose={() => setShowFillModal(false)}
+      />
+
+      <ImportLinksModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
+
+      <ExtractFromTextModal
+        isOpen={showExtractTextModal}
+        onClose={() => setShowExtractTextModal(false)}
+      />
+
+      <PlanningChatPanel
+        isOpen={showPlanningChat}
+        onClose={() => setShowPlanningChat(false)}
+      />
     </>
   );
 }

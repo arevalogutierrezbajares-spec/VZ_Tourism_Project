@@ -1,11 +1,25 @@
 'use client';
 
-import { useRef } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryStopCard } from './ItineraryStopCard';
+import { useItineraryStore } from '@/stores/itinerary-store';
 import type { ItineraryStop } from '@/types/database';
 import { cn } from '@/lib/utils';
+import toast from 'react-hot-toast';
+
+interface SuggestedStop {
+  listing_id: string | null;
+  title: string;
+  description: string;
+  location_name: string;
+  latitude: number | null;
+  longitude: number | null;
+  cost_usd: number;
+  duration_hours: number | null;
+  reason: string;
+}
 
 interface ItineraryDaySectionProps {
   day: number;
@@ -30,6 +44,9 @@ export function ItineraryDaySection({
 }: ItineraryDaySectionProps) {
   const dragStopIdRef = useRef<string | null>(null);
   const dragSourceDayRef = useRef<number | null>(null);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedStop[]>([]);
+  const { addStop, current, days } = useItineraryStore();
 
   const handleDragStart = (stopId: string, sourceDay: number) => {
     dragStopIdRef.current = stopId;
@@ -50,6 +67,73 @@ export function ItineraryDaySection({
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const handleSuggestStops = async () => {
+    setIsSuggesting(true);
+    setSuggestions([]);
+    try {
+      const allStops = days.flatMap((d) =>
+        d.stops.map((s) => ({
+          day: d.day,
+          title: s.title,
+          location_name: s.location_name || undefined,
+        }))
+      );
+
+      const response = await fetch('/api/ai/suggest-stops', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          day,
+          total_days: days.length,
+          regions: current?.regions || [],
+          existing_stops: allStops,
+          mode: 'suggest',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to get suggestions');
+
+      const data = await response.json();
+      if (data.suggestions?.length > 0) {
+        setSuggestions(data.suggestions);
+      } else {
+        toast('No suggestions found. Try adding more context to your itinerary.');
+      }
+    } catch {
+      toast.error('Could not get AI suggestions');
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
+  const handleAcceptSuggestion = (suggestion: SuggestedStop) => {
+    addStop({
+      itinerary_id: current?.id || '',
+      listing_id: suggestion.listing_id,
+      day,
+      order: stops.length,
+      title: suggestion.title,
+      description: suggestion.description || null,
+      latitude: suggestion.latitude ?? null,
+      longitude: suggestion.longitude ?? null,
+      location_name: suggestion.location_name || null,
+      cost_usd: suggestion.cost_usd || 0,
+      duration_hours: suggestion.duration_hours ?? null,
+      start_time: null,
+      end_time: null,
+      transport_to_next: null,
+      transport_duration_minutes: null,
+      notes: null,
+      source_type: 'ai_suggested',
+    });
+    setSuggestions((prev) => prev.filter((s) => s.title !== suggestion.title));
+    toast.success(`Added "${suggestion.title}"`);
+  };
+
+  const handleDismissSuggestions = () => {
+    setSuggestions([]);
+  };
+
   return (
     <div className={cn('space-y-2', className)}>
       {/* Day header */}
@@ -63,16 +147,32 @@ export function ItineraryDaySection({
             {stops.length} stop{stops.length !== 1 ? 's' : ''}
           </span>
         </div>
-        {onRemoveDay && (
+        <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
             size="icon"
-            className="w-6 h-6 text-muted-foreground hover:text-destructive"
-            onClick={() => onRemoveDay(day)}
+            className="w-6 h-6 text-muted-foreground hover:text-primary"
+            onClick={handleSuggestStops}
+            disabled={isSuggesting}
+            title="AI suggest stops"
           >
-            <Trash2 className="w-3 h-3" />
+            {isSuggesting ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Sparkles className="w-3 h-3" />
+            )}
           </Button>
-        )}
+          {onRemoveDay && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6 text-muted-foreground hover:text-destructive"
+              onClick={() => onRemoveDay(day)}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stops */}
@@ -100,13 +200,67 @@ export function ItineraryDaySection({
           </div>
         ))}
 
-        {stops.length === 0 && (
+        {stops.length === 0 && !suggestions.length && (
           <div
             className="py-4 border-2 border-dashed border-muted rounded-lg text-center"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, 0)}
           >
-            <p className="text-xs text-muted-foreground">Drop stops here or add one below</p>
+            <p className="text-xs text-muted-foreground">
+              Drop stops here or add one below
+            </p>
+          </div>
+        )}
+
+        {/* AI Suggestions */}
+        {suggestions.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-medium text-primary flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                AI Suggestions
+              </span>
+              <button
+                type="button"
+                onClick={handleDismissSuggestions}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </button>
+            </div>
+            {suggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleAcceptSuggestion(suggestion)}
+                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group"
+              >
+                <div className="flex items-start gap-2">
+                  <Plus className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium line-clamp-1">
+                      {suggestion.title}
+                    </p>
+                    {suggestion.reason && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {suggestion.reason}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      {suggestion.location_name && (
+                        <span>{suggestion.location_name}</span>
+                      )}
+                      {suggestion.cost_usd > 0 && (
+                        <span>${suggestion.cost_usd}</span>
+                      )}
+                      {suggestion.duration_hours && (
+                        <span>{suggestion.duration_hours}h</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         )}
 
