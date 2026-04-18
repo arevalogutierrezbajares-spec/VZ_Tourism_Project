@@ -15,8 +15,9 @@ import {
   ArrowLeft,
   CreditCard,
   Banknote,
-  QrCode,
+  Map,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,57 +66,17 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   arrival: 'Pay on Arrival',
 };
 
-// Minimal SVG QR code — encodes text as a simple visual pattern
-// (not a real scannable QR, but a visual placeholder with the code displayed)
 function QrDisplay({ value }: { value: string }) {
-  // Create a simple grid pattern based on the value's character codes
-  const size = 9;
-  const chars = value.split('').map((c) => c.charCodeAt(0));
-  const cells: boolean[][] = [];
-  for (let r = 0; r < size; r++) {
-    cells[r] = [];
-    for (let c = 0; c < size; c++) {
-      // Finder pattern corners
-      const inCorner =
-        (r < 3 && c < 3) ||
-        (r < 3 && c >= size - 3) ||
-        (r >= size - 3 && c < 3);
-      if (inCorner) {
-        cells[r][c] = true;
-      } else {
-        // Data pattern based on booking code chars
-        const idx = (r * size + c) % chars.length;
-        cells[r][c] = (chars[idx] + r + c) % 3 !== 0;
-      }
-    }
-  }
-  const cellSize = 24;
-  const svgSize = size * cellSize;
-
   return (
     <div className="flex flex-col items-center gap-2">
-      <svg
-        width={svgSize}
-        height={svgSize}
-        viewBox={`0 0 ${svgSize} ${svgSize}`}
-        className="border-2 border-black rounded-sm"
-        style={{ background: 'white' }}
-      >
-        {cells.map((row, r) =>
-          row.map((filled, c) =>
-            filled ? (
-              <rect
-                key={`${r}-${c}`}
-                x={c * cellSize}
-                y={r * cellSize}
-                width={cellSize}
-                height={cellSize}
-                fill="black"
-              />
-            ) : null
-          )
-        )}
-      </svg>
+      <div className="p-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm">
+        <QRCodeSVG
+          value={value}
+          size={160}
+          level="M"
+          includeMargin={false}
+        />
+      </div>
       <p className="text-xs text-muted-foreground">Show this at check-in</p>
     </div>
   );
@@ -222,7 +183,7 @@ export function ConfirmationClient({ booking }: Props) {
                   {booking.confirmation_code}
                 </span>
                 <Button variant="ghost" size="sm" onClick={copyCode} className="h-7 px-2">
-                  {copied ? '✓' : <QrCode className="w-4 h-4" />}
+                  {copied ? '✓ Copied' : 'Copy'}
                 </Button>
               </div>
             </div>
@@ -365,6 +326,24 @@ export function ConfirmationClient({ booking }: Props) {
             Share via WhatsApp
           </Button>
         </div>
+
+        {/* Build a trip CTA */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-4 pb-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Map className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">Build a trip around this</p>
+              <p className="text-xs text-muted-foreground">Add more stops, flights & activities</p>
+            </div>
+            <Button asChild size="sm" className="flex-shrink-0">
+              <Link href={`/itineraries?add=${booking.listing_id ?? ''}`}>
+                Plan
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
 
         <Button asChild variant="ghost" className="w-full">
           <Link href="/">

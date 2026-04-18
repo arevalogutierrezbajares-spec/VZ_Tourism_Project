@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRecentlyViewed } from '@/hooks/use-recently-viewed';
 import { createClient } from '@/lib/supabase/client';
 import { differenceInDays, isPast, isFuture, parseISO, format, formatDistanceToNow } from 'date-fns';
-import { Luggage, MapPin, Calendar, Star, Heart, Cloud, BookOpen, Pencil, Clock } from 'lucide-react';
+import { Luggage, MapPin, Calendar, Star, Heart, Cloud, BookOpen, Pencil, Clock, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -46,9 +46,18 @@ type Tab = 'upcoming' | 'past' | 'itineraries' | 'saved';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-100 text-green-800',
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending: 'bg-amber-100 text-amber-800',
+  payment_submitted: 'bg-blue-100 text-blue-800',
   cancelled: 'bg-red-100 text-red-800',
   completed: 'bg-blue-100 text-blue-800',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  confirmed: 'Confirmed',
+  pending: 'Awaiting Confirmation',
+  payment_submitted: 'Payment Sent',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
 };
 
 function daysUntil(dateStr: string) {
@@ -70,7 +79,7 @@ function BookingCard({ booking, past }: { booking: GuestBooking; past?: boolean 
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="font-semibold text-base leading-tight">{booking.listing_name}</h3>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[booking.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                {booking.status}
+                {STATUS_LABELS[booking.status] ?? booking.status}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mb-2">Ref: {booking.confirmation_code}</p>
@@ -79,7 +88,17 @@ function BookingCard({ booking, past }: { booking: GuestBooking; past?: boolean 
               <span>{booking.guest_count} {booking.guest_count === 1 ? 'guest' : 'guests'}</span>
               <span className="font-medium text-foreground">${booking.total_usd}</span>
             </div>
-            {!past && days !== null && days >= 0 && (
+            {booking.status === 'pending' && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1 mb-2">
+                Awaiting provider confirmation — usually within 24h
+              </p>
+            )}
+            {booking.status === 'payment_submitted' && (
+              <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-1 mb-2">
+                Payment received — verifying within 1 hour
+              </p>
+            )}
+            {!past && days !== null && days >= 0 && booking.status === 'confirmed' && (
               <p className="text-xs font-semibold text-sky-600 mb-2">
                 {days === 0 ? 'Today!' : days === 1 ? 'Tomorrow!' : `In ${days} days!`}
               </p>
@@ -199,10 +218,19 @@ export default function TripsPage() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'there';
 
+  // "Upcoming" = confirmed future stays + any pending/payment_submitted bookings
   const upcoming = bookings.filter(
-    (b) => b.status === 'confirmed' && isFuture(parseISO(b.check_in))
+    (b) =>
+      (b.status === 'confirmed' && isFuture(parseISO(b.check_in))) ||
+      b.status === 'pending' ||
+      b.status === 'payment_submitted'
   );
   const past = bookings.filter((b) => isPast(parseISO(b.check_out)));
+
+  // Bookings that need the user's attention
+  const needsAttention = bookings.filter(
+    (b) => b.status === 'pending' || b.status === 'payment_submitted'
+  );
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'upcoming', label: 'Upcoming', count: upcoming.length },
@@ -223,7 +251,33 @@ export default function TripsPage() {
   return (
     <div className="container px-4 py-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">My Trips</h1>
-      <p className="text-muted-foreground text-sm mb-6">Welcome back, {firstName}! Here&apos;s your travel history.</p>
+      <p className="text-muted-foreground text-sm mb-4">Welcome back, {firstName}! Here&apos;s your travel history.</p>
+
+      {/* Attention callout */}
+      {needsAttention.length > 0 && !bookingsLoading && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">
+              {needsAttention.length === 1
+                ? '1 booking needs your attention'
+                : `${needsAttention.length} bookings need your attention`}
+            </p>
+            <ul className="mt-1 space-y-0.5">
+              {needsAttention.map((b) => (
+                <li key={b.id} className="text-xs text-amber-700 flex items-center gap-1.5">
+                  <span className="font-medium">{b.listing_name}</span>
+                  <span>·</span>
+                  <span>{STATUS_LABELS[b.status] ?? b.status}</span>
+                  <Link href={`/bookings/${b.id}`} className="ml-1 underline hover:no-underline">
+                    View →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b">

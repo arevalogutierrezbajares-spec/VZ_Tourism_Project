@@ -31,13 +31,33 @@ interface GuestBooking {
   status: string;
   payment_method: string;
   confirmation_code: string;
+  cancellation_policy: string | null;
   special_requests: string | null;
   notes: string | null;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+/** Returns refund percentage and label based on days until check-in */
+function getRefundEstimate(daysUntil: number, totalUsd: number) {
+  if (daysUntil >= 14) return { pct: 90, label: 'Full refund (90%)', amount: totalUsd * 0.9, tier: 'green' };
+  if (daysUntil >= 7)  return { pct: 70, label: 'Partial refund (70%)', amount: totalUsd * 0.7, tier: 'yellow' };
+  if (daysUntil >= 3)  return { pct: 30, label: 'Partial refund (30%)', amount: totalUsd * 0.3, tier: 'orange' };
+  return { pct: 0, label: 'No refund', amount: 0, tier: 'red' };
+}
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode; note?: string }> = {
   confirmed: { label: 'Confirmed', color: 'bg-green-500', icon: <CheckCircle className="w-5 h-5" /> },
-  pending: { label: 'Pending', color: 'bg-yellow-500', icon: <Clock className="w-5 h-5" /> },
+  pending: {
+    label: 'Awaiting Confirmation',
+    color: 'bg-amber-500',
+    icon: <Clock className="w-5 h-5" />,
+    note: 'The provider is reviewing your request. You\'ll hear back within 24 hours.',
+  },
+  payment_submitted: {
+    label: 'Payment Sent',
+    color: 'bg-blue-500',
+    icon: <Clock className="w-5 h-5" />,
+    note: 'We received your payment details and are verifying within 1 hour.',
+  },
   cancelled: { label: 'Cancelled', color: 'bg-red-500', icon: <XCircle className="w-5 h-5" /> },
   completed: { label: 'Completed', color: 'bg-blue-500', icon: <CheckCircle className="w-5 h-5" /> },
 };
@@ -143,11 +163,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       </Link>
 
       {/* Status banner */}
-      <div className={`${statusCfg.color} text-white rounded-xl px-4 py-3 flex items-center gap-2 mb-6`}>
+      <div className={`${statusCfg.color} text-white rounded-xl px-4 py-3 flex items-center gap-2 mb-2`}>
         {statusCfg.icon}
         <span className="font-semibold">{statusCfg.label}</span>
         <span className="text-sm opacity-90 ml-auto">Ref: {booking.confirmation_code}</span>
       </div>
+      {statusCfg.note && (
+        <p className="text-sm text-muted-foreground px-1 mb-4">{statusCfg.note}</p>
+      )}
 
       <div className="space-y-4">
         {/* Listing card */}
@@ -295,14 +318,51 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Cancel modal */}
-      {showCancelModal && (
+      {showCancelModal && (() => {
+        const refund = getRefundEstimate(daysUntilCheckin, booking.total_usd);
+        const refundColors: Record<string, string> = {
+          green:  'bg-green-50 border-green-200 text-green-800',
+          yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+          orange: 'bg-orange-50 border-orange-200 text-orange-800',
+          red:    'bg-red-50 border-red-200 text-red-800',
+        };
+        return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
-            <h3 className="text-lg font-bold mb-2">Cancel this booking?</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              This will cancel your booking at <strong>{booking.listing_name}</strong>. This action cannot be undone.
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold">Cancel this booking?</h3>
+
+            {/* Refund estimate */}
+            <div className={`rounded-xl border px-4 py-3 text-sm ${refundColors[refund.tier]}`}>
+              <p className="font-semibold">{refund.label}</p>
+              {refund.amount > 0 ? (
+                <p className="text-xs mt-0.5 opacity-80">
+                  Estimated refund: <strong>${refund.amount.toFixed(2)}</strong> of ${booking.total_usd.toFixed(2)} paid
+                </p>
+              ) : (
+                <p className="text-xs mt-0.5 opacity-80">
+                  Check-in is {daysUntilCheckin <= 0 ? 'today or past' : `in ${daysUntilCheckin} day${daysUntilCheckin !== 1 ? 's' : ''}`} — refunds are not available this close to arrival.
+                </p>
+              )}
+            </div>
+
+            {/* Policy text */}
+            {booking.cancellation_policy ? (
+              <p className="text-xs text-muted-foreground border-l-2 pl-3">
+                <span className="font-medium text-foreground">Policy: </span>
+                {booking.cancellation_policy}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Cancellations made {daysUntilCheckin >= 14 ? '14+' : daysUntilCheckin >= 7 ? '7-13' : daysUntilCheckin >= 3 ? '3-6' : 'fewer than 3'} days before check-in qualify for {refund.pct}% back.
+                Refunds are processed within 5-7 business days.
+              </p>
+            )}
+
+            <p className="text-sm text-muted-foreground">
+              Cancelling <strong>{booking.listing_name}</strong>. This cannot be undone.
             </p>
-            <div className="flex gap-3">
+
+            <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setShowCancelModal(false)}
                 className="flex-1 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted transition-colors"
@@ -319,7 +379,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

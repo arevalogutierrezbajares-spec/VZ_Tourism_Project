@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles, Luggage, Heart, LogIn, Route } from 'lucide-react';
+import { Map, BookOpen, User, LayoutDashboard, Shield, Sparkles, Luggage, Heart, Search, Route } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,14 +14,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from './Logo';
+import { SearchOverlay } from './SearchOverlay';
 import { useAuth } from '@/hooks/use-auth';
 import { getInitials } from '@/lib/utils';
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, profile, isAuthenticated, isProvider, isAdmin, signOut } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
+    <>
+    <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
@@ -75,6 +80,16 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* AI Search trigger */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:block">Search</span>
+          </button>
+
           {isAuthenticated ? (
             <>
               <Link
@@ -144,5 +159,6 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Sparkles, RefreshCw } from 'lucide-react';
+import { Search, Sparkles, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryFeedCard } from '@/components/social/ItineraryFeedCard';
 import { InfluencerCard } from './InfluencerCard';
 import { ItineraryDetail } from './ItineraryDetail';
 import { FilterBar, type Filters } from './FilterBar';
+import { ItineraryWizard } from '@/components/itinerary/ItineraryWizard';
 import type { Itinerary } from '@/types/database';
 
 interface CreatorWithItinerary {
@@ -52,6 +53,7 @@ export function ItinerariesClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   const hasActiveFilters = filters.region || filters.durationMin || filters.budgetMin || filters.sort !== 'popular';
 
@@ -113,10 +115,21 @@ export function ItinerariesClient({
       {/* Hero */}
       <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl p-8 md:p-12 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Discover Venezuela Itineraries</h1>
-        <p className="text-white/85 text-base md:text-lg max-w-xl mx-auto">
+        <p className="text-white/85 text-base md:text-lg max-w-xl mx-auto mb-5">
           Curated trip plans from travelers and creators who know Venezuela best
         </p>
+        <Button
+          onClick={() => setShowWizard(true)}
+          variant="secondary"
+          size="lg"
+          className="font-semibold"
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          Create My Itinerary
+        </Button>
       </div>
+
+      {showWizard && <ItineraryWizard onClose={() => setShowWizard(false)} />}
 
       {/* Filters */}
       <FilterBar regions={regions} filters={filters} onChange={setFilters} />

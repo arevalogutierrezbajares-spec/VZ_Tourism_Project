@@ -14,6 +14,7 @@ interface GuestBooking {
   check_out: string;
   status: string;
   confirmation_code: string;
+  provider_phone: string | null;
 }
 
 const TEMPLATES = [
@@ -25,7 +26,8 @@ const TEMPLATES = [
 
 function waLink(booking: GuestBooking, message: string): string {
   const full = `${message}\n\n(Booking ${booking.confirmation_code} at ${booking.listing_name}, ${format(parseISO(booking.check_in), 'MMM d')}–${format(parseISO(booking.check_out), 'MMM d, yyyy')})`;
-  return `https://wa.me/?text=${encodeURIComponent(full)}`;
+  const number = booking.provider_phone ? booking.provider_phone.replace(/\D/g, '') : '';
+  return `https://wa.me/${number}?text=${encodeURIComponent(full)}`;
 }
 
 export default function MessagesPage() {

@@ -1,15 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
-import { MapPin, Clock, Users, Globe, CheckCircle, XCircle, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MapPin, Clock, Users, Globe, CheckCircle, XCircle, Star, MessageCircle, ExternalLink } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageGallery } from '@/components/common/ImageGallery';
 import { SafetyBadge } from '@/components/common/SafetyBadge';
 import { BookingForm } from './BookingForm';
+import { ListingMap } from './ListingMap';
 import { ReviewSection } from './ReviewSection';
 import { useRecentlyViewed } from '@/hooks/use-recently-viewed';
+import { useItineraryStore } from '@/stores/itinerary-store';
 import type { Listing, Review } from '@/types/database';
 import { formatDuration, pluralize } from '@/lib/utils';
 import { LISTING_CATEGORIES } from '@/lib/constants';
@@ -23,6 +25,8 @@ interface ListingDetailProps {
 
 export function ListingDetail({ listing, reviews, canReview, bookingId }: ListingDetailProps) {
   const { track } = useRecentlyViewed();
+  const { addStop, days, openPanel } = useItineraryStore();
+  const [addedToItinerary, setAddedToItinerary] = useState(false);
 
   useEffect(() => {
     track({
@@ -200,8 +204,78 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
         </div>
 
         {/* Sidebar - Booking form */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
+          {/* Add to itinerary */}
+          <button
+            onClick={() => {
+              const targetDay = days.length > 0 ? days[days.length - 1].day : 1;
+              const stopCount = days.length > 0
+                ? days[days.length - 1].stops.length
+                : 0;
+              addStop({
+                itinerary_id: '',
+                day: targetDay,
+                order: stopCount + 1,
+                listing_id: listing.id,
+                title: listing.title,
+                description: listing.short_description ?? null,
+                latitude: listing.latitude ?? null,
+                longitude: listing.longitude ?? null,
+                location_name: listing.location_name ?? null,
+                start_time: null,
+                end_time: null,
+                duration_hours: listing.duration_hours ?? null,
+                cost_usd: listing.price_usd ?? 0,
+                transport_to_next: null,
+                transport_duration_minutes: null,
+                notes: null,
+              });
+              openPanel();
+              setAddedToItinerary(true);
+              setTimeout(() => setAddedToItinerary(false), 2500);
+            }}
+            className="w-full py-3 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+          >
+            {addedToItinerary ? '✓ Added to itinerary' : '+ Add to itinerary'}
+          </button>
+
+          {/* Map */}
+          {listing.latitude && listing.longitude && (
+            <div>
+              <ListingMap
+                lat={listing.latitude}
+                lng={listing.longitude}
+                title={listing.title}
+                className="w-full h-48 rounded-xl overflow-hidden border"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {listing.location_name}
+              </p>
+            </div>
+          )}
+
+          {listing.cancellation_policy && (
+            <div className="p-4 rounded-xl bg-muted/30 border text-sm">
+              <p className="font-semibold mb-1">Cancellation policy</p>
+              <p className="text-muted-foreground leading-relaxed">{listing.cancellation_policy}</p>
+            </div>
+          )}
           <BookingForm listing={listing} />
+
+          {/* WhatsApp contact */}
+          {listing.provider?.whatsapp_number && (
+            <a
+              href={`https://wa.me/${listing.provider.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in "${listing.title}"`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Message on WhatsApp
+              <ExternalLink className="w-3 h-3 opacity-60" />
+            </a>
+          )}
         </div>
       </div>
     </div>

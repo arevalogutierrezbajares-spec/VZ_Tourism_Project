@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getBooking, updateBookingStatus, type BookingStatus } from '@/lib/bookings-store';
 
+// Lazy-load scraped listings for cover image enrichment
+let _listings: Record<string, string | null>[] | null = null;
+function getListings() {
+  if (_listings) return _listings;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    _listings = require('@/data/scraped-listings.json') as Record<string, string | null>[];
+  } catch {
+    _listings = [];
+  }
+  return _listings;
+}
+
+function enrichBooking(booking: Record<string, unknown>) {
+  const listings = getListings();
+  const listing = listings.find(
+    (l) => l.id === booking.listing_id || l.slug === booking.listing_slug
+  );
+  return {
+    ...booking,
+    cover_image_url: booking.cover_image_url ?? listing?.cover_image_url ?? null,
+    provider_phone: listing?.phone ?? null,
+  };
+}
+
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -25,7 +50,7 @@ export async function GET(_: NextRequest, { params }: Params) {
         .select('*')
         .eq('id', id)
         .single();
-      if (!error && data) return NextResponse.json({ data });
+      if (!error && data) return NextResponse.json({ data: enrichBooking(data as Record<string, unknown>) });
       if (error?.code !== 'PGRST116') console.error('Supabase GET booking error:', error);
     } catch (err) {
       console.error('Supabase GET booking exception:', err);
@@ -35,7 +60,7 @@ export async function GET(_: NextRequest, { params }: Params) {
   // JSON fallback
   const booking = getBooking(id);
   if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ data: booking });
+  return NextResponse.json({ data: enrichBooking(booking as unknown as Record<string, unknown>) });
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {

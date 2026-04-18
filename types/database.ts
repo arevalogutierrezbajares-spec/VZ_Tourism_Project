@@ -48,6 +48,8 @@ export interface Provider {
   updated_at: string;
 }
 
+export type ListingSource = 'manual' | 'creator_import' | 'scraped' | 'admin' | 'google_places';
+
 export interface Listing {
   id: string;
   provider_id: string;
@@ -62,6 +64,7 @@ export interface Listing {
   latitude: number;
   longitude: number;
   address: string | null;
+  google_place_id?: string | null;
   price_usd: number;
   price_ves: number | null;
   currency: 'USD' | 'VES';
@@ -81,6 +84,8 @@ export interface Listing {
   cancellation_policy: string;
   meeting_point: string | null;
   cover_image_url: string | null;
+  source?: ListingSource;
+  added_by_user_id?: string | null;
   created_at: string;
   updated_at: string;
   provider?: Provider;
@@ -140,6 +145,8 @@ export interface Review {
   tourist?: User;
 }
 
+export type ItineraryCreationMethod = 'social_import' | 'document_import' | 'conversation' | 'scratch' | 'clone';
+
 export interface Itinerary {
   id: string;
   user_id: string;
@@ -159,6 +166,7 @@ export interface Itinerary {
   likes: number;
   saves: number;
   views: number;
+  creation_method?: ItineraryCreationMethod;
   created_at: string;
   updated_at: string;
   stops?: ItineraryStop[];
@@ -178,6 +186,8 @@ export interface ItineraryReferral {
   commission_amount_usd: number | null;
 }
 
+export type StopSourceType = 'social_import' | 'document_import' | 'ai_suggested' | 'manual' | 'google_places';
+
 export interface ItineraryStop {
   id: string;
   itinerary_id: string;
@@ -196,8 +206,29 @@ export interface ItineraryStop {
   transport_to_next: string | null;
   transport_duration_minutes: number | null;
   notes: string | null;
+  source_url?: string | null;
+  source_type?: StopSourceType;
+  video_embed_url?: string | null;
   created_at: string;
   listing?: Listing;
+}
+
+// itinerary_conversations table exists in DB (migration 009) for future use.
+// The current conversation route uses stateless SSE streaming.
+// These types are defined here for when conversation persistence is implemented.
+export interface ItineraryConversation {
+  id: string;
+  itinerary_id: string | null;
+  user_id: string;
+  messages: ConversationMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
 }
 
 export interface Guide {
@@ -283,6 +314,150 @@ export interface Availability {
   price_override_usd: number | null;
   created_at: string;
 }
+
+// ─── Posada Knowledge Base ───────────────────────────────────────────────────
+
+export interface RoomType {
+  name: string;
+  capacity: number;
+  price_usd: number;
+  description: string;
+  amenities: string[];
+}
+
+export interface PosadaPolicies {
+  check_in?: string;          // e.g. "3:00 PM"
+  check_out?: string;         // e.g. "11:00 AM"
+  min_stay_nights?: number;
+  cancellation?: string;
+  deposit_percent?: number;
+  pets?: string;              // "allowed" | "not allowed" | "on request"
+  smoking?: string;
+  extra_guest_fee?: string;
+}
+
+export interface FaqPair {
+  question: string;
+  answer: string;
+}
+
+export interface PricingSeasonalPeriod {
+  name: string;          // e.g. "Semana Santa", "Navidad"
+  dates: { start: string; end: string }[]; // YYYY-MM-DD pairs
+  multiplier: number;    // e.g. 1.3 = 30% increase
+}
+
+export interface PricingLongStayDiscount {
+  nights: number;        // minimum nights
+  discount: number;      // e.g. 0.1 = 10% off
+}
+
+export interface PricingRules {
+  seasonal_periods?: PricingSeasonalPeriod[];
+  weekend_premium?: number;           // e.g. 0.2 = +20% on Fri/Sat
+  long_stay_discounts?: PricingLongStayDiscount[];
+  last_minute_discount?: {
+    days_before: number;              // e.g. 3 = within 3 days of arrival
+    discount: number;                 // e.g. 0.15 = 15% off
+  };
+  quote_currency?: 'USD' | 'Bs' | 'both';
+}
+
+export interface PosadaKnowledge {
+  id: string;
+  provider_id: string;
+  property_description: string | null;
+  location_details: string | null;
+  room_types: RoomType[];
+  amenities: string[];
+  policies: PosadaPolicies;
+  faqs: FaqPair[];
+  booking_process: string | null;
+  payment_methods: string[];
+  nearby_attractions: string | null;
+  languages_spoken: string[];
+  special_notes: string | null;
+  pricing_rules: PricingRules;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── WhatsApp AI Messaging ────────────────────────────────────────────────────
+
+export type WaConversationStatus = 'ai' | 'human' | 'escalated' | 'closed';
+export type WaBookingStage = 'lead' | 'quoted' | 'confirmed' | 'checked_in' | 'closed';
+export type WaMessageRole = 'inbound' | 'outbound';
+export type WaToneFormality = 'casual' | 'neutral' | 'formal';
+export type WaToneLanguage = 'es' | 'en' | 'bilingual';
+export type WaResponseLength = 'brief' | 'standard' | 'detailed';
+export type WaBookingPressure = 'soft' | 'direct';
+export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_uncertainty';
+
+export interface PosadaWhatsappConfig {
+  id: string;
+  provider_id: string;
+  phone_number_id: string;
+  access_token: string;
+  verify_token: string;
+  persona_name: string;
+  persona_bio: string | null;
+  tone_formality: WaToneFormality;
+  tone_language: WaToneLanguage;
+  response_length: WaResponseLength;
+  booking_pressure: WaBookingPressure;
+  upsell_enabled: boolean;
+  custom_instructions: string | null;
+  ai_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WaConversation {
+  id: string;
+  provider_id: string;
+  guest_phone: string;
+  guest_name: string | null;
+  status: WaConversationStatus;
+  unread_count: number;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  booking_stage: WaBookingStage;
+  notes: string | null;
+  guest_language: string | null;  // BCP-47 primary language detected
+  created_at: string;
+  updated_at: string;
+  messages?: WaMessage[];
+  escalations?: WaEscalation[];
+}
+
+export interface WaMessage {
+  id: string;
+  conversation_id: string;
+  wa_message_id: string | null;
+  role: WaMessageRole;
+  content: string;
+  content_en: string | null;      // English translation (null if already English)
+  detected_lang: string | null;   // BCP-47 language code
+  is_ai: boolean;
+  flagged: boolean;
+  flag_reason: string | null;
+  sentiment_score: number | null;
+  created_at: string;
+}
+
+export interface WaEscalation {
+  id: string;
+  conversation_id: string;
+  reason: string;
+  trigger_type: WaEscalationTrigger | null;
+  assigned_to: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface CreatorProfile {
   id: string;

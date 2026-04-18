@@ -1,10 +1,12 @@
 'use client';
 
-import { MapPin, Clock, DollarSign, X, ChevronDown, ChevronUp, Utensils, Bed, Compass } from 'lucide-react';
+import { MapPin, Clock, DollarSign, X, ChevronDown, ChevronUp, Compass, Copy, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { formatCurrency, getInitials } from '@/lib/utils';
+import { useItineraryStore } from '@/stores/itinerary-store';
+import { useRouter } from 'next/navigation';
 import type { Itinerary, ItineraryStop } from '@/types/database';
 import { useState } from 'react';
 
@@ -15,6 +17,9 @@ interface ItineraryDetailProps {
 
 export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
   const [expandedDay, setExpandedDay] = useState<number | null>(1);
+  const [templateCopied, setTemplateCopied] = useState(false);
+  const { setItinerary, openPanel } = useItineraryStore();
+  const router = useRouter();
   const stops = itinerary.stops || [];
   const totalDays = itinerary.total_days || 1;
 
@@ -188,11 +193,70 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
 
           {/* Bottom CTA */}
           <div className="flex gap-3 pt-2 border-t">
-            <Button size="lg" className="flex-1 font-semibold">
+            <Button
+              size="lg"
+              className="flex-1 font-semibold"
+              onClick={() => {
+                const now = new Date().toISOString();
+                const cloned = {
+                  ...itinerary,
+                  id: `local-${Date.now()}`,
+                  user_id: 'local',
+                  title: itinerary.title,
+                  is_public: false,
+                  created_at: now,
+                  updated_at: now,
+                  stops: (itinerary.stops ?? []).map((s) => ({
+                    ...s,
+                    id: `stop-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    itinerary_id: '',
+                    created_at: now,
+                  })),
+                };
+                setItinerary(cloned);
+                openPanel();
+                onClose();
+                router.push('/itineraries/draft');
+              }}
+            >
               Book This Trip
             </Button>
-            <Button size="lg" variant="outline" className="flex-1">
-              Customize
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                const now = new Date().toISOString();
+                const cloned = {
+                  ...itinerary,
+                  id: `local-${Date.now()}`,
+                  user_id: 'local',
+                  title: `${itinerary.title} (my version)`,
+                  is_public: false,
+                  created_at: now,
+                  updated_at: now,
+                  stops: (itinerary.stops ?? []).map((s) => ({
+                    ...s,
+                    id: `stop-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    itinerary_id: '',
+                    created_at: now,
+                  })),
+                };
+                setItinerary(cloned);
+                openPanel();
+                setTemplateCopied(true);
+                setTimeout(() => {
+                  setTemplateCopied(false);
+                  onClose();
+                  router.push('/itineraries/draft');
+                }, 1200);
+              }}
+            >
+              {templateCopied ? (
+                <><CheckCircle className="w-4 h-4 mr-1.5 text-green-500" /> Copied!</>
+              ) : (
+                <><Copy className="w-4 h-4 mr-1.5" /> Use as Template</>
+              )}
             </Button>
           </div>
         </div>
