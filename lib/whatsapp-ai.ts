@@ -1,27 +1,104 @@
 import { getGroqClient, GROQ_MODEL } from './groq';
-import type { PosadaWhatsappConfig, WaMessage } from '@/types/database';
+import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 
 const MAX_HISTORY_MESSAGES = 20;
 
 interface BuildReplyOptions {
   config: PosadaWhatsappConfig;
-  providerName: string;      // business_name from providers table
+  providerName: string;
   providerDescription: string;
   providerRegion: string;
   inboundText: string;
-  history: WaMessage[];      // chronological, most recent last
-  availabilityNote?: string; // e.g. "Available: Jun 1-15, Jul 3-10"
+  history: WaMessage[];
+  knowledge?: PosadaKnowledge | null;
+  availabilityNote?: string;
 }
 
+// ─── Knowledge base formatter ─────────────────────────────────────────────────
+// Converts structured DB rows into clean readable text for the system prompt.
+
+function formatKnowledge(k: PosadaKnowledge, providerName: string): string {
+  const lines: string[] = [];
+
+  if (k.property_description) {
+    lines.push(`## About ${providerName}\n${k.property_description}`);
+  }
+
+  if (k.location_details) {
+    lines.push(`## Location & How to Get Here\n${k.location_details}`);
+  }
+
+  if (k.room_types?.length) {
+    lines.push('## Rooms & Rates');
+    for (const room of k.room_types) {
+      const roomLines = [
+        `**${room.name}** — $${room.price_usd}/night · Up to ${room.capacity} guests`,
+      ];
+      if (room.description) roomLines.push(room.description);
+      if (room.amenities?.length) roomLines.push(`Includes: ${room.amenities.join(', ')}`);
+      lines.push(roomLines.join('\n'));
+    }
+  }
+
+  if (k.amenities?.length) {
+    lines.push(`## Amenities\n${k.amenities.join(' · ')}`);
+  }
+
+  if (Object.keys(k.policies ?? {}).length) {
+    const p = k.policies;
+    const policyLines: string[] = [];
+    if (p.check_in)         policyLines.push(`Check-in: ${p.check_in}`);
+    if (p.check_out)        policyLines.push(`Check-out: ${p.check_out}`);
+    if (p.min_stay_nights)  policyLines.push(`Minimum stay: ${p.min_stay_nights} night${p.min_stay_nights > 1 ? 's' : ''}`);
+    if (p.cancellation)     policyLines.push(`Cancellation: ${p.cancellation}`);
+    if (p.deposit_percent)  policyLines.push(`Deposit: ${p.deposit_percent}% required`);
+    if (p.pets)             policyLines.push(`Pets: ${p.pets}`);
+    if (p.smoking)          policyLines.push(`Smoking: ${p.smoking}`);
+    if (p.extra_guest_fee)  policyLines.push(`Extra guest fee: ${p.extra_guest_fee}`);
+    if (policyLines.length) lines.push(`## Policies\n${policyLines.join('\n')}`);
+  }
+
+  if (k.booking_process) {
+    lines.push(`## How to Book\n${k.booking_process}`);
+  }
+
+  if (k.payment_methods?.length) {
+    lines.push(`## Payment Methods\n${k.payment_methods.join(', ')}`);
+  }
+
+  if (k.nearby_attractions) {
+    lines.push(`## Nearby & Local Tips\n${k.nearby_attractions}`);
+  }
+
+  if (k.languages_spoken?.length) {
+    lines.push(`## Languages Spoken\n${k.languages_spoken.join(', ')}`);
+  }
+
+  if (k.faqs?.length) {
+    lines.push('## Frequently Asked Questions');
+    for (const faq of k.faqs) {
+      lines.push(`Q: ${faq.question}\nA: ${faq.answer}`);
+    }
+  }
+
+  if (k.special_notes) {
+    lines.push(`## Additional Notes\n${k.special_notes}`);
+  }
+
+  return lines.join('\n\n');
+}
+
+// ─── System prompt builder ────────────────────────────────────────────────────
+
 function buildSystemPrompt(opts: BuildReplyOptions): string {
-  const { config, providerName, providerDescription, providerRegion } = opts;
+  const { config, providerName, providerDescription, providerRegion, knowledge } = opts;
 
   const formalityGuide =
     config.tone_formality === 'formal'
       ? 'Use formal, professional language. Use "usted" in Spanish.'
       : config.tone_formality === 'casual'
       ? 'Use warm, friendly, conversational language. Use "tú" in Spanish.'
-      : 'Use neutral, polite language. Match the guest\'s register.';
+      : "Use neutral, polite language. Match the guest's register.";
 
   const langGuide =
     config.tone_language === 'es'
@@ -54,17 +131,21 @@ function buildSystemPrompt(opts: BuildReplyOptions): string {
     ? `\nCurrent availability: ${opts.availabilityNote}\n`
     : '';
 
+  // Knowledge base block — rich structured context
+  const knowledgeBlock = knowledge
+    ? `\n---\n# Property Knowledge Base\n\n${formatKnowledge(knowledge, providerName)}\n---\n`
+    : knowledge === null
+    ? `\nAbout the property:\n${providerDescription}\n`
+    : `\nAbout the property:\n${providerDescription}\n`;
+
   return `You are ${config.persona_name}, a guest relations assistant at ${providerName} in ${providerRegion}, Venezuela.
 ${config.persona_bio ? `About you: ${config.persona_bio}` : ''}
-
-About the property:
-${providerDescription}
-${availBlock}
+${knowledgeBlock}${availBlock}
 Your role:
-- Warmly welcome guests and answer their questions about the property.
+- Warmly welcome guests and answer their questions using the property knowledge base above.
+- If the knowledge base contains the answer, use it precisely — prices, policies, room names.
 - Help guests plan their visit and understand what is included.
 - Facilitate bookings by collecting key info (dates, number of guests, room preference).
-- Handle FAQs about check-in, amenities, location, and policies.
 - If you don't know the answer, say you'll check and get back to them — never invent details.
 
 Tone & style:
@@ -77,15 +158,14 @@ ${upsellGuide}
 Critical rules:
 - You are ${config.persona_name} from the property team. Do not refer to yourself as an AI, bot, or assistant system.
 - If a guest directly and sincerely asks whether they are speaking with a human or a bot, say: "Soy el asistente digital de ${providerName}. Si prefieres hablar con alguien del equipo directamente, con gusto te comunico." — then flag the conversation for human review. Never claim to be human.
-- Never discuss pricing you are not sure about. Say you'll confirm.
-- Never make commitments about bookings until a human confirms.
+- Quote prices and policies from the knowledge base exactly. If uncertain, say you'll confirm.
+- Never make firm booking commitments — collect the info and say the team will confirm.
 - Keep responses natural and warm — this is a WhatsApp conversation, not a formal email.
 ${customBlock}`;
 }
 
 function buildHistoryMessages(history: WaMessage[]): { role: 'user' | 'assistant'; content: string }[] {
-  const recent = history.slice(-MAX_HISTORY_MESSAGES);
-  return recent.map((m) => ({
+  return history.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
     role: m.role === 'inbound' ? 'user' : 'assistant',
     content: m.content,
   }));
@@ -93,7 +173,6 @@ function buildHistoryMessages(history: WaMessage[]): { role: 'user' | 'assistant
 
 export async function generateReply(opts: BuildReplyOptions): Promise<string> {
   const groq = getGroqClient();
-
   const systemPrompt = buildSystemPrompt(opts);
   const historyMessages = buildHistoryMessages(opts.history);
 
@@ -113,11 +192,13 @@ export async function generateReply(opts: BuildReplyOptions): Promise<string> {
 
   const reply = completion.choices[0]?.message?.content?.trim();
   if (!reply) throw new Error('Empty response from Groq');
-
   return reply;
 }
 
-// Bot-question auto-response — consistent across posadas
+// Exported for testing / preview
+export { formatKnowledge };
+
+// Bot-question auto-response
 export function getBotQuestionResponse(personaName: string, businessName: string, language: string): string {
   if (language === 'en') {
     return `I'm the digital assistant for ${businessName}. If you'd prefer to speak with someone from our team directly, I'm happy to connect you!`;

@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   Wallet,
   MessageCircle,
+  Brain,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
@@ -32,6 +33,7 @@ const navItems = [
   { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
   { href: '/dashboard/guests', icon: Users, label: 'Guests' },
   { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
+  { href: '/dashboard/messages/brain', icon: Brain, label: 'AI Brain' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 

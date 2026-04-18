@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/whatsapp-api';
 import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
-import type { PosadaWhatsappConfig, WaMessage } from '@/types/database';
+import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 
 // ─── Webhook verification (Meta GET challenge) ────────────────────────────────
 
@@ -179,6 +179,13 @@ async function handleMessage(
     .order('created_at', { ascending: true })
     .limit(20) as { data: WaMessage[] | null };
 
+  // 11b. Load knowledge base for this posada
+  const { data: knowledge } = await supabase
+    .from('posada_knowledge')
+    .select('*')
+    .eq('provider_id', provider.id)
+    .single() as { data: PosadaKnowledge | null };
+
   // 12. Generate AI reply via Groq
   const reply = await generateReply({
     config,
@@ -187,6 +194,7 @@ async function handleMessage(
     providerRegion: provider.region,
     inboundText: body,
     history: (history ?? []).filter((m) => m.id !== undefined),
+    knowledge,
   });
 
   // 13. Send + persist outbound

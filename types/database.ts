@@ -315,6 +315,52 @@ export interface Availability {
   created_at: string;
 }
 
+// ─── Posada Knowledge Base ───────────────────────────────────────────────────
+
+export interface RoomType {
+  name: string;
+  capacity: number;
+  price_usd: number;
+  description: string;
+  amenities: string[];
+}
+
+export interface PosadaPolicies {
+  check_in?: string;          // e.g. "3:00 PM"
+  check_out?: string;         // e.g. "11:00 AM"
+  min_stay_nights?: number;
+  cancellation?: string;
+  deposit_percent?: number;
+  pets?: string;              // "allowed" | "not allowed" | "on request"
+  smoking?: string;
+  extra_guest_fee?: string;
+}
+
+export interface FaqPair {
+  question: string;
+  answer: string;
+}
+
+export interface PosadaKnowledge {
+  id: string;
+  provider_id: string;
+  property_description: string | null;
+  location_details: string | null;
+  room_types: RoomType[];
+  amenities: string[];
+  policies: PosadaPolicies;
+  faqs: FaqPair[];
+  booking_process: string | null;
+  payment_methods: string[];
+  nearby_attractions: string | null;
+  languages_spoken: string[];
+  special_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ─── WhatsApp AI Messaging ────────────────────────────────────────────────────
 
 export type WaConversationStatus = 'ai' | 'human' | 'escalated' | 'closed';
