@@ -27,6 +27,20 @@
 - P2-13: Share link on itinerary detail
 - P2-17: Cancellation shortcut from /trips
 
+## WhatsApp Security
+
+**Encrypt WhatsApp access tokens using Supabase Vault**
+
+- **What:** `posada_whatsapp_config.access_token` is stored as plain text. Each token lets you send WhatsApp messages as that provider's number.
+- **Why:** If the DB is compromised (service key leak, misconfigured RLS, insider), all provider WhatsApp identities are exposed.
+- **How to fix:**
+  1. Enable `vault` extension in Supabase: `CREATE EXTENSION IF NOT EXISTS vault;`
+  2. For each row: `UPDATE posada_whatsapp_config SET access_token_vault_id = vault.create_secret(access_token, 'wa_token_' || id), access_token = '[encrypted]'`
+  3. At query time: `SELECT vault.decrypted_secret(access_token_vault_id) AS access_token`
+  4. Migration: add `access_token_vault_id UUID` column, backfill, then drop `access_token`
+- **Depends on:** Supabase project with Vault enabled (available on Pro plan)
+- **Priority:** P1 — before onboarding real providers
+
 ## Completed
 
 - All P0 + P1 UX items shipped — **Completed: v0.3.0.0 (2026-04-18)**

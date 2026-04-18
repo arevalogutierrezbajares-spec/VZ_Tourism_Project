@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { createServiceClient } from '@/lib/supabase/server';
 import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/whatsapp-api';
 import { analyzeMessage } from '@/lib/sentiment';
@@ -7,8 +8,9 @@ import { buildLiveContext } from '@/lib/whatsapp-context';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 
-// Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies
-const NEEDS_HUMAN_RE = /\[NEEDS_HUMAN:\s*([^\]]+)\]\s*$/;
+// Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies.
+// Permissive — matches anywhere in the string so the LLM can place it mid-reply.
+const NEEDS_HUMAN_RE = /\[NEEDS_HUMAN:\s*([^\]]+)\]/;
 
 // ─── Webhook verification (Meta GET challenge) ────────────────────────────────
 
@@ -48,9 +50,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'ok' });
   }
 
-  // Process asynchronously — do not await so we respond to Meta instantly
-  processInbound(payload).catch((err) =>
-    console.error('[whatsapp/webhook] processInbound error:', err)
+  // waitUntil tells Vercel to keep the function alive after the response is sent.
+  // Without this, serverless kills the process the moment we return 200, silently
+  // dropping every inbound message before the AI can reply.
+  waitUntil(
+    processInbound(payload).catch((err) =>
+      console.error('[whatsapp/webhook] processInbound error:', err)
+    )
   );
 
   return NextResponse.json({ status: 'ok' });
@@ -185,20 +191,20 @@ async function handleMessage(
     return;
   }
 
-  // 11. Load recent conversation history for context
-  const { data: history } = await supabase
-    .from('wa_messages')
-    .select('id, role, content, is_ai, created_at')
-    .eq('conversation_id', conv.id)
-    .order('created_at', { ascending: true })
-    .limit(20) as { data: WaMessage[] | null };
-
-  // 11b. Load knowledge base for this posada
-  const { data: knowledge } = await supabase
-    .from('posada_knowledge')
-    .select('*')
-    .eq('provider_id', provider.id)
-    .single() as { data: PosadaKnowledge | null };
+  // 11. Load history + knowledge in parallel (independent queries)
+  const [{ data: history }, { data: knowledge }] = await Promise.all([
+    supabase
+      .from('wa_messages')
+      .select('id, role, content, is_ai, created_at')
+      .eq('conversation_id', conv.id)
+      .order('created_at', { ascending: true })
+      .limit(20) as Promise<{ data: WaMessage[] | null }>,
+    supabase
+      .from('posada_knowledge')
+      .select('*')
+      .eq('provider_id', provider.id)
+      .single() as Promise<{ data: PosadaKnowledge | null }>,
+  ]);
 
   // 11c. Build live context (dynamic pricing + availability)
   const liveContext = await buildLiveContext(supabase, provider.id, knowledge).catch(() => undefined);
@@ -217,7 +223,7 @@ async function handleMessage(
 
   // 12b. Parse HITL escalation tag
   const hitlMatch = rawReply.match(NEEDS_HUMAN_RE);
-  const reply = rawReply.replace(NEEDS_HUMAN_RE, '').trim();
+  const reply = rawReply.replace(NEEDS_HUMAN_RE, '').replace(/\s{2,}/g, ' ').trim();
   const needsHuman = !!hitlMatch;
   const hitlReason = hitlMatch?.[1]?.trim() ?? null;
 
@@ -262,6 +268,12 @@ async function sendAndPersist(
     to,
     body,
   });
+
+  if (!result.success) {
+    console.error('[whatsapp/webhook] sendWhatsAppText failed:', result.error);
+    // Still persist so the provider can see the attempted reply in the dashboard.
+    // The message will appear but without a wa_message_id, indicating delivery failure.
+  }
 
   await supabase.from('wa_messages').insert({
     conversation_id: convId,
