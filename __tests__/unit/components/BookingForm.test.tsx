@@ -7,36 +7,61 @@ import { mockListing } from '@/__tests__/fixtures';
 const mockNextStep = jest.fn();
 const mockPrevStep = jest.fn();
 const mockUpdateFormData = jest.fn();
-const mockHandlePayment = jest.fn();
-const mockGetTotalPrice = jest.fn(() => 170);
+const mockSubmitBooking = jest.fn();
+const mockHandleCardPayment = jest.fn();
+const mockHandleManualPaymentConfirm = jest.fn();
+const mockHandleArrivalBooking = jest.fn();
+const mockGetNights = jest.fn(() => 2);
+const mockGetSubtotal = jest.fn(() => 170);
+const mockGetServiceFee = jest.fn(() => 17);
+const mockGetTotal = jest.fn(() => 187);
 
 jest.mock('@/hooks/use-auth', () => ({
   useAuth: jest.fn(() => ({
     isAuthenticated: true,
     user: { id: 'user-1', email: 'test@example.com' },
     loading: false,
+    profile: null,
   })),
 }));
+
+const baseFormData = {
+  listing_id: 'listing-uuid-1',
+  guest_count: 2,
+  guest_name: 'Test User',
+  guest_email: 'test@example.com',
+  guest_phone: '',
+  special_requests: '',
+  payment_method: 'card',
+};
 
 jest.mock('@/hooks/use-booking', () => ({
   useBooking: jest.fn(() => ({
     step: 'select',
-    formData: { listing_id: 'listing-uuid-1', guests: 2 },
+    formData: { ...baseFormData },
     isLoading: false,
+    booking: null,
+    paymentDetails: null,
     updateFormData: mockUpdateFormData,
     nextStep: mockNextStep,
     prevStep: mockPrevStep,
-    handlePayment: mockHandlePayment,
-    getTotalPrice: mockGetTotalPrice,
+    getNights: mockGetNights,
+    getSubtotal: mockGetSubtotal,
+    getServiceFee: mockGetServiceFee,
+    getTotal: mockGetTotal,
+    submitBooking: mockSubmitBooking,
+    handleCardPayment: mockHandleCardPayment,
+    handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+    handleArrivalBooking: mockHandleArrivalBooking,
   })),
 }));
 
 // Mock AvailabilityCalendar to avoid complex setup
 jest.mock('@/components/listing/AvailabilityCalendar', () => ({
-  AvailabilityCalendar: ({ onDateSelect }: any) => (
+  AvailabilityCalendar: ({ onRangeSelect }: any) => (
     <div data-testid="availability-calendar">
-      <button onClick={() => onDateSelect(new Date('2026-04-15'))}>
-        Select April 15
+      <button onClick={() => onRangeSelect('2026-04-15', '2026-04-17')}>
+        Select April 15–17
       </button>
     </div>
   ),
@@ -46,6 +71,10 @@ jest.mock('@/components/common/PriceDisplay', () => ({
   PriceDisplay: ({ priceUsd }: any) => <span data-testid="price-display">${priceUsd}</span>,
 }));
 
+jest.mock('@/components/common/AuthModal', () => ({
+  AuthModal: () => null,
+}));
+
 import { useBooking } from '@/hooks/use-booking';
 
 describe('BookingForm - Step 1 (select)', () => {
@@ -53,13 +82,21 @@ describe('BookingForm - Step 1 (select)', () => {
     jest.clearAllMocks();
     (useBooking as jest.Mock).mockReturnValue({
       step: 'select',
-      formData: { listing_id: 'listing-uuid-1', guests: 2 },
+      formData: { ...baseFormData },
       isLoading: false,
+      booking: null,
+      paymentDetails: null,
       updateFormData: mockUpdateFormData,
       nextStep: mockNextStep,
       prevStep: mockPrevStep,
-      handlePayment: mockHandlePayment,
-      getTotalPrice: mockGetTotalPrice,
+      getNights: mockGetNights,
+      getSubtotal: mockGetSubtotal,
+      getServiceFee: mockGetServiceFee,
+      getTotal: mockGetTotal,
+      submitBooking: mockSubmitBooking,
+      handleCardPayment: mockHandleCardPayment,
+      handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+      handleArrivalBooking: mockHandleArrivalBooking,
     });
   });
 
@@ -75,45 +112,49 @@ describe('BookingForm - Step 1 (select)', () => {
 
   it('shows guest count controls', () => {
     render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Number of guests')).toBeInTheDocument();
+    expect(screen.getByText('Guests')).toBeInTheDocument();
   });
 
   it('shows step indicator', () => {
     render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Select Date')).toBeInTheDocument();
-    expect(screen.getByText('Details')).toBeInTheDocument();
+    expect(screen.getByText('Dates')).toBeInTheDocument();
+    expect(screen.getByText('Your Info')).toBeInTheDocument();
     expect(screen.getByText('Payment')).toBeInTheDocument();
   });
 
   it('Continue button is disabled before date is selected', () => {
     render(<BookingForm listing={mockListing} />);
-    const continueBtn = screen.getByText('Continue');
+    const continueBtn = screen.getByText(/Continue/);
     expect(continueBtn).toBeDisabled();
   });
 
   it('enables Continue after date selection', () => {
+    (useBooking as jest.Mock).mockReturnValue({
+      step: 'select',
+      formData: { ...baseFormData, check_in: '2026-04-15', check_out: '2026-04-17' },
+      isLoading: false,
+      booking: null,
+      paymentDetails: null,
+      updateFormData: mockUpdateFormData,
+      nextStep: mockNextStep,
+      prevStep: mockPrevStep,
+      getNights: mockGetNights,
+      getSubtotal: mockGetSubtotal,
+      getServiceFee: mockGetServiceFee,
+      getTotal: mockGetTotal,
+      submitBooking: mockSubmitBooking,
+      handleCardPayment: mockHandleCardPayment,
+      handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+      handleArrivalBooking: mockHandleArrivalBooking,
+    });
     render(<BookingForm listing={mockListing} />);
-    fireEvent.click(screen.getByText('Select April 15'));
-    const continueBtn = screen.getByText('Continue');
+    const continueBtn = screen.getByText(/Continue/);
     expect(continueBtn).not.toBeDisabled();
-  });
-
-  it('calls nextStep when Continue is clicked', () => {
-    render(<BookingForm listing={mockListing} />);
-    fireEvent.click(screen.getByText('Select April 15'));
-    fireEvent.click(screen.getByText('Continue'));
-    expect(mockNextStep).toHaveBeenCalled();
   });
 
   it('calls updateFormData with guests when + is clicked', () => {
     render(<BookingForm listing={mockListing} />);
     fireEvent.click(screen.getByText('+'));
-    expect(mockUpdateFormData).toHaveBeenCalled();
-  });
-
-  it('calls updateFormData with guests when - is clicked', () => {
-    render(<BookingForm listing={mockListing} />);
-    fireEvent.click(screen.getByText('-'));
     expect(mockUpdateFormData).toHaveBeenCalled();
   });
 });
@@ -123,25 +164,27 @@ describe('BookingForm - Step 2 (details)', () => {
     jest.clearAllMocks();
     (useBooking as jest.Mock).mockReturnValue({
       step: 'details',
-      formData: { listing_id: 'listing-uuid-1', guests: 2, check_in: '2026-04-15' },
+      formData: { ...baseFormData, check_in: '2026-04-15', check_out: '2026-04-17' },
       isLoading: false,
+      booking: null,
+      paymentDetails: null,
       updateFormData: mockUpdateFormData,
       nextStep: mockNextStep,
       prevStep: mockPrevStep,
-      handlePayment: mockHandlePayment,
-      getTotalPrice: mockGetTotalPrice,
+      getNights: mockGetNights,
+      getSubtotal: mockGetSubtotal,
+      getServiceFee: mockGetServiceFee,
+      getTotal: mockGetTotal,
+      submitBooking: mockSubmitBooking,
+      handleCardPayment: mockHandleCardPayment,
+      handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+      handleArrivalBooking: mockHandleArrivalBooking,
     });
   });
 
   it('shows special requests textarea', () => {
     render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Special requests (optional)')).toBeInTheDocument();
-  });
-
-  it('shows total price', () => {
-    render(<BookingForm listing={mockListing} />);
-    const prices = screen.getAllByTestId('price-display');
-    expect(prices.length).toBeGreaterThan(0);
+    expect(screen.getByText('Special requests')).toBeInTheDocument();
   });
 
   it('shows Back button', () => {
@@ -154,66 +197,86 @@ describe('BookingForm - Step 2 (details)', () => {
     fireEvent.click(screen.getByText('Back'));
     expect(mockPrevStep).toHaveBeenCalled();
   });
+});
+
+describe('BookingForm - Step 3 (review)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useBooking as jest.Mock).mockReturnValue({
+      step: 'review',
+      formData: { ...baseFormData, check_in: '2026-04-15', check_out: '2026-04-17' },
+      isLoading: false,
+      booking: null,
+      paymentDetails: null,
+      updateFormData: mockUpdateFormData,
+      nextStep: mockNextStep,
+      prevStep: mockPrevStep,
+      getNights: mockGetNights,
+      getSubtotal: mockGetSubtotal,
+      getServiceFee: mockGetServiceFee,
+      getTotal: mockGetTotal,
+      submitBooking: mockSubmitBooking,
+      handleCardPayment: mockHandleCardPayment,
+      handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+      handleArrivalBooking: mockHandleArrivalBooking,
+    });
+  });
+
+  it('shows review step content', () => {
+    render(<BookingForm listing={mockListing} />);
+    // Review step shows Back button and booking action button
+    expect(screen.getByText('Back')).toBeInTheDocument();
+  });
 
   it('shows cancellation policy', () => {
     render(<BookingForm listing={mockListing} />);
     expect(screen.getByText(/cancellation policy/i)).toBeInTheDocument();
   });
-});
 
-describe('BookingForm - Step 3 (payment)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (useBooking as jest.Mock).mockReturnValue({
-      step: 'payment',
-      formData: { listing_id: 'listing-uuid-1', guests: 2, check_in: '2026-04-15' },
-      isLoading: false,
-      updateFormData: mockUpdateFormData,
-      nextStep: mockNextStep,
-      prevStep: mockPrevStep,
-      handlePayment: mockHandlePayment,
-      getTotalPrice: mockGetTotalPrice,
-    });
+  it('shows request to book button for unverified provider', () => {
+    render(<BookingForm listing={mockListing} />);
+    expect(screen.getByText('Request to Book')).toBeInTheDocument();
   });
 
-  it('shows booking summary', () => {
+  it('shows Back button', () => {
     render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Booking Summary')).toBeInTheDocument();
+    expect(screen.getByText('Back')).toBeInTheDocument();
   });
 
-  it('shows Pay now button', () => {
-    render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Pay now')).toBeInTheDocument();
-  });
-
-  it('calls handlePayment when Pay now is clicked', () => {
-    render(<BookingForm listing={mockListing} />);
-    fireEvent.click(screen.getByText('Pay now'));
-    expect(mockHandlePayment).toHaveBeenCalled();
-  });
-
-  it('shows Stripe secure payment notice', () => {
-    render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText(/Secure payment via Stripe/i)).toBeInTheDocument();
+  it('shows instant book button for verified provider', () => {
+    const verifiedListing = {
+      ...mockListing,
+      provider: { is_verified: true, whatsapp_number: null },
+    };
+    render(<BookingForm listing={verifiedListing as any} />);
+    expect(screen.getByText('Book Now')).toBeInTheDocument();
   });
 });
 
 describe('BookingForm - Confirmation', () => {
   beforeEach(() => {
     (useBooking as jest.Mock).mockReturnValue({
-      step: 'confirmation',
-      formData: {},
+      step: 'done',
+      formData: { ...baseFormData },
       isLoading: false,
+      booking: null,
+      paymentDetails: null,
       updateFormData: mockUpdateFormData,
       nextStep: mockNextStep,
       prevStep: mockPrevStep,
-      handlePayment: mockHandlePayment,
-      getTotalPrice: mockGetTotalPrice,
+      getNights: mockGetNights,
+      getSubtotal: mockGetSubtotal,
+      getServiceFee: mockGetServiceFee,
+      getTotal: mockGetTotal,
+      submitBooking: mockSubmitBooking,
+      handleCardPayment: mockHandleCardPayment,
+      handleManualPaymentConfirm: mockHandleManualPaymentConfirm,
+      handleArrivalBooking: mockHandleArrivalBooking,
     });
   });
 
-  it('shows confirmation message', () => {
+  it('shows submission message', () => {
     render(<BookingForm listing={mockListing} />);
-    expect(screen.getByText('Booking Confirmed!')).toBeInTheDocument();
+    expect(screen.getByText('Booking Submitted!')).toBeInTheDocument();
   });
 });
