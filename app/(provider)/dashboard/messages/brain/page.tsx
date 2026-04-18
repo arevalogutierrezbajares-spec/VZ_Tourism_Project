@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +10,9 @@ import {
   Brain, Home, BedDouble, Sparkles, HelpCircle,
   CreditCard, MapPin, ChevronDown, ChevronUp,
   Plus, Trash2, Save, Eye, EyeOff, CheckCircle2, AlertCircle,
-  TrendingUp,
+  TrendingUp, Upload, BookOpen, Loader2,
 } from 'lucide-react';
+import type { TrainingImportRecord } from '@/types/database';
 import { formatKnowledge } from '@/lib/whatsapp-ai';
 import type { PosadaKnowledge, RoomType, FaqPair, PosadaPolicies, PricingRules } from '@/types/database';
 import toast from 'react-hot-toast';
@@ -567,6 +568,247 @@ function PreviewPanel({ knowledge, providerName }: { knowledge: PosadaKnowledge;
   );
 }
 
+// ─── Training import section ──────────────────────────────────────────────────
+
+type ImportStage = 'idle' | 'uploading' | 'complete' | 'error';
+
+interface ImportStats {
+  turns_parsed: number;
+  pairs_found: number;
+  lessons_extracted: number;
+  lessons_stored: number;
+  lessons_skipped: number;
+  provider_name_detected: string;
+  tone_profile_extracted: boolean;
+}
+
+function TrainingSection({ onImportDone }: { onImportDone?: () => void }) {
+  const [stage, setStage] = useState<ImportStage>('idle');
+  const [file, setFile] = useState<File | null>(null);
+  const [providerName, setProviderName] = useState('');
+  const [stats, setStats] = useState<ImportStats | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [history, setHistory] = useState<TrainingImportRecord[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Load import history from posada_knowledge
+  useEffect(() => {
+    fetch('/api/whatsapp/knowledge')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.data?.training_imports) {
+          setHistory(res.data.training_imports as TrainingImportRecord[]);
+        }
+      })
+      .catch(() => {});
+  }, [stage]); // re-fetch after each import
+
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+    if (!f.name.endsWith('.txt')) {
+      setErrorMsg('Please upload a .txt WhatsApp export file.');
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setErrorMsg('File is too large (max 10MB).');
+      return;
+    }
+    setFile(f);
+    setErrorMsg('');
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+    setStage('uploading');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    if (providerName.trim()) fd.append('provider_name', providerName.trim());
+
+    try {
+      const res = await fetch('/api/whatsapp/import', { method: 'POST', body: fd });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error ?? 'Import failed. Try again.');
+        setStage('error');
+        return;
+      }
+
+      setStats(data as ImportStats);
+      setStage('complete');
+      setFile(null);
+      setProviderName('');
+      onImportDone?.();
+    } catch {
+      setErrorMsg('Network error. Check your connection and try again.');
+      setStage('error');
+    }
+  };
+
+  const reset = () => {
+    setStage('idle');
+    setFile(null);
+    setStats(null);
+    setErrorMsg('');
+  };
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground">
+        Upload a WhatsApp chat export (.txt) from your existing guest conversations.
+        The AI will extract Q&amp;A pairs and learn from the way you actually talk to guests.
+      </p>
+
+      {/* Stage: idle / uploading */}
+      {(stage === 'idle' || stage === 'error') && (
+        <div className="space-y-4">
+          {/* Dropzone */}
+          <div
+            className={cn(
+              'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors',
+              dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
+              file && 'border-primary/40 bg-primary/5'
+            )}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
+            onClick={() => fileRef.current?.click()}
+          >
+            <input
+              type="file"
+              accept=".txt"
+              className="hidden"
+              ref={fileRef}
+              onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+              id="whatsapp-import-input"
+            />
+            {file ? (
+              <div className="space-y-1">
+                <CheckCircle2 className="w-8 h-8 mx-auto text-primary" />
+                <p className="text-sm font-medium">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Upload className="w-8 h-8 mx-auto text-muted-foreground/50" />
+                <p className="text-sm font-medium">Drop your WhatsApp export here</p>
+                <p className="text-xs text-muted-foreground">or click to browse — .txt files only, max 10MB</p>
+              </div>
+            )}
+          </div>
+
+          {/* How to export instructions */}
+          <details className="text-xs text-muted-foreground">
+            <summary className="cursor-pointer hover:text-foreground transition-colors">How to export from WhatsApp</summary>
+            <div className="mt-2 space-y-1 pl-3 border-l border-border">
+              <p><strong>iOS:</strong> Open a chat → tap name at top → Scroll down → &ldquo;Export Chat&rdquo; → &ldquo;Without Media&rdquo;</p>
+              <p><strong>Android:</strong> Open a chat → three dots → More → Export Chat → Without Media</p>
+              <p>Send the .txt file to yourself (email, notes) and upload it here.</p>
+            </div>
+          </details>
+
+          {/* Provider name hint */}
+          <Field
+            label="Your name in WhatsApp (optional)"
+            hint="Helps the AI know which messages are yours. If blank, the most active sender is assumed to be you."
+          >
+            <Input
+              value={providerName}
+              onChange={setProviderName}
+              placeholder="María Posada, Hotel El Saco, etc."
+            />
+          </Field>
+
+          {errorMsg && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" /> {errorMsg}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleImport}
+              disabled={!file}
+              className="flex-1"
+            >
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              Extract Lessons
+            </Button>
+            {stage === 'error' && (
+              <Button size="sm" variant="outline" onClick={reset}>Try Again</Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Stage: uploading / processing */}
+      {stage === 'uploading' && (
+        <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <p className="text-sm font-medium">Processing your conversation history...</p>
+          <p className="text-xs">This takes 30–90 seconds depending on conversation length.</p>
+        </div>
+      )}
+
+      {/* Stage: complete */}
+      {stage === 'complete' && stats && (
+        <div className="space-y-4">
+          <div className="rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="text-sm font-semibold">Import complete!</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-white dark:bg-black/20 rounded-lg p-2 text-center">
+                <div className="text-lg font-bold text-foreground">{stats.turns_parsed}</div>
+                <div className="text-muted-foreground">Messages parsed</div>
+              </div>
+              <div className="bg-white dark:bg-black/20 rounded-lg p-2 text-center">
+                <div className="text-lg font-bold text-foreground">{stats.pairs_found}</div>
+                <div className="text-muted-foreground">Q&amp;A pairs found</div>
+              </div>
+              <div className="bg-white dark:bg-black/20 rounded-lg p-2 text-center">
+                <div className="text-lg font-bold text-primary">{stats.lessons_stored}</div>
+                <div className="text-muted-foreground">Lessons added</div>
+              </div>
+              <div className="bg-white dark:bg-black/20 rounded-lg p-2 text-center">
+                <div className="text-lg font-bold text-foreground">{stats.lessons_skipped}</div>
+                <div className="text-muted-foreground">Duplicates skipped</div>
+              </div>
+            </div>
+            {stats.tone_profile_extracted && (
+              <p className="text-xs text-green-700 dark:text-green-400">
+                Tone profile detected — AI will mirror your communication style.
+              </p>
+            )}
+          </div>
+          <Button size="sm" variant="outline" className="w-full" onClick={reset}>
+            Import Another File
+          </Button>
+        </div>
+      )}
+
+      {/* Import history */}
+      {history.length > 0 && stage !== 'complete' && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Past imports</p>
+          <div className="space-y-1">
+            {history.slice(-5).reverse().map((rec, i) => (
+              <div key={i} className="flex items-center justify-between text-xs bg-muted/30 rounded-lg px-3 py-2">
+                <span className="font-mono truncate max-w-[160px]">{rec.filename}</span>
+                <span className="text-muted-foreground">{rec.qa_pairs_count} lessons · {new Date(rec.imported_at).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 const EMPTY_PRICING_RULES: PricingRules = {
@@ -979,6 +1221,15 @@ export default function BrainPage() {
                 </Button>
               </div>
             </div>
+          </Section>
+
+          {/* § 9 · Training Data */}
+          <Section
+            icon={<BookOpen className="w-4 h-4" />}
+            title="Training Data"
+            badge="Learn from past WhatsApp conversations"
+          >
+            <TrainingSection onImportDone={() => void 0} />
           </Section>
 
         </div>
