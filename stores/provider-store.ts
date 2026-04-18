@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Booking, Listing, Notification, Provider } from '@/types/database';
+import { createClient } from '@/lib/supabase/client';
 
 interface ProviderState {
   provider: Provider | null;
@@ -20,6 +21,8 @@ interface ProviderActions {
   setBookings: (bookings: Booking[]) => void;
   fetchListings: () => Promise<void>;
   fetchBookings: () => Promise<void>;
+  fetchEscalatedCount: () => Promise<void>;
+  subscribeToEscalations: (providerId: string) => () => void;
   setNotifications: (notifications: Notification[]) => void;
   markNotificationRead: (id: string) => void;
   setUnreadCount: (count: number) => void;
@@ -75,6 +78,45 @@ export const useProviderStore = create<ProviderStore>()(
         } finally {
           set({ isLoading: false });
         }
+      },
+
+      fetchEscalatedCount: async () => {
+        try {
+          const response = await fetch('/api/whatsapp/hitl-count');
+          if (response.ok) {
+            const { count } = await response.json();
+            set({ waUnreadCount: count ?? 0 });
+          }
+        } catch {
+          // Non-critical — fail silently
+        }
+      },
+
+      subscribeToEscalations: (providerId: string) => {
+        const supabase = createClient();
+        if (!supabase) return () => undefined;
+
+        // Re-fetch whenever any conversation for this provider changes status.
+        // Keeps the sidebar badge live without polling.
+        const channel = supabase
+          .channel(`escalations:${providerId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'wa_conversations',
+              filter: `provider_id=eq.${providerId}`,
+            },
+            () => {
+              void get().fetchEscalatedCount();
+            }
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
       },
 
       setNotifications: (notifications) => {
