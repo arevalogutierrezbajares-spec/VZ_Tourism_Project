@@ -457,6 +457,41 @@ export interface WaEscalation {
   created_at: string;
 }
 
+// ─── WhatsApp RAG / Lesson types ──────────────────────────────────────────────
+
+export type WaLessonSource = 'historical_import' | 'hitl_correction' | 'manual';
+
+export interface WaLesson {
+  id: string;
+  provider_id: string;
+  question_text: string;
+  answer_text: string;
+  context_tags: string[];
+  source: WaLessonSource;
+  conversation_id: string | null;
+  approved: boolean;
+  times_used: number;
+  question_embedding: number[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ToneProfile {
+  formality: 'formal' | 'warm-informal' | 'casual';
+  emoji_usage: 'none' | 'minimal' | 'moderate' | 'heavy';
+  avg_response_length: string;
+  language: string;
+  typical_greeting: string;
+}
+
+export interface TrainingImportRecord {
+  filename: string;
+  imported_at: string;
+  qa_pairs_count: number;
+  provider_name_detected: string;
+  status: 'complete' | 'error';
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface CreatorProfile {
