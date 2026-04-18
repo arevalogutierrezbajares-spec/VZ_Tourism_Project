@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import type { Itinerary, ItineraryStop } from '@/types/database';
 
 interface ItineraryDay {
@@ -37,6 +37,7 @@ type ItineraryStore = ItineraryState & ItineraryActions;
 
 export const useItineraryStore = create<ItineraryStore>()(
   devtools(
+    persist(
     (set, get) => ({
       current: null,
       days: [],
@@ -174,7 +175,11 @@ export const useItineraryStore = create<ItineraryStore>()(
 
       save: async () => {
         const { current, days } = get();
-        if (!current) return;
+        // Anonymous users: data is already persisted to localStorage by the persist middleware
+        if (!current?.id || current.id.startsWith('local-')) {
+          set({ isDirty: false });
+          return;
+        }
 
         set({ isSaving: true });
         try {
@@ -206,6 +211,17 @@ export const useItineraryStore = create<ItineraryStore>()(
           isOpen: false,
         }),
     }),
+    {
+      name: 'vz_itinerary',
+      // Only persist data — not ephemeral UI state (isOpen, isSaving)
+      partialize: (state) => ({
+        current: state.current,
+        days: state.days,
+        totalCost: state.totalCost,
+        isDirty: state.isDirty,
+      }),
+    }
+    ),
     { name: 'itinerary-store' }
   )
 );

@@ -77,29 +77,34 @@ export function getCategoryIcon(category: string): string {
 
 export function getCategoryColor(category: string): string {
   const colors: Record<string, string> = {
-    // Scraped business categories
+    accommodation: '#3B82F6',
+    gastronomy: '#F97316',
+    adventure: '#EF4444',
+    cities: '#8B5CF6',
+    beaches: '#0EA5E9',
+    'eco-tours': '#22C55E',
+    mountains: '#8B5CF6',
+    cultural: '#F59E0B',
+    wellness: '#EC4899',
+    // Legacy aliases
     hotel: '#3B82F6',
     restaurant: '#F97316',
     experience: '#22C55E',
     other: '#6B7280',
-    // Legacy listing categories
-    beaches: '#0EA5E9',
-    mountains: '#8B5CF6',
-    cities: '#8B5CF6',
-    'eco-tours': '#22C55E',
-    gastronomy: '#F97316',
-    adventure: '#EF4444',
-    wellness: '#EC4899',
-    cultural: '#F59E0B',
   };
   return colors[category] || '#6B7280';
 }
 
 export const BUSINESS_CATEGORIES: { key: string; label: string; color: string }[] = [
-  { key: 'hotel', label: 'Hotels & Posadas', color: '#3B82F6' },
-  { key: 'restaurant', label: 'Restaurants', color: '#F97316' },
-  { key: 'experience', label: 'Tours & Experiences', color: '#22C55E' },
-  { key: 'other', label: 'Other', color: '#6B7280' },
+  { key: 'accommodation', label: 'Hotels & Posadas', color: '#3B82F6' },
+  { key: 'gastronomy', label: 'Gastronomy', color: '#F97316' },
+  { key: 'adventure', label: 'Adventure', color: '#EF4444' },
+  { key: 'cities', label: 'Cities', color: '#8B5CF6' },
+  { key: 'beaches', label: 'Beaches', color: '#0EA5E9' },
+  { key: 'eco-tours', label: 'Eco-Tours', color: '#22C55E' },
+  { key: 'mountains', label: 'Mountains', color: '#8B5CF6' },
+  { key: 'cultural', label: 'Cultural', color: '#F59E0B' },
+  { key: 'wellness', label: 'Wellness', color: '#EC4899' },
 ];
 
 export function getSafetyColor(level: string): string {

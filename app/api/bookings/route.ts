@@ -9,6 +9,7 @@ import {
 } from '@/lib/bookings-store';
 import { PLATFORM_COMMISSION_RATE } from '@/lib/constants';
 import { createCheckoutSession } from '@/lib/stripe/server';
+import { Resend } from 'resend';
 
 /**
  * Returns a Supabase service-role client, or null if env vars are not set.
@@ -292,6 +293,56 @@ export async function POST(request: NextRequest) {
       reference: booking.confirmation_code as string,
       instructions: `Your booking is reserved. Pay $${total_usd.toFixed(2)} in cash on arrival. Show your booking code "${booking.confirmation_code}" to the provider.`,
     };
+  }
+
+  // Send confirmation emails (non-blocking — email failure never fails the booking)
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'bookings@vz-tourism.com';
+    const opsEmail = process.env.RESEND_NOTIFY_EMAIL || 'ops@vz-tourism.com';
+    const confirmationCode = booking.confirmation_code as string;
+    const nextSteps = payment_method === 'card'
+      ? 'Complete payment via the checkout link to confirm your booking.'
+      : payment_method === 'arrival'
+      ? 'Your booking is reserved. Pay on arrival and show your booking code to the provider.'
+      : `Transfer ${payment_details?.amount} via ${payment_details?.method} using the details provided. Your booking will be confirmed once payment is verified.`;
+
+    Promise.all([
+      resend.emails.send({
+        from: fromEmail,
+        to: opsEmail,
+        subject: `New booking: ${confirmationCode} — ${listing_name}`,
+        text: [
+          `Booking Reference: ${confirmationCode}`,
+          `Listing: ${listing_name}`,
+          `Guest: ${guest_name} <${guest_email}>`,
+          `Phone: ${guest_phone ?? 'N/A'}`,
+          `Check-in: ${check_in}`,
+          `Check-out: ${check_out ?? check_in}`,
+          `Guests: ${guest_count}`,
+          `Payment: ${payment_method} — $${total_usd} USD`,
+          `Notes: ${special_requests ?? notes ?? 'None'}`,
+        ].join('\n'),
+      }),
+      resend.emails.send({
+        from: fromEmail,
+        to: guest_email,
+        subject: `Booking confirmed — ${confirmationCode}`,
+        text: [
+          `Hi ${guest_name},`,
+          '',
+          `Your booking at ${listing_name} is received.`,
+          `Booking reference: ${confirmationCode}`,
+          `Check-in: ${check_in}`,
+          `Check-out: ${check_out ?? check_in}`,
+          `Total: $${total_usd} USD`,
+          '',
+          nextSteps,
+          '',
+          'Questions? Reply to this email or contact us on WhatsApp.',
+        ].join('\n'),
+      }),
+    ]).catch((err) => console.error('Resend email error:', err));
   }
 
   return NextResponse.json(
