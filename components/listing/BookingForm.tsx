@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
 import {
   Users,
@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   CheckCircle,
   Copy,
+  Zap,
+  Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,8 +26,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AvailabilityCalendar } from './AvailabilityCalendar';
 import { PriceDisplay } from '@/components/common/PriceDisplay';
+import { AuthModal } from '@/components/common/AuthModal';
 import type { Listing } from '@/types/database';
 import { useBooking, type PaymentMethod } from '@/hooks/use-booking';
+import { useAuth } from '@/hooks/use-auth';
+import { useAuthStore } from '@/stores/auth-store';
 
 interface BookingFormProps {
   listing: Listing;
@@ -154,7 +159,35 @@ export function BookingForm({ listing }: BookingFormProps) {
     handleArrivalBooking,
   } = useBooking(listing);
 
+  const { isAuthenticated } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Verified provider = instant book; otherwise = request to book
+  const isInstantBook = listing.provider?.is_verified === true;
+
+  // After auth succeeds: pre-fill form with profile data, then advance step
+  const handleAuthSuccess = useCallback(() => {
+    setShowAuthModal(false);
+    const { profile } = useAuthStore.getState();
+    if (profile) {
+      updateFormData({
+        guest_name: profile.full_name || '',
+        guest_email: profile.email || '',
+        guest_phone: profile.phone || '',
+      });
+    }
+    nextStep();
+  }, [nextStep, updateFormData]);
+
+  // Gate on step 1 Continue — require auth before proceeding
+  const handleContinueFromDates = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+    } else {
+      nextStep();
+    }
+  };
 
   const stepIndex = ['select', 'details', 'review', 'payment', 'done'].indexOf(step);
 
@@ -176,12 +209,18 @@ export function BookingForm({ listing }: BookingFormProps) {
   };
 
   const canProceedFromSelect = !!formData.check_in;
-  const canProceedFromDetails = formData.guest_name.trim() && formData.guest_email.trim();
+  const canProceedFromDetails = formData.guest_name?.trim() && formData.guest_email?.trim();
 
-  // Called when tourist clicks "Book Now" from review step
+  // Called when tourist clicks "Book Now" or "Request to Book" from review step
   const handleBookNow = async () => {
     const created = await submitBooking();
-    if (created) nextStep(); // advance to 'payment'
+    if (!created) return;
+    if (isInstantBook) {
+      nextStep(); // advance to 'payment'
+    } else {
+      // Request to book: skip payment, go directly to confirmation
+      window.location.href = `/booking/confirmation?id=${created.id}`;
+    }
   };
 
   // Called from payment step
@@ -287,8 +326,8 @@ export function BookingForm({ listing }: BookingFormProps) {
               </div>
             )}
 
-            <Button className="w-full" disabled={!canProceedFromSelect} onClick={nextStep}>
-              Continue
+            <Button className="w-full" disabled={!canProceedFromSelect} onClick={handleContinueFromDates}>
+              {isAuthenticated ? 'Continue' : 'Continue — Sign in required'}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </>
@@ -424,13 +463,30 @@ export function BookingForm({ listing }: BookingFormProps) {
               </p>
             )}
 
+            {/* Booking mode indicator */}
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
+              isInstantBook
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-sky-50 text-sky-700 border border-sky-200'
+            }`}>
+              {isInstantBook ? (
+                <><Zap className="w-3.5 h-3.5 flex-shrink-0" /> Instant confirmation — pay now</>
+              ) : (
+                <><Send className="w-3.5 h-3.5 flex-shrink-0" /> Provider confirms within 24h — no payment now</>
+              )}
+            </div>
+
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={prevStep}>
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back
               </Button>
               <Button className="flex-1" onClick={handleBookNow} disabled={isLoading}>
-                {isLoading ? 'Reserving...' : 'Book Now'}
+                {isLoading
+                  ? (isInstantBook ? 'Reserving...' : 'Sending request...')
+                  : isInstantBook
+                  ? 'Book Now'
+                  : 'Request to Book'}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -581,6 +637,14 @@ export function BookingForm({ listing }: BookingFormProps) {
           </div>
         )}
       </CardContent>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        title="Sign in to book"
+        subtitle="We need your account to process payment and send your confirmation."
+      />
     </Card>
   );
 }

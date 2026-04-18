@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 const WORDS = ['Discover', 'Explore', 'Experience', 'Uncover'];
 
@@ -84,6 +85,28 @@ export function HeroSection() {
         >
           From pristine Caribbean beaches to Andean peaks
         </p>
+
+        {/* Intent CTAs */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/explore"
+            className="px-7 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors shadow-lg"
+          >
+            Explore
+          </Link>
+          <Link
+            href="/book"
+            className="px-7 py-3 rounded-xl bg-white/20 backdrop-blur-sm text-white border border-white/30 font-semibold text-sm hover:bg-white/30 transition-colors"
+          >
+            Book
+          </Link>
+          <Link
+            href="/itineraries"
+            className="px-7 py-3 rounded-xl bg-white/20 backdrop-blur-sm text-white border border-white/30 font-semibold text-sm hover:bg-white/30 transition-colors"
+          >
+            Plan
+          </Link>
+        </div>
       </div>
 
       {/* Scroll indicator */}
