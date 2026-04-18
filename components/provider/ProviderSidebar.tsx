@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   LayoutDashboard,
   List,
@@ -39,7 +40,15 @@ const navItems = [
 
 export function ProviderSidebar() {
   const pathname = usePathname();
-  const { unreadCount, waUnreadCount } = useProviderStore();
+  const { unreadCount, waUnreadCount, provider, fetchEscalatedCount, subscribeToEscalations } = useProviderStore();
+
+  // Initial fetch + real-time subscription so the badge updates without reload
+  useEffect(() => {
+    void fetchEscalatedCount();
+    if (!provider?.id) return;
+    const unsubscribe = subscribeToEscalations(provider.id);
+    return unsubscribe;
+  }, [provider?.id, fetchEscalatedCount, subscribeToEscalations]);
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-background flex flex-col h-full">
@@ -75,7 +84,7 @@ export function ProviderSidebar() {
                   </Badge>
                 )}
                 {item.label === 'Messages' && waUnreadCount > 0 && (
-                  <Badge className="bg-green-500 text-white text-xs px-1.5 h-5 min-w-5 flex items-center justify-center">
+                  <Badge className="bg-red-500 text-white text-xs px-1.5 h-5 min-w-5 flex items-center justify-center animate-pulse">
                     {waUnreadCount > 9 ? '9+' : waUnreadCount}
                   </Badge>
                 )}
