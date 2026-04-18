@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+/**
+ * GET /api/whatsapp/config
+ * Returns the WhatsApp config for the authenticated provider.
+ * access_token is masked for security.
+ */
+export async function GET() {
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+
+  const { data, error } = await supabase
+    .from('posada_whatsapp_config')
+    .select('id, provider_id, phone_number_id, persona_name, persona_bio, tone_formality, tone_language, response_length, booking_pressure, upsell_enabled, custom_instructions, ai_enabled, verify_token, created_at, updated_at')
+    .eq('provider_id', provider.id)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Mask access_token — never send it to the client
+  return NextResponse.json({ data: data ?? null });
+}
+
+/**
+ * PUT /api/whatsapp/config
+ * Create or update the WhatsApp config for the authenticated provider.
+ */
+export async function PUT(request: NextRequest) {
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const allowed = [
+    'phone_number_id', 'access_token', 'persona_name', 'persona_bio',
+    'tone_formality', 'tone_language', 'response_length', 'booking_pressure',
+    'upsell_enabled', 'custom_instructions', 'ai_enabled',
+  ];
+
+  const updates = Object.fromEntries(
+    Object.entries(body).filter(([k]) => allowed.includes(k))
+  );
+
+  if (!updates.phone_number_id) {
+    // Validate required field only on first creation
+    const { count } = await supabase
+      .from('posada_whatsapp_config')
+      .select('id', { count: 'exact', head: true })
+      .eq('provider_id', provider.id);
+
+    if (!count) {
+      return NextResponse.json({ error: 'phone_number_id is required' }, { status: 400 });
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('posada_whatsapp_config')
+    .upsert({ provider_id: provider.id, ...updates }, { onConflict: 'provider_id' })
+    .select('id, provider_id, phone_number_id, persona_name, persona_bio, tone_formality, tone_language, response_length, booking_pressure, upsell_enabled, custom_instructions, ai_enabled, verify_token, updated_at')
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ data });
+}

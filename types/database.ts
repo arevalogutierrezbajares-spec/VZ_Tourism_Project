@@ -315,6 +315,78 @@ export interface Availability {
   created_at: string;
 }
 
+// ─── WhatsApp AI Messaging ────────────────────────────────────────────────────
+
+export type WaConversationStatus = 'ai' | 'human' | 'escalated' | 'closed';
+export type WaBookingStage = 'lead' | 'quoted' | 'confirmed' | 'checked_in' | 'closed';
+export type WaMessageRole = 'inbound' | 'outbound';
+export type WaToneFormality = 'casual' | 'neutral' | 'formal';
+export type WaToneLanguage = 'es' | 'en' | 'bilingual';
+export type WaResponseLength = 'brief' | 'standard' | 'detailed';
+export type WaBookingPressure = 'soft' | 'direct';
+export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold';
+
+export interface PosadaWhatsappConfig {
+  id: string;
+  provider_id: string;
+  phone_number_id: string;
+  access_token: string;
+  verify_token: string;
+  persona_name: string;
+  persona_bio: string | null;
+  tone_formality: WaToneFormality;
+  tone_language: WaToneLanguage;
+  response_length: WaResponseLength;
+  booking_pressure: WaBookingPressure;
+  upsell_enabled: boolean;
+  custom_instructions: string | null;
+  ai_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WaConversation {
+  id: string;
+  provider_id: string;
+  guest_phone: string;
+  guest_name: string | null;
+  status: WaConversationStatus;
+  unread_count: number;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  booking_stage: WaBookingStage;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  messages?: WaMessage[];
+  escalations?: WaEscalation[];
+}
+
+export interface WaMessage {
+  id: string;
+  conversation_id: string;
+  wa_message_id: string | null;
+  role: WaMessageRole;
+  content: string;
+  is_ai: boolean;
+  flagged: boolean;
+  flag_reason: string | null;
+  sentiment_score: number | null;
+  created_at: string;
+}
+
+export interface WaEscalation {
+  id: string;
+  conversation_id: string;
+  reason: string;
+  trigger_type: WaEscalationTrigger | null;
+  assigned_to: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface CreatorProfile {
   id: string;
   user_id: string;

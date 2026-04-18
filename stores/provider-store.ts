@@ -9,6 +9,7 @@ interface ProviderState {
   bookings: Booking[];
   notifications: Notification[];
   unreadCount: number;
+  waUnreadCount: number;
   isLoading: boolean;
 }
 
@@ -22,6 +23,7 @@ interface ProviderActions {
   setNotifications: (notifications: Notification[]) => void;
   markNotificationRead: (id: string) => void;
   setUnreadCount: (count: number) => void;
+  setWaUnreadCount: (count: number) => void;
 }
 
 type ProviderStore = ProviderState & ProviderActions;
@@ -35,6 +37,7 @@ export const useProviderStore = create<ProviderStore>()(
       bookings: [],
       notifications: [],
       unreadCount: 0,
+      waUnreadCount: 0,
       isLoading: false,
 
       setProvider: (provider) => set({ provider }),
@@ -89,6 +92,7 @@ export const useProviderStore = create<ProviderStore>()(
         }),
 
       setUnreadCount: (unreadCount) => set({ unreadCount }),
+      setWaUnreadCount: (waUnreadCount) => set({ waUnreadCount }),
     }),
     { name: 'provider-store' }
   )

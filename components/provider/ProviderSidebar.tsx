@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronLeft,
   Wallet,
+  MessageCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
@@ -30,12 +31,13 @@ const navItems = [
   { href: '/dashboard/revenue', icon: DollarSign, label: 'Revenue' },
   { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
   { href: '/dashboard/guests', icon: Users, label: 'Guests' },
+  { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function ProviderSidebar() {
   const pathname = usePathname();
-  const { unreadCount } = useProviderStore();
+  const { unreadCount, waUnreadCount } = useProviderStore();
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-background flex flex-col h-full">
@@ -68,6 +70,11 @@ export function ProviderSidebar() {
                 {item.label === 'Bookings' && unreadCount > 0 && (
                   <Badge className="bg-red-500 text-white text-xs px-1.5 h-5 min-w-5 flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+                {item.label === 'Messages' && waUnreadCount > 0 && (
+                  <Badge className="bg-green-500 text-white text-xs px-1.5 h-5 min-w-5 flex items-center justify-center">
+                    {waUnreadCount > 9 ? '9+' : waUnreadCount}
                   </Badge>
                 )}
               </div>
