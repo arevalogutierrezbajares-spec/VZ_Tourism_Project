@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { MapPin, Search, ChevronDown, Heart } from 'lucide-react';
+import { MapPin, Search, ChevronDown, Heart, PlusCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFavoritesStore } from '@/stores/favorites-store';
+import { useItineraryStore } from '@/stores/itinerary-store';
 
 interface ApiListing {
   id: string;
@@ -152,33 +154,22 @@ function generateTags(listing: ApiListing): Tag[] {
   return tags.slice(0, 4);
 }
 
-interface PriceInfo {
-  label: string;
-  level: number;
-}
-
-function getPriceLevel(listing: ApiListing): PriceInfo {
+function estimateListingPrice(listing: ApiListing): number {
   const type = listing.type?.toLowerCase() ?? '';
-  const region = listing.region?.toLowerCase() ?? '';
   const rating = listing.rating ?? 0;
-
-  if (type === 'restaurante' || type === 'restaurant') {
-    if (rating >= 4.5) return { label: '$$$', level: 3 };
-    if (rating >= 4.0) return { label: '$$', level: 2 };
-    return { label: '$', level: 1 };
+  if (type === 'restaurante' || type === 'restaurant' || type === 'cafe' || type === 'bar') {
+    return rating >= 4.5 ? 35 : rating >= 4 ? 27 : 18;
   }
-  if (type === 'tours' || type === 'tour') {
-    return { label: '$$', level: 2 };
+  if (type === 'posada' || type === 'alojamiento' || type === 'hospedaje' || type === 'casa vacacional') {
+    return rating >= 4.5 ? 75 : rating >= 4 ? 60 : 40;
   }
-  if (type === 'cafe' || type === 'bar') {
-    return { label: '$', level: 1 };
+  if (type === 'hotel') {
+    return rating >= 4.5 ? 185 : rating >= 4 ? 110 : rating >= 3 ? 80 : 60;
   }
-  // Accommodation
-  if (region === 'losroques' && rating >= 4.0) return { label: '$$$$', level: 4 };
-  if (rating >= 4.5 && type === 'hotel') return { label: '$$$', level: 3 };
-  if (type === 'hotel') return { label: '$$', level: 2 };
-  if (type === 'posada') return { label: '$$', level: 2 };
-  return { label: '$', level: 1 };
+  if (type === 'tours' || type === 'tour' || type === 'experience') {
+    return rating >= 4.5 ? 45 : 30;
+  }
+  return 60;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -203,12 +194,15 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function PriceDisplay({ listing }: { listing: ApiListing }) {
-  const { label, level } = getPriceLevel(listing);
-  const max = 4;
+  const estimate = estimateListingPrice(listing);
+  const type = listing.type?.toLowerCase() ?? '';
+  const isFood = type === 'restaurante' || type === 'restaurant' || type === 'cafe' || type === 'bar';
+  const isTour = type === 'tours' || type === 'tour' || type === 'experience';
+  const suffix = isFood ? '/person' : isTour ? '/person' : '/night';
   return (
-    <span className="text-sm font-medium tracking-wide">
-      <span className="text-gray-800">{label}</span>
-      <span className="text-gray-300">{'$'.repeat(max - level)}</span>
+    <span className="text-sm font-medium text-gray-700">
+      ~${estimate}
+      <span className="text-gray-400 font-normal text-xs ml-0.5">{suffix}</span>
     </span>
   );
 }
@@ -232,6 +226,39 @@ function TierBadge({ status }: { status?: string }) {
 }
 
 function ListingCard({ listing }: { listing: ApiListing }) {
+  const { favorites, addFavorite, removeFavorite } = useFavoritesStore();
+  const { current: activeItinerary, days, addStop, openPanel } = useItineraryStore();
+  const [addedToTrip, setAddedToTrip] = useState(false);
+  const isFavorited = favorites.includes(listing.id);
+  const alreadyInTrip = days.some((d) => d.stops.some((s) => s.listing_id === listing.id));
+
+  const handleAddToTrip = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const targetDay = days.length > 0 ? days[days.length - 1].day : 1;
+    const stopCount = days.length > 0 ? days[days.length - 1].stops.length : 0;
+    addStop({
+      itinerary_id: activeItinerary?.id ?? '',
+      day: targetDay,
+      order: stopCount + 1,
+      listing_id: listing.id,
+      title: listing.title,
+      description: null,
+      latitude: null,
+      longitude: null,
+      location_name: listing.region ?? null,
+      start_time: null,
+      end_time: null,
+      duration_hours: null,
+      cost_usd: 0,
+      transport_to_next: null,
+      transport_duration_minutes: null,
+      notes: null,
+    });
+    openPanel();
+    setAddedToTrip(true);
+    setTimeout(() => setAddedToTrip(false), 2500);
+  };
   const gradient = CATEGORY_GRADIENTS[listing.category] ?? CATEGORY_GRADIENTS.other;
   const catIcon = CATEGORY_ICONS[listing.type?.toLowerCase()] ?? CATEGORY_ICONS[listing.category] ?? '📍';
   const typeLabel = TYPE_LABELS[listing.type?.toLowerCase()] ?? listing.type ?? 'Place';
@@ -274,10 +301,20 @@ function ListingCard({ listing }: { listing: ApiListing }) {
             {/* Heart — top right */}
             <button
               className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-              aria-label="Save"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isFavorited) removeFavorite(listing.id);
+                else addFavorite(listing.id);
+              }}
+              aria-label={isFavorited ? 'Remove from saved' : 'Save'}
             >
-              <Heart className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors" />
+              <Heart
+                className={cn(
+                  'w-4 h-4 transition-colors',
+                  isFavorited ? 'fill-rose-500 text-rose-500' : 'text-gray-500 hover:text-rose-500'
+                )}
+              />
             </button>
           </div>
         </div>
@@ -340,14 +377,35 @@ function ListingCard({ listing }: { listing: ApiListing }) {
               {isOnboarded ? 'Book Now' : 'View Details'}
             </span>
           </div>
+
+          {/* Add to active itinerary */}
+          {activeItinerary && (
+            <button
+              onClick={handleAddToTrip}
+              className={cn(
+                'w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium border transition-colors mt-1',
+                alreadyInTrip || addedToTrip
+                  ? 'border-green-300 text-green-700 bg-green-50'
+                  : 'border-primary/30 text-primary hover:bg-primary/5'
+              )}
+            >
+              {alreadyInTrip || addedToTrip ? (
+                <><CheckCircle className="w-3.5 h-3.5" /> Added to {activeItinerary.title}</>
+              ) : (
+                <><PlusCircle className="w-3.5 h-3.5" /> Add to {activeItinerary.title}</>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </Link>
   );
 }
 
-export function ExploreClient({ total }: { total: number }) {
-  const [category, setCategory] = useState('all');
+export function ExploreClient({ total, initialCategory = 'all' }: { total: number; initialCategory?: string }) {
+  const [category, setCategory] = useState(
+    CATEGORIES.some((c) => c.id === initialCategory) ? initialCategory : 'all'
+  );
   const [region, setRegion] = useState('all');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
