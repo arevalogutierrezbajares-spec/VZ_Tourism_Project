@@ -118,6 +118,26 @@ describe('truncate', () => {
     const result = truncate('Hello World', 11);
     expect(result).toBe('Hello World');
   });
+
+  it('returns empty string for null input', () => {
+    expect(truncate(null, 100)).toBe('');
+  });
+
+  it('returns empty string for undefined input', () => {
+    expect(truncate(undefined, 100)).toBe('');
+  });
+
+  it('returns the text unchanged when under the limit', () => {
+    expect(truncate('hello', 100)).toBe('hello');
+  });
+
+  it('truncates and appends ellipsis when over the limit', () => {
+    expect(truncate('hello world', 8)).toBe('hello...');
+  });
+
+  it('uses custom ellipsis', () => {
+    expect(truncate('hello world', 8, '…')).toBe('hello w…');
+  });
 });
 
 describe('calculateDistance', () => {

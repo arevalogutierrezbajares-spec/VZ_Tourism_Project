@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { SlidersHorizontal, MapPin, Route, LogIn, User, Luggage, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,9 +39,35 @@ export default function HomePage() {
     useSearch();
   const { isOpen: itineraryOpen, createNew } = useItinerary();
   const { isAuthenticated, user, profile, signOut } = useAuth();
+  const router = useRouter();
   const { setPins, hiddenCategories, toggleCategory } = useMapStore();
   const [activeCategory, setActiveCategory] = useState(CATEGORY_FILTER_ALL);
   const [totalCount, setTotalCount] = useState(0);
+  const searchParams = useSearchParams();
+
+  // Handle deep-link intents from the "Build my itinerary" modal
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+
+    if (mode === 'ai') {
+      // Auto-trigger AI search with a trip-planning prompt
+      const t = setTimeout(() => {
+        search('Help me plan a trip to Venezuela');
+        router.replace('/map');
+      }, 600);
+      return () => clearTimeout(t);
+    }
+
+    const plan = searchParams.get('plan');
+    if (plan) {
+      const t = setTimeout(() => {
+        search(decodeURIComponent(plan).slice(0, 800));
+        router.replace('/map');
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load all scraped listings as map pins on mount
   useEffect(() => {
@@ -250,7 +277,7 @@ export default function HomePage() {
               onClick={() => createNew()}
             >
               <Route className="w-4 h-4" />
-              Plan itinerary
+              Build my itinerary
             </Button>
           )}
           <a

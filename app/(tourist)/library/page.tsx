@@ -148,7 +148,7 @@ export default async function LibraryPage() {
 
       <div className="container mx-auto px-4 space-y-12 pb-12">
         {/* Categories */}
-        <section>
+        <section id="categories">
           <h2 className="text-2xl font-bold mb-6">Browse by category</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {CATEGORY_CARDS.map((cat) => (

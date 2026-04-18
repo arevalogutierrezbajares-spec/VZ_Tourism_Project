@@ -35,15 +35,21 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
           )}
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm leading-tight line-clamp-1">{listing.title}</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">{listing.location_name}</p>
+            {listing.location_name && (
+              <p className="text-xs text-muted-foreground mt-0.5">{listing.location_name}</p>
+            )}
             <div className="flex items-center justify-between mt-1">
-              <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
-              </div>
-              <span className="text-sm font-bold text-primary">
-                {formatCurrency(listing.price_usd, 'USD')}
-              </span>
+              {listing.rating != null && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
+                </div>
+              )}
+              {listing.price_usd != null && (
+                <span className="text-sm font-bold text-primary">
+                  {formatCurrency(listing.price_usd, 'USD')}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -76,7 +82,9 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
             )}
           </div>
           <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-            <SafetyBadge level={listing.safety_level} size="sm" className="bg-white/90 border-0 shadow-sm" />
+            {listing.safety_level && (
+              <SafetyBadge level={listing.safety_level} size="sm" className="bg-white/90 border-0 shadow-sm" />
+            )}
             <FavoriteButton listingId={listing.id} />
           </div>
         </div>
@@ -87,12 +95,16 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                 {listing.title}
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">{listing.location_name}</p>
+              {listing.location_name && (
+                <p className="text-xs text-muted-foreground mt-0.5">{listing.location_name}</p>
+              )}
             </div>
 
-            <p className="text-xs text-muted-foreground line-clamp-2">
-              {truncate(listing.short_description, 100)}
-            </p>
+            {listing.short_description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {truncate(listing.short_description, 100)}
+              </p>
+            )}
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {listing.duration_hours && (
@@ -101,25 +113,39 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
                   {formatDuration(listing.duration_hours)}
                 </span>
               )}
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                Up to {listing.max_guests}
-              </span>
+              {listing.max_guests != null && (
+                <span className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Up to {listing.max_guests}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t">
               <div className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
-                {listing.total_reviews > 0 && (
-                  <span className="text-xs text-muted-foreground">({listing.total_reviews})</span>
+                {listing.rating != null ? (
+                  <>
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
+                    {(listing.total_reviews ?? 0) > 0 && (
+                      <span className="text-xs text-muted-foreground">({listing.total_reviews})</span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">No reviews yet</span>
                 )}
               </div>
               <div className="text-right">
-                <span className="text-base font-bold text-primary">
-                  {formatCurrency(listing.price_usd, 'USD')}
-                </span>
-                <span className="text-xs text-muted-foreground ml-1">/ person</span>
+                {listing.price_usd != null ? (
+                  <>
+                    <span className="text-base font-bold text-primary">
+                      {formatCurrency(listing.price_usd, 'USD')}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">/ person</span>
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Contact for pricing</span>
+                )}
               </div>
             </div>
           </div>

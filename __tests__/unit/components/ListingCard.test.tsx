@@ -114,3 +114,41 @@ describe('ListingCard (compact)', () => {
     expect(link?.getAttribute('href')).toBe('/listing/merida-mountain-trek-local-guide-xyz');
   });
 });
+
+describe('ListingCard with scraped listing shape', () => {
+  const scrapedListing = {
+    ...mockListing,
+    rating: null,
+    price_usd: null,
+    safety_level: null,
+    location_name: null,
+    max_guests: null,
+    duration_hours: null,
+    short_description: null,
+    total_reviews: 0,
+  };
+
+  it('renders without crashing when all optional fields are null', () => {
+    render(<ListingCard listing={scrapedListing as any} />);
+  });
+
+  it('shows "No reviews yet" when rating is null', () => {
+    render(<ListingCard listing={scrapedListing as any} />);
+    expect(screen.getByText('No reviews yet')).toBeInTheDocument();
+  });
+
+  it('shows "Contact for pricing" when price_usd is null', () => {
+    render(<ListingCard listing={scrapedListing as any} />);
+    expect(screen.getByText('Contact for pricing')).toBeInTheDocument();
+  });
+
+  it('does not render safety badge when safety_level is null', () => {
+    const { container } = render(<ListingCard listing={scrapedListing as any} />);
+    expect(container.querySelector('[data-testid="safety-badge"]')).toBeNull();
+  });
+
+  it('does not render max guests when null', () => {
+    render(<ListingCard listing={scrapedListing as any} />);
+    expect(screen.queryByText(/Up to/)).toBeNull();
+  });
+});

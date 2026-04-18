@@ -27,6 +27,25 @@
 - P2-13: Share link on itinerary detail
 - P2-17: Cancellation shortcut from /trips
 
+## P1 — Editorial Content CMS
+
+**Migrate `lib/editorial-content.ts` to a structured data source**
+
+- **What:** The 743-line `lib/editorial-content.ts` file holds all category and destination editorial copy (headlines, intros, guides, quick stats) as hardcoded TypeScript. Each content update requires a code deploy.
+- **Why:** As Venezuela coverage grows (more regions, more guides, seasonal updates), maintaining this in a TS file becomes a bottleneck and blocks non-developers from updating copy.
+- **How:** Options in priority order: (1) Contentlayer + MDX once the Next.js 16 peer dep issue resolves, (2) JSON files in `content/` that TS imports (same deploy requirement, but simpler for non-TS editors), (3) headless CMS (Sanity, Contentful) with ISR revalidation.
+- **Depends on:** Contentlayer peer dep fix (tracked separately). JSON option is unblocked now.
+- **Priority:** P1 — before onboarding editorial contributors
+
+## P1 — Hero Image LCP Optimization
+
+**Audit and optimize the HeroSection LCP element**
+
+- **What:** The hero crossfades between 2 images every 6s with a Ken Burns effect. Both images sit in the DOM simultaneously (CSS opacity switch). The first image is now using `next/image` with `priority` (shipped 2026-04-18), but the `sizes="100vw"` is a blunt instrument — the browser downloads a full-viewport image even on mobile.
+- **Why:** Hero is the single most important LCP element. Proper responsive `sizes` (e.g., `(max-width: 768px) 100vw, 100vw`) combined with correct image dimensions in the Next.js config would reduce mobile payload by 40-60%.
+- **How:** (1) Define explicit `width`/`height` or use `fill` with `sizes` calibrated to actual breakpoints, (2) consider serving a single static hero on mobile to avoid dual-image memory pressure.
+- **Priority:** P1 — directly affects Lighthouse score and mobile conversion
+
 ## WhatsApp Security
 
 **Encrypt WhatsApp access tokens using Supabase Vault**

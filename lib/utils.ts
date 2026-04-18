@@ -59,7 +59,8 @@ export function slugify(text: string): string {
     .trim();
 }
 
-export function truncate(text: string, maxLength: number, ellipsis = '...'): string {
+export function truncate(text: string | null | undefined, maxLength: number, ellipsis = '...'): string {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - ellipsis.length) + ellipsis;
 }
