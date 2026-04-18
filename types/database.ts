@@ -341,6 +341,28 @@ export interface FaqPair {
   answer: string;
 }
 
+export interface PricingSeasonalPeriod {
+  name: string;          // e.g. "Semana Santa", "Navidad"
+  dates: { start: string; end: string }[]; // YYYY-MM-DD pairs
+  multiplier: number;    // e.g. 1.3 = 30% increase
+}
+
+export interface PricingLongStayDiscount {
+  nights: number;        // minimum nights
+  discount: number;      // e.g. 0.1 = 10% off
+}
+
+export interface PricingRules {
+  seasonal_periods?: PricingSeasonalPeriod[];
+  weekend_premium?: number;           // e.g. 0.2 = +20% on Fri/Sat
+  long_stay_discounts?: PricingLongStayDiscount[];
+  last_minute_discount?: {
+    days_before: number;              // e.g. 3 = within 3 days of arrival
+    discount: number;                 // e.g. 0.15 = 15% off
+  };
+  quote_currency?: 'USD' | 'Bs' | 'both';
+}
+
 export interface PosadaKnowledge {
   id: string;
   provider_id: string;
@@ -355,6 +377,7 @@ export interface PosadaKnowledge {
   nearby_attractions: string | null;
   languages_spoken: string[];
   special_notes: string | null;
+  pricing_rules: PricingRules;
   created_at: string;
   updated_at: string;
 }
@@ -370,7 +393,7 @@ export type WaToneFormality = 'casual' | 'neutral' | 'formal';
 export type WaToneLanguage = 'es' | 'en' | 'bilingual';
 export type WaResponseLength = 'brief' | 'standard' | 'detailed';
 export type WaBookingPressure = 'soft' | 'direct';
-export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold';
+export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_uncertainty';
 
 export interface PosadaWhatsappConfig {
   id: string;

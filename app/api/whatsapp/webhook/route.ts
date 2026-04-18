@@ -3,7 +3,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/whatsapp-api';
 import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
+import { buildLiveContext } from '@/lib/whatsapp-context';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
+
+// Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies
+const NEEDS_HUMAN_RE = /\[NEEDS_HUMAN:\s*([^\]]+)\]\s*$/;
 
 // ─── Webhook verification (Meta GET challenge) ────────────────────────────────
 
@@ -186,8 +190,11 @@ async function handleMessage(
     .eq('provider_id', provider.id)
     .single() as { data: PosadaKnowledge | null };
 
+  // 11c. Build live context (dynamic pricing + availability)
+  const liveContext = await buildLiveContext(supabase, provider.id, knowledge).catch(() => undefined);
+
   // 12. Generate AI reply via Groq
-  const reply = await generateReply({
+  const rawReply = await generateReply({
     config,
     providerName: provider.business_name,
     providerDescription: provider.description,
@@ -195,10 +202,27 @@ async function handleMessage(
     inboundText: body,
     history: (history ?? []).filter((m) => m.id !== undefined),
     knowledge,
+    liveContext,
   });
+
+  // 12b. Parse HITL escalation tag
+  const hitlMatch = rawReply.match(NEEDS_HUMAN_RE);
+  const reply = rawReply.replace(NEEDS_HUMAN_RE, '').trim();
+  const needsHuman = !!hitlMatch;
+  const hitlReason = hitlMatch?.[1]?.trim() ?? null;
 
   // 13. Send + persist outbound
   await sendAndPersist(supabase, conv.id, config, from, reply, true);
+
+  // 13b. If AI flagged uncertainty — escalate and notify provider
+  if (needsHuman) {
+    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
+    await supabase.from('wa_escalations').insert({
+      conversation_id: conv.id,
+      reason: `AI requested human review: ${hitlReason}`,
+      trigger_type: 'ai_uncertainty',
+    });
+  }
 
   // 14. Mark inbound as read
   await markWhatsAppRead({

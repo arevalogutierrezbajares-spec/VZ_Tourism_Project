@@ -10,9 +10,10 @@ import {
   Brain, Home, BedDouble, Sparkles, HelpCircle,
   CreditCard, MapPin, ChevronDown, ChevronUp,
   Plus, Trash2, Save, Eye, EyeOff, CheckCircle2, AlertCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { formatKnowledge } from '@/lib/whatsapp-ai';
-import type { PosadaKnowledge, RoomType, FaqPair, PosadaPolicies } from '@/types/database';
+import type { PosadaKnowledge, RoomType, FaqPair, PosadaPolicies, PricingRules } from '@/types/database';
 import toast from 'react-hot-toast';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -268,6 +269,285 @@ function FaqBuilder({ faqs, onChange }: { faqs: FaqPair[]; onChange: (faqs: FaqP
   );
 }
 
+// ─── Pricing rules builder ────────────────────────────────────────────────────
+
+const VZ_SEASON_PRESETS = [
+  {
+    name: 'Carnaval',
+    dates: [{ start: '2026-02-13', end: '2026-02-17' }],
+    multiplier: 1.3,
+  },
+  {
+    name: 'Semana Santa',
+    dates: [{ start: '2026-03-29', end: '2026-04-05' }],
+    multiplier: 1.35,
+  },
+  {
+    name: 'Navidad / Año Nuevo',
+    dates: [{ start: '2025-12-20', end: '2026-01-05' }],
+    multiplier: 1.4,
+  },
+  {
+    name: 'Vacaciones de Julio',
+    dates: [{ start: '2026-07-01', end: '2026-07-31' }],
+    multiplier: 1.2,
+  },
+];
+
+function PricingBuilder({
+  rules, onChange,
+}: { rules: PricingRules; onChange: (r: PricingRules) => void }) {
+  const seasons = rules.seasonal_periods ?? [];
+  const longStay = rules.long_stay_discounts ?? [];
+
+  const addPreset = (preset: typeof VZ_SEASON_PRESETS[number]) => {
+    const already = seasons.some((s) => s.name === preset.name);
+    if (already) return;
+    onChange({ ...rules, seasonal_periods: [...seasons, preset] });
+  };
+
+  const removeSeason = (i: number) =>
+    onChange({ ...rules, seasonal_periods: seasons.filter((_, idx) => idx !== i) });
+
+  const updateSeason = (i: number, patch: Partial<(typeof seasons)[number]>) =>
+    onChange({
+      ...rules,
+      seasonal_periods: seasons.map((s, idx) => idx === i ? { ...s, ...patch } : s),
+    });
+
+  const addLongStay = () =>
+    onChange({ ...rules, long_stay_discounts: [...longStay, { nights: 7, discount: 0.1 }] });
+
+  const removeLongStay = (i: number) =>
+    onChange({ ...rules, long_stay_discounts: longStay.filter((_, idx) => idx !== i) });
+
+  const updateLongStay = (i: number, patch: Partial<(typeof longStay)[number]>) =>
+    onChange({
+      ...rules,
+      long_stay_discounts: longStay.map((d, idx) => idx === i ? { ...d, ...patch } : d),
+    });
+
+  return (
+    <div className="space-y-6">
+      {/* Peak seasons */}
+      <div className="space-y-3">
+        <Field label="Peak season periods" hint="AI will automatically quote higher rates during these windows">
+          {/* Preset chips */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {VZ_SEASON_PRESETS.map((p) => {
+              const active = seasons.some((s) => s.name === p.name);
+              return (
+                <button
+                  key={p.name}
+                  onClick={() => active
+                    ? onChange({ ...rules, seasonal_periods: seasons.filter((s) => s.name !== p.name) })
+                    : addPreset(p)
+                  }
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
+                    active
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground'
+                  )}
+                >
+                  {active ? '✓ ' : '+ '}{p.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {seasons.length > 0 && (
+            <div className="space-y-2">
+              {seasons.map((season, i) => (
+                <div key={i} className="rounded-lg border p-3 bg-muted/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold">{season.name}</span>
+                    <button onClick={() => removeSeason(i)} className="text-muted-foreground hover:text-destructive">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Field label="From">
+                      <input
+                        type="date"
+                        className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        value={season.dates[0]?.start ?? ''}
+                        onChange={(e) => updateSeason(i, { dates: [{ start: e.target.value, end: season.dates[0]?.end ?? '' }] })}
+                      />
+                    </Field>
+                    <Field label="To">
+                      <input
+                        type="date"
+                        className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        value={season.dates[0]?.end ?? ''}
+                        onChange={(e) => updateSeason(i, { dates: [{ start: season.dates[0]?.start ?? '', end: e.target.value }] })}
+                      />
+                    </Field>
+                    <Field label="Price uplift">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number" min={0} max={100} step={5}
+                          className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                          value={Math.round((season.multiplier - 1) * 100)}
+                          onChange={(e) => updateSeason(i, { multiplier: 1 + (parseInt(e.target.value) || 0) / 100 })}
+                        />
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                    </Field>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <Button variant="outline" size="sm" className="mt-2" onClick={() => onChange({
+            ...rules,
+            seasonal_periods: [...seasons, { name: 'Custom Period', dates: [{ start: '', end: '' }], multiplier: 1.2 }],
+          })}>
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add custom period
+          </Button>
+        </Field>
+      </div>
+
+      {/* Weekend premium */}
+      <div className="rounded-lg border p-4 space-y-3 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Weekend premium</p>
+            <p className="text-xs text-muted-foreground">Higher rates on Friday & Saturday nights</p>
+          </div>
+          <button
+            onClick={() => onChange({ ...rules, weekend_premium: rules.weekend_premium ? 0 : 0.15 })}
+            className={cn(
+              'w-9 h-5 rounded-full transition-colors relative',
+              (rules.weekend_premium ?? 0) > 0 ? 'bg-primary' : 'bg-muted border'
+            )}
+          >
+            <span className={cn(
+              'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
+              (rules.weekend_premium ?? 0) > 0 ? 'left-4' : 'left-0.5'
+            )} />
+          </button>
+        </div>
+        {(rules.weekend_premium ?? 0) > 0 && (
+          <div className="flex items-center gap-3">
+            <input
+              type="range" min={5} max={50} step={5}
+              className="flex-1 accent-primary"
+              value={Math.round((rules.weekend_premium ?? 0) * 100)}
+              onChange={(e) => onChange({ ...rules, weekend_premium: parseInt(e.target.value) / 100 })}
+            />
+            <span className="text-sm font-medium w-12 text-right">+{Math.round((rules.weekend_premium ?? 0) * 100)}%</span>
+          </div>
+        )}
+      </div>
+
+      {/* Long-stay discounts */}
+      <div className="space-y-3">
+        <Field label="Long-stay discounts" hint="Encourage multi-week bookings with automatic discounts">
+          <div className="space-y-2 mt-1">
+            {longStay.map((d, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="number" min={2} max={90}
+                    className="w-20 rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    value={d.nights}
+                    onChange={(e) => updateLongStay(i, { nights: parseInt(e.target.value) || 2 })}
+                  />
+                  <span className="text-sm text-muted-foreground">nights →</span>
+                  <input
+                    type="number" min={1} max={50}
+                    className="w-20 rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    value={Math.round(d.discount * 100)}
+                    onChange={(e) => updateLongStay(i, { discount: (parseInt(e.target.value) || 0) / 100 })}
+                  />
+                  <span className="text-sm text-muted-foreground">% off</span>
+                </div>
+                <button onClick={() => removeLongStay(i)} className="text-muted-foreground hover:text-destructive">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={addLongStay}>
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Add discount tier
+            </Button>
+          </div>
+        </Field>
+      </div>
+
+      {/* Last-minute discount */}
+      <div className="rounded-lg border p-4 space-y-3 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Last-minute discount</p>
+            <p className="text-xs text-muted-foreground">Discount for bookings close to arrival date</p>
+          </div>
+          <button
+            onClick={() => onChange({
+              ...rules,
+              last_minute_discount: rules.last_minute_discount
+                ? undefined
+                : { days_before: 3, discount: 0.15 },
+            })}
+            className={cn(
+              'w-9 h-5 rounded-full transition-colors relative',
+              rules.last_minute_discount ? 'bg-primary' : 'bg-muted border'
+            )}
+          >
+            <span className={cn(
+              'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
+              rules.last_minute_discount ? 'left-4' : 'left-0.5'
+            )} />
+          </button>
+        </div>
+        {rules.last_minute_discount && (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Within how many days">
+              <input
+                type="number" min={1} max={30}
+                className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                value={rules.last_minute_discount.days_before}
+                onChange={(e) => onChange({
+                  ...rules,
+                  last_minute_discount: { ...rules.last_minute_discount!, days_before: parseInt(e.target.value) || 1 },
+                })}
+              />
+            </Field>
+            <Field label="Discount (%)">
+              <div className="flex items-center gap-2">
+                <input
+                  type="number" min={1} max={50}
+                  className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  value={Math.round(rules.last_minute_discount.discount * 100)}
+                  onChange={(e) => onChange({
+                    ...rules,
+                    last_minute_discount: { ...rules.last_minute_discount!, discount: (parseInt(e.target.value) || 0) / 100 },
+                  })}
+                />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
+            </Field>
+          </div>
+        )}
+      </div>
+
+      {/* Currency preference */}
+      <Field label="Quote currency" hint="How the AI quotes prices to guests">
+        <div className="flex gap-2">
+          {(['USD', 'Bs', 'both'] as const).map((c) => (
+            <ToggleChip
+              key={c}
+              label={c === 'USD' ? '$ USD only' : c === 'Bs' ? 'Bs. only' : 'USD + Bs'}
+              selected={(rules.quote_currency ?? 'USD') === c}
+              onClick={() => onChange({ ...rules, quote_currency: c })}
+            />
+          ))}
+        </div>
+      </Field>
+    </div>
+  );
+}
+
 // ─── Preview panel ────────────────────────────────────────────────────────────
 
 function PreviewPanel({ knowledge, providerName }: { knowledge: PosadaKnowledge; providerName: string }) {
@@ -289,6 +569,14 @@ function PreviewPanel({ knowledge, providerName }: { knowledge: PosadaKnowledge;
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
+const EMPTY_PRICING_RULES: PricingRules = {
+  seasonal_periods: [],
+  weekend_premium: 0,
+  long_stay_discounts: [],
+  last_minute_discount: undefined,
+  quote_currency: 'USD',
+};
+
 const EMPTY_KNOWLEDGE: Omit<PosadaKnowledge, 'id' | 'provider_id' | 'created_at' | 'updated_at'> = {
   property_description: '',
   location_details: '',
@@ -301,6 +589,7 @@ const EMPTY_KNOWLEDGE: Omit<PosadaKnowledge, 'id' | 'provider_id' | 'created_at'
   nearby_attractions: '',
   languages_spoken: [],
   special_notes: '',
+  pricing_rules: EMPTY_PRICING_RULES,
 };
 
 export default function BrainPage() {
@@ -347,6 +636,7 @@ export default function BrainPage() {
   }, []);
 
   // ── Section complete checks ────────────────────────────────────────────────
+  const pr = knowledge.pricing_rules ?? {};
   const sectionComplete = {
     overview:    !!(knowledge.property_description),
     rooms:       knowledge.room_types.length > 0,
@@ -355,6 +645,12 @@ export default function BrainPage() {
     faqs:        knowledge.faqs.length > 0,
     booking:     !!(knowledge.booking_process) || knowledge.payment_methods.length > 0,
     local:       !!(knowledge.nearby_attractions),
+    pricing:     !!(
+      (pr.seasonal_periods && pr.seasonal_periods.length > 0) ||
+      (pr.weekend_premium && pr.weekend_premium > 0) ||
+      (pr.long_stay_discounts && pr.long_stay_discounts.length > 0) ||
+      pr.last_minute_discount
+    ),
   };
 
   const completedCount = Object.values(sectionComplete).filter(Boolean).length;
@@ -611,7 +907,7 @@ export default function BrainPage() {
           </Section>
 
           {/* § 7 · Local tips */}
-          <Section icon={<MapPin className="w-4 h-4" />} title="Local Tips & Attractions" badge="Beaches, restaurants, activities nearby" complete={sectionComplete.local}>
+          <Section icon={<MapPin className="w-4 h-4" />} title="Local Tips & Attractions" badge="Beaches, restaurants, activities nearby" complete={sectionComplete.local} >
             <div className="space-y-4">
               <Field label="Nearby attractions & tips" hint="Beaches, restaurants, tours, transport — distances and honest opinions">
                 <Textarea
@@ -650,6 +946,36 @@ export default function BrainPage() {
                 <Button size="sm" onClick={() => save('local', { nearby_attractions: knowledge.nearby_attractions, languages_spoken: knowledge.languages_spoken, special_notes: knowledge.special_notes })} disabled={saving === 'local'}>
                   <Save className="w-3.5 h-3.5 mr-1.5" />
                   {saving === 'local' ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          </Section>
+
+          {/* § 8 · Dynamic Pricing */}
+          <Section
+            icon={<TrendingUp className="w-4 h-4" />}
+            title="Dynamic Pricing"
+            badge="Seasonal rates, weekend uplift, discounts"
+            complete={sectionComplete.pricing}
+          >
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
+                Configure your pricing rules here. The AI concierge will automatically quote
+                the correct adjusted price to guests based on their travel dates — no manual
+                updates needed.
+              </p>
+              <PricingBuilder
+                rules={knowledge.pricing_rules ?? EMPTY_PRICING_RULES}
+                onChange={(pricing_rules) => setKnowledge((k) => ({ ...k, pricing_rules }))}
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={() => save('pricing', { pricing_rules: knowledge.pricing_rules })}
+                  disabled={saving === 'pricing'}
+                >
+                  <Save className="w-3.5 h-3.5 mr-1.5" />
+                  {saving === 'pricing' ? 'Saving…' : 'Save'}
                 </Button>
               </div>
             </div>

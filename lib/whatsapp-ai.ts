@@ -12,6 +12,7 @@ interface BuildReplyOptions {
   history: WaMessage[];
   knowledge?: PosadaKnowledge | null;
   availabilityNote?: string;
+  liveContext?: string;
 }
 
 // ─── Knowledge base formatter ─────────────────────────────────────────────────
@@ -138,12 +139,18 @@ function buildSystemPrompt(opts: BuildReplyOptions): string {
     ? `\nAbout the property:\n${providerDescription}\n`
     : `\nAbout the property:\n${providerDescription}\n`;
 
+  // Live context block (availability + dynamic pricing)
+  const liveBlock = opts.liveContext
+    ? `\n---\n${opts.liveContext}\n---\n`
+    : '';
+
   return `You are ${config.persona_name}, a guest relations assistant at ${providerName} in ${providerRegion}, Venezuela.
 ${config.persona_bio ? `About you: ${config.persona_bio}` : ''}
-${knowledgeBlock}${availBlock}
+${knowledgeBlock}${liveBlock}${availBlock}
 Your role:
 - Warmly welcome guests and answer their questions using the property knowledge base above.
 - If the knowledge base contains the answer, use it precisely — prices, policies, room names.
+- For pricing questions, use the Live Property Data section above — it contains today's adjusted prices.
 - Help guests plan their visit and understand what is included.
 - Facilitate bookings by collecting key info (dates, number of guests, room preference).
 - If you don't know the answer, say you'll check and get back to them — never invent details.
@@ -161,7 +168,23 @@ Critical rules:
 - Quote prices and policies from the knowledge base exactly. If uncertain, say you'll confirm.
 - Never make firm booking commitments — collect the info and say the team will confirm.
 - Keep responses natural and warm — this is a WhatsApp conversation, not a formal email.
-${customBlock}`;
+${customBlock}
+Human-in-the-loop escalation:
+When you are NOT confident you can answer accurately, you MUST:
+1. Give the guest a warm holding response (e.g. "Déjame verificar eso con el equipo y te confirmo en breve.")
+2. Append this exact tag at the very end of your message (the system will strip it before sending to the guest):
+   [NEEDS_HUMAN: <brief reason in English, max 15 words>]
+
+Escalate when:
+- Guest asks for availability/pricing for specific dates you cannot confirm from Live Property Data
+- Guest wants to negotiate price, request a special deal, or asks about corporate rates
+- Large group inquiry (8+ guests) or special event (wedding, corporate retreat, birthday)
+- Guest has a complaint or issue about a past stay
+- Guest asks for something not covered in the knowledge base
+- Guest explicitly asks to speak with a team member or manager
+- You are genuinely unsure and guessing would risk misleading the guest
+
+Do NOT append the tag for routine questions you can answer confidently from the knowledge base.`;
 }
 
 function buildHistoryMessages(history: WaMessage[]): { role: 'user' | 'assistant'; content: string }[] {

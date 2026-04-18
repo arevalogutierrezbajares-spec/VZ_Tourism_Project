@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest) {
   const allowed: (keyof typeof body)[] = [
     'property_description', 'location_details', 'room_types', 'amenities',
     'policies', 'faqs', 'booking_process', 'payment_methods',
-    'nearby_attractions', 'languages_spoken', 'special_notes',
+    'nearby_attractions', 'languages_spoken', 'special_notes', 'pricing_rules',
   ];
 
   const updates = Object.fromEntries(
