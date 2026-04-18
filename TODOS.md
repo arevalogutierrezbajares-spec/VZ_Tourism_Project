@@ -41,6 +41,19 @@
 - **Depends on:** Supabase project with Vault enabled (available on Pro plan)
 - **Priority:** P1 — before onboarding real providers
 
+## WhatsApp RAG / Training Pipeline
+
+**T-003 — Unit tests for `lib/whatsapp-ai.ts` and `lib/whatsapp-rag.ts`**
+
+- **What:** Add `__tests__/unit/lib/whatsapp-ai.test.ts` and `__tests__/unit/lib/whatsapp-rag.test.ts` covering: `generateReply` confidence threshold, JSON parse failure fallback, `buildSystemPrompt` with/without tone profile, `embedText` null when OPENAI_API_KEY missing, `findRelevantLessons` returns `[]` on null embedding, `buildRagContext` empty lessons.
+- **Why:** `lib/whatsapp-ai.ts` contains HITL escalation logic that decides whether AI responds or escalates. A bug here silently breaks escalation for all providers.
+- **Priority:** P1 — cover before adding new Groq-dependent features.
+
+**T-004 — Webhook processes only `messages[0]` (batched messages dropped)**
+
+- **What:** The `processInbound` loop already iterates `for (const msg of messages)` in the evolved codebase — this was inherited from `parseWebhookPayload`. Verified fixed.
+- **Status:** DONE in evolved codebase.
+
 ## Completed
 
 - All P0 + P1 UX items shipped — **Completed: v0.3.0.0 (2026-04-18)**
