@@ -425,6 +425,7 @@ export interface WaConversation {
   last_message_preview: string | null;
   booking_stage: WaBookingStage;
   notes: string | null;
+  guest_language: string | null;  // BCP-47 primary language detected
   created_at: string;
   updated_at: string;
   messages?: WaMessage[];
@@ -437,6 +438,8 @@ export interface WaMessage {
   wa_message_id: string | null;
   role: WaMessageRole;
   content: string;
+  content_en: string | null;      // English translation (null if already English)
+  detected_lang: string | null;   // BCP-47 language code
   is_ai: boolean;
   flagged: boolean;
   flag_reason: string | null;

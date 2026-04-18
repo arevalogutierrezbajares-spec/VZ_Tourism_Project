@@ -4,6 +4,7 @@ import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/w
 import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
 import { buildLiveContext } from '@/lib/whatsapp-context';
+import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 
 // Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies
@@ -109,28 +110,37 @@ async function handleMessage(
 
   if (count && count > 0) return;
 
-  // 4. Sentiment analysis
-  const sentiment = analyzeMessage(body);
+  // 4. Sentiment analysis + language detection + translation (run in parallel)
+  const [sentiment, translation] = await Promise.all([
+    Promise.resolve(analyzeMessage(body)),
+    detectAndTranslate(body).catch(() => null),
+  ]);
 
-  // 5. Persist inbound message
+  const detectedLang = translation?.detected.language ?? null;
+  const contentEn = translation?.english ?? null; // null = already English
+
+  // 5. Persist inbound message (with language + English trail)
   await supabase.from('wa_messages').insert({
     conversation_id: conv.id,
     wa_message_id: waMessageId,
     role: 'inbound',
     content: body,
+    content_en: contentEn,
+    detected_lang: detectedLang,
     is_ai: false,
     flagged: sentiment.flagged,
     flag_reason: sentiment.flag_reason,
     sentiment_score: sentiment.score,
   });
 
-  // 6. Update conversation preview + unread count
+  // 6. Update conversation preview + unread count + detected language
   await supabase
     .from('wa_conversations')
     .update({
       last_message_at: new Date().toISOString(),
       last_message_preview: body.slice(0, 120),
       guest_name: guestName ?? undefined,
+      guest_language: detectedLang ?? undefined,
       unread_count: supabase.rpc('increment', { x: 1 }), // simple counter; fallback below
     })
     .eq('id', conv.id);
@@ -211,8 +221,11 @@ async function handleMessage(
   const needsHuman = !!hitlMatch;
   const hitlReason = hitlMatch?.[1]?.trim() ?? null;
 
-  // 13. Send + persist outbound
-  await sendAndPersist(supabase, conv.id, config, from, reply, true);
+  // 13. Send + persist outbound (with English trail if AI replied in another language)
+  const replyEn = detectedLang && detectedLang !== 'en'
+    ? await detectAndTranslate(reply).then((r) => r.english).catch(() => null)
+    : null;
+  await sendAndPersist(supabase, conv.id, config, from, reply, true, detectedLang, replyEn);
 
   // 13b. If AI flagged uncertainty — escalate and notify provider
   if (needsHuman) {
@@ -239,7 +252,9 @@ async function sendAndPersist(
   config: PosadaWhatsappConfig,
   to: string,
   body: string,
-  isAi: boolean
+  isAi: boolean,
+  detectedLang?: string | null,
+  contentEn?: string | null
 ) {
   const result = await sendWhatsAppText({
     phoneNumberId: config.phone_number_id,
@@ -253,6 +268,8 @@ async function sendAndPersist(
     wa_message_id: result.messageId ?? null,
     role: 'outbound',
     content: body,
+    content_en: contentEn ?? null,
+    detected_lang: detectedLang ?? null,
     is_ai: isAi,
     flagged: false,
   });

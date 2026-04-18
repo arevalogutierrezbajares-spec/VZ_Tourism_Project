@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import {
   Bot, User, AlertTriangle, Send, RefreshCw,
   MessageCircle, Settings, Sparkles, Phone,
-  CheckCheck, Circle,
+  CheckCheck, Circle, Globe,
 } from 'lucide-react';
 import type {
   WaConversation, WaMessage, WaConversationStatus, WaBookingStage,
@@ -149,6 +149,9 @@ function ConversationRow({
 
 function MessageBubble({ msg }: { msg: WaMessage }) {
   const isOut = msg.role === 'outbound';
+  const [showTranslation, setShowTranslation] = useState(false);
+  const hasTranslation = !!(msg.content_en && msg.content_en !== msg.content);
+
   return (
     <div className={cn('flex gap-2 mb-2', isOut ? 'flex-row-reverse' : 'flex-row')}>
       <Avatar className="w-6 h-6 shrink-0 mt-auto">
@@ -170,11 +173,31 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           {msg.content}
         </div>
 
+        {/* English translation toggle */}
+        {hasTranslation && (
+          <div className={cn('px-1', isOut ? 'text-right' : 'text-left')}>
+            <button
+              onClick={() => setShowTranslation((s) => !s)}
+              className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+            >
+              {showTranslation ? 'Hide translation' : `Show in English (${msg.detected_lang?.toUpperCase() ?? '?'})`}
+            </button>
+            {showTranslation && (
+              <p className="text-[11px] text-muted-foreground italic mt-1 bg-muted/40 px-2 py-1 rounded-lg">
+                {msg.content_en}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className={cn('flex items-center gap-1 px-1', isOut ? 'flex-row-reverse' : 'flex-row')}>
           <span className="text-[10px] text-muted-foreground">{formatTime(msg.created_at)}</span>
           {isOut && msg.is_ai && <Sparkles className="w-2.5 h-2.5 text-muted-foreground" />}
           {isOut && !msg.is_ai && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
           {msg.flagged && <AlertTriangle className="w-2.5 h-2.5 text-destructive" />}
+          {hasTranslation && !showTranslation && (
+            <Globe className="w-2.5 h-2.5 text-blue-400" aria-label={`Message in ${msg.detected_lang}`} />
+          )}
         </div>
       </div>
     </div>
