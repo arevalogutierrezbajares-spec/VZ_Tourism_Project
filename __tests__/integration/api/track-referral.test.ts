@@ -77,7 +77,8 @@ describe('POST /api/itineraries/[id]/track-referral', () => {
       .mockReturnValueOnce(insertQuery)
       .mockReturnValueOnce(updateQuery);
 
-    mockRpc.mockRejectedValue(new Error('no rpc'));
+    // Supabase clients return { error } objects, not thrown rejections
+    mockRpc.mockResolvedValue({ error: { message: 'no rpc' } });
 
     const req = new NextRequest('http://localhost/api/itineraries/test-id/track-referral', {
       method: 'POST',

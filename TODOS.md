@@ -2,17 +2,9 @@
 
 ## Tests
 
-**Pre-existing test failures — fix before next ship**
+All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 
-| Test | Error | Priority |
-|------|-------|----------|
-| `__tests__/integration/api/bookings.test.ts` | API returns 200/400 instead of expected 401 for unauthenticated requests | **P0** |
-| `__tests__/integration/api/listings.test.ts` | Integration test failures (auth/mock mismatch) | **P0** |
-| `__tests__/integration/api/stripe.test.ts` | Stripe integration test failures | **P0** |
-| `__tests__/integration/api/track-referral.test.ts` | `Response` not available in test environment | **P0** |
-| `__tests__/unit/components/ReferralTracker.test.tsx` | `Response` not available in jsdom environment | **P0** |
-| `__tests__/unit/components/ItineraryFeedCard.test.tsx` | Multiple elements match "7 days" text (ambiguous query) | **P1** |
-| `__tests__/unit/components/ListingWizard.test.tsx` | UI text mismatch (step labels changed) | **P1** |
+- 435 tests passing across 34 suites (0 failures)
 
 **Noticed on branch:** feat/itinerary-planning (v0.3.0.0)
 

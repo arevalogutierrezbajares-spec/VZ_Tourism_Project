@@ -106,6 +106,8 @@ export async function GET(request: NextRequest) {
   const guests = parseInt(searchParams.get('guests') || '2');
   const amenitiesParam = searchParams.get('amenities') || '';
   const amenityFilter = amenitiesParam ? amenitiesParam.split(',').filter(Boolean) : [];
+  const minPrice = searchParams.get('min_price') ? Number(searchParams.get('min_price')) : undefined;
+  const maxPrice = searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined;
 
   const datesSelected = !!(checkIn && checkOut && checkIn < checkOut);
 
@@ -126,6 +128,8 @@ export async function GET(request: NextRequest) {
         if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,location_name.ilike.%${search}%`);
         if (category) query = query.eq('category', category);
         else if (type) query = query.eq('category', mapTypeToCategory(type));
+        if (minPrice !== undefined && !isNaN(minPrice)) query = query.gte('price_usd', minPrice);
+        if (maxPrice !== undefined && !isNaN(maxPrice)) query = query.lte('price_usd', maxPrice);
 
         const { data, count, error } = await query;
 

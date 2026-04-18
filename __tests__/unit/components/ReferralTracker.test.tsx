@@ -10,9 +10,14 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(
-  new Response(JSON.stringify({ tracked: true }), { status: 200 })
-);
+// `Response` is a Web API not available in the jsdom test environment.
+// Use a plain object cast instead of `new Response(...)`.
+const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+  ok: true,
+  status: 200,
+  json: jest.fn().mockResolvedValue({ tracked: true }),
+  text: jest.fn().mockResolvedValue(JSON.stringify({ tracked: true })),
+} as unknown as Response);
 
 beforeEach(() => {
   fetchSpy.mockClear();
