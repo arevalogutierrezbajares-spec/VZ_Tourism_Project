@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/margarita.jpeg",
+  "headline": "Margarita Island",
+  "tagline": "The Pearl of the Caribbean — beaches, kite surfing, and fresh seafood",
+  "intro": [
+    "Isla Margarita is the largest island in Venezuela, lying 38 km off the northeastern coast. It has the infrastructure of a proper tourist destination — airport, resort hotels, and a reliable ferry connection from Puerto La Cruz — without the overdevelopment of more heavily marketed Caribbean islands.",
+    "El Yaque beach on the south coast has established itself as one of the world's premier kite surfing spots: flat water lagoon, consistent trade winds from November through April, and a community of international riders who have made it their annual base. Beginners take lessons here; experts set records.",
+    "The island divides naturally into the arid western half (Macanao Peninsula, rugged and largely undeveloped) and the greener, more populated eastern half where most beaches, restaurants, and posadas are concentrated. La Restinga National Park, a mangrove lagoon in the middle of the island, is the ecological centrepiece."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Flight from Caracas (1 hr) or ferry" },
+    { "label": "Best season", "value": "Nov – Apr (kite season)" },
+    { "label": "Typical budget", "value": "$50–120/day" },
+    { "label": "Top beach", "value": "El Yaque (kite), Playa El Agua (swimming)" }
+  ],
+  "topActivities": [
+    { "icon": "🪁", "name": "Kite surfing", "desc": "World-class flat water at El Yaque" },
+    { "icon": "🐚", "name": "Shell collecting", "desc": "La Restinga lagoon boat tours" },
+    { "icon": "🍤", "name": "Seafood", "desc": "Fresh catch at Puerto Fermín and Juangriego" },
+    { "icon": "🏊", "name": "Beach hopping", "desc": "Playa El Agua, Caribe, Parguito" },
+    { "icon": "🦩", "name": "Birdwatching", "desc": "Flamingos in La Restinga lagoon" }
+  ],
+  "guides": [
+    {
+      "title": "Kite Surfing Margarita: The Complete Guide",
+      "teaser": "El Yaque's wind window, the best schools, equipment hire, and what to do on the days the wind drops.",
+      "tag": "Water Sports",
+      "readTime": "7 min read",
+      "image": "/destinations/margarita.jpeg"
+    },
+    {
+      "title": "Margarita Island in 4 Days: A Practical Itinerary",
+      "teaser": "West to east, beach to mangrove — a day-by-day guide that covers the island without wasting a single morning.",
+      "tag": "Itinerary",
+      "readTime": "6 min read",
+      "image": "/destinations/margarita.jpeg"
+    }
+  ]
+}

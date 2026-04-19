@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/choroni.jpg",
+  "headline": "Choroní",
+  "tagline": "Colonial village. No ATMs. No signal. Perfect.",
+  "intro": [
+    "Choroní sits on the Caribbean coast of Henri Pittier National Park, two hours from Maracay by a spectacular mountain road that climbs through cloud forest before descending to the sea. The journey itself is reason enough to come: the Portachuelo Pass cuts through one of the highest concentrations of biodiversity on earth.",
+    "The town is a single colonial street of brightly painted houses, an 18th-century church, and a handful of restaurants that depend entirely on what arrived from the fishing boats that morning. The beach — Puerto Colombia, a short walk from the town centre — is a working fishing beach with a few colourful launches and enough shade from almond trees to spend a full day without burning.",
+    "Choroní has no ATMs and unreliable phone signal, which is, for many visitors, its primary appeal. The posadas here are family-run; the cacao grown in the surrounding hills supplies some of Europe's finest chocolate makers; and the Afro-Venezuelan musical tradition of tambor is still performed in the central plaza on significant dates."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Drive from Maracay (2 hrs over mountain)" },
+    { "label": "Best season", "value": "Dec – Apr (dry)" },
+    { "label": "Typical budget", "value": "$30–60/day" },
+    { "label": "Practical note", "value": "Bring cash — no ATMs in town" }
+  ],
+  "topActivities": [
+    { "icon": "🏖️", "name": "Puerto Colombia beach", "desc": "Shade, fishing boats, and calm water" },
+    { "icon": "🎵", "name": "Tambor music", "desc": "Afro-Venezuelan drum tradition in the plaza" },
+    { "icon": "🌿", "name": "Cloud forest hiking", "desc": "Portachuelo Pass birdwatching trails" },
+    { "icon": "🍫", "name": "Cacao tours", "desc": "Visit working cacao farms in the valley" },
+    { "icon": "⛵", "name": "Boat to Cuyagua", "desc": "Surf beach accessible by sea only" }
+  ],
+  "guides": [
+    {
+      "title": "Choroní: The Perfect Two-Day Escape",
+      "teaser": "What to eat, where to stay, the hikes worth doing, and why you should budget an extra day just in case you cannot leave.",
+      "tag": "Weekend Guide",
+      "readTime": "7 min read",
+      "image": "/destinations/choroni.jpg"
+    },
+    {
+      "title": "Venezuelan Cacao: Taste It at the Source in Choroní",
+      "teaser": "The farms that supply European chocolatiers are a short ride from the colonial square. Here's how to visit them.",
+      "tag": "Food & Culture",
+      "readTime": "5 min read",
+      "image": "/hero/gastronomy.jpg"
+    }
+  ]
+}

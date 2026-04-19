@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/angel-falls-tour.jpg",
+  "headline": "Canaima",
+  "tagline": "Angel Falls and the ancient world of the tepuis",
+  "intro": [
+    "Canaima National Park covers 30,000 km² of the Gran Sabana — an area larger than Belgium — and contains the highest waterfall on earth, one of the world's oldest geological formations, and a Pemón indigenous culture that has inhabited this landscape for centuries. It is a UNESCO World Heritage Site, and one of the few places on earth that justifies the description \"otherworldly.\"",
+    "Angel Falls (Salto Ángel) drops 979 metres off the edge of Auyán-tepui, the largest of the region's flat-topped sandstone mountains. The falls are best visited from June to November when water flow is highest; the dry season (January to May) offers clearer skies but a thinner cascade.",
+    "Canaima lagoon is the base camp: a pink-tinted lake fed by tannin-rich rivers, flanked by smaller waterfalls you can swim behind, and ringed by posadas and Pemón craft stalls. Access is by small plane only — no road connects Canaima to the outside world."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Flight from Puerto Ordaz or Caracas (1–2 hrs)" },
+    { "label": "Best for falls", "value": "Jun – Nov (high water)" },
+    { "label": "Typical budget", "value": "$100–200/day (tours required)" },
+    { "label": "Guided access", "value": "All tepui approaches need Pemón guides" }
+  ],
+  "topActivities": [
+    { "icon": "🌊", "name": "Angel Falls tour", "desc": "2-day river journey + overland to the base" },
+    { "icon": "🚣", "name": "Canaima lagoon", "desc": "Swim behind the Hacha and Golondrina falls" },
+    { "icon": "🥾", "name": "Roraima trek", "desc": "6-day expedition to the world's oldest plateau" },
+    { "icon": "🎒", "name": "Tepui climbing", "desc": "Technical routes up Auyán with Pemón guides" },
+    { "icon": "📸", "name": "Sunrise overflight", "desc": "Small-plane flights over the tepui at dawn" }
+  ],
+  "guides": [
+    {
+      "title": "Angel Falls: The Complete Expedition Guide",
+      "teaser": "Which operator, which season, what to pack, and whether the river trip or the overflight is worth it (answer: both).",
+      "tag": "Expedition Guide",
+      "readTime": "11 min read",
+      "image": "/destinations/angel-falls-tour.jpg"
+    },
+    {
+      "title": "Trek to Roraima: Step-by-Step",
+      "teaser": "The six-day route to the summit of the world's oldest plateau — permits, guides, gear list, and what it actually feels like up there.",
+      "tag": "Trekking",
+      "readTime": "14 min read",
+      "image": "/hero/adventure.jpg"
+    }
+  ]
+}

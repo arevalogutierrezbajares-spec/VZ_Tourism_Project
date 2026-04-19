@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/vzla_retreat.avif",
+  "headline": "Disconnect to reconnect",
+  "tagline": "Cloud forest retreats, hot springs, and coastal yoga — at a fraction of other destinations' prices",
+  "intro": [
+    "Wellness tourism in Venezuela is still emerging, which means the experiences feel genuine rather than packaged. The posadas (family-run guesthouses) that have evolved into retreat centres did so organically — owners who practice yoga themselves, cooks who source from their own gardens, guides who have been walking the cloud forest trails since childhood.",
+    "The Mérida region offers the most concentrated wellness infrastructure: mountain-air altitude, Andean hot springs at Agua Caliente, and a food culture built on fresh produce at altitude. Several posadas in the surrounding valleys now run structured yoga and meditation programmes alongside their standard accommodation.",
+    "On the coast, Choroní and the more remote beaches of Henri Pittier National Park offer a simpler form of wellness — no itinerary, no wifi, just the rhythm of a small fishing village and water warm enough to swim in at midnight."
+  ],
+  "highlights": [
+    "Mérida hot springs: thermal baths in the Andes, some at over 60°C",
+    "Cloud forest retreats: yoga and meditation with mountain views at 2,000+ m",
+    "Coastal posadas: boutique accommodation with in-house chefs and gardens",
+    "Digital detox by design: remote access means no signal in many areas",
+    "Local cuisine: Andean produce, fresh seafood, and Venezuelan cacao"
+  ],
+  "quickStats": [
+    { "label": "Top region", "value": "Mérida & Coast" },
+    { "label": "Best for", "value": "Retreat stays" },
+    { "label": "Starting from", "value": "$60/night" }
+  ],
+  "guides": [
+    {
+      "title": "The Best Eco-Retreats in Mérida's Cloud Forest",
+      "teaser": "Posadas that have quietly evolved into serious wellness destinations — yoga platforms, farm kitchens, and Andean silence.",
+      "tag": "Retreat Guide",
+      "readTime": "7 min read",
+      "image": "/hero/vzla_retreat.avif"
+    },
+    {
+      "title": "Hot Springs in the Venezuelan Andes",
+      "teaser": "From the roadside pools at Agua Caliente to the more remote thermal vents deep in the mountains. What to expect and how to get there.",
+      "tag": "Wellness",
+      "readTime": "5 min read",
+      "image": "/destinations/merida.jpg"
+    },
+    {
+      "title": "Choroní and Beyond: Coastal Wellness at Its Most Honest",
+      "teaser": "A colonial village with no ATMs, unreliable signal, and some of the most relaxing days you will spend anywhere in Latin America.",
+      "tag": "Slow Travel",
+      "readTime": "6 min read",
+      "image": "/destinations/choroni.jpg"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/morrocoy.jpg",
+  "headline": "Morrocoy",
+  "tagline": "20 coral cays, flamingo lagoons, and no-queue snorkelling",
+  "intro": [
+    "Morrocoy National Park covers 32,000 hectares of Caribbean coastline in Falcón State, most of it water: a shallow inner lagoon fringed by mangroves, and beyond it a scattering of coral cays (cayos) with white sand beaches and calm, reef-protected water. The park is reachable by road from Valencia or Caracas, which makes it more accessible than Los Roques — and occasionally more crowded on holiday weekends.",
+    "Each cay has its own character. Cayo Borracho is the most visited — developed enough to have a restaurant, quiet enough on weekdays to feel private. Cayo Peraza is smaller and wilder, with better snorkelling. Cayo Muerto (despite the name) is the preferred anchorage for yachters passing through.",
+    "The Cuare Wildlife Refuge adjacent to the park is worth a morning: boat tours through the mangroves pass through roosting colonies of scarlet ibis and pink flamingos — the kind of spectacle that makes people put their phones down."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Drive from Valencia (2 hrs) or Caracas (3 hrs)" },
+    { "label": "Best season", "value": "Year-round; avoid Easter week" },
+    { "label": "Typical budget", "value": "$40–80/day + boat hire" },
+    { "label": "Boat access", "value": "Required to reach the cays (hire at Tucacas)" }
+  ],
+  "topActivities": [
+    { "icon": "🤿", "name": "Snorkelling", "desc": "Coral reefs at Cayo Peraza and Cayo Sombrero" },
+    { "icon": "🦩", "name": "Flamingo watching", "desc": "Cuare Wildlife Refuge boat tours" },
+    { "icon": "⛵", "name": "Cay hopping", "desc": "20 cays, each with different character" },
+    { "icon": "🦜", "name": "Birdwatching", "desc": "Scarlet ibis roosting at sunset" },
+    { "icon": "🏄", "name": "Kayaking", "desc": "Through mangrove channels in the inner lagoon" }
+  ],
+  "guides": [
+    {
+      "title": "Morrocoy National Park: A Complete Visitor Guide",
+      "teaser": "Which cays are worth the boat fare, what to bring, where to stay in Tucacas, and how to avoid the holiday weekend crowds.",
+      "tag": "Park Guide",
+      "readTime": "8 min read",
+      "image": "/destinations/morrocoy.jpg"
+    },
+    {
+      "title": "Morrocoy vs Los Roques: Making the Choice",
+      "teaser": "Two very different Caribbean experiences at two very different price points. How to decide which one belongs on your itinerary.",
+      "tag": "Comparison",
+      "readTime": "5 min read",
+      "image": "/destinations/los roques1.jpg"
+    }
+  ]
+}

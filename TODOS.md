@@ -10,14 +10,14 @@ All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 
 ## P2 Polish (from UX stack)
 
-- P2-1: Grid ↔ Map view toggle on /explore
-- P2-2: Filters on /explore (price, dates, sort)
-- P2-3: Breadcrumbs
-- P2-4: 3-column grid on desktop
-- P2-7: Smart tag accuracy (wire to real listing attributes)
-- P2-10: "My Trip" persistent floating button
-- P2-13: Share link on itinerary detail
-- P2-17: Cancellation shortcut from /trips
+- P2-1: Grid ↔ Map view toggle on /explore — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-2: Filters on /explore (sort by rating, price, reviews) — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-3: Breadcrumbs — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-4: 3-column grid on desktop — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-7: Smart tag accuracy (wired to real listing attributes) — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-10: "My Trip" persistent floating button — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-13: Share link on itinerary detail — **Completed: v0.3.3.0 (2026-04-19)**
+- P2-17: Cancellation shortcut from /trips — **Completed: v0.3.3.0 (2026-04-19)**
 
 ## P1 — Editorial Content CMS
 
@@ -86,3 +86,6 @@ All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 - `@testing-library/dom` installed — **Completed: v0.3.0.0 (2026-04-18)**
 - `BookingForm` null-safety fix — **Completed: v0.3.0.0 (2026-04-18)**
 - QA remediation (10 issues, health 56→production) — **Completed: v0.3.2.0 (2026-04-19)**
+- Hero Image LCP — `next/image` + priority + lazy-mount images 1–3 — **Completed: v0.3.2.0 (2026-04-19)**
+- Editorial Content CMS — 743-line TS → 16 JSON files in `content/` — **Completed: v0.3.2.0 (2026-04-19)**
+- P2 Polish (8 items: map toggle, sort, breadcrumbs, 3-col grid, smart tags, FAB, share, cancel) — **Completed: v0.3.3.0 (2026-04-19)**

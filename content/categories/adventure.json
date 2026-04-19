@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/adventure.jpg",
+  "headline": "Where the continent gets extreme",
+  "tagline": "From Andean paragliding to Roraima summit — Venezuela's hardest playgrounds",
+  "intro": [
+    "Venezuela's geography is an adventure sport atlas: a Caribbean coast for kite surfers, Andean thermals for paragliders, ancient tepui summits for trekkers, and river systems that range from Class II floats to Class V white-water. Most of it is remarkably uncrowded — world-class terrain without the queues.",
+    "Mérida is the undisputed adventure capital. The cable car launch sites above the city produce thermals that draw paragliding pilots from across South America, and the surrounding valleys offer white-water rafting, via ferrata, canyoning, and multi-day horse treks. Guides are experienced and locally certified.",
+    "For serious mountaineers, Pico Bolívar (4,978 m) presents a technical challenge — the final approach crosses a glaciated ridge. Roraima in the Gran Sabana is a six-day round trip to the summit of the world's oldest plateau, a genuinely other-worldly landscape that justifies the effort entirely."
+  ],
+  "highlights": [
+    "Paragliding: some of the longest cross-country flights in South America from Mérida",
+    "Kite surfing: El Yaque on Margarita Island — consistent trade winds, flat water",
+    "Roraima Trek: 6 days, 2,810 m summit, endemic species found nowhere else",
+    "White-water rafting: Río Orinoco and Río Apure tributaries",
+    "Caving: Cueva del Guácharo — Venezuela's largest and most accessible cave system"
+  ],
+  "quickStats": [
+    { "label": "Adventure hub", "value": "Mérida" },
+    { "label": "Top activity", "value": "Paragliding & Trekking" },
+    { "label": "Starting from", "value": "$50/person" }
+  ],
+  "guides": [
+    {
+      "title": "Paragliding the Venezuelan Andes: A Pilot's Guide",
+      "teaser": "Launch sites, thermal windows, landing fields, and the operators who have been flying this sky for decades.",
+      "tag": "Adventure",
+      "readTime": "8 min read",
+      "image": "/hero/adventure.jpg"
+    },
+    {
+      "title": "Trek to Roraima: The World's Oldest Plateau",
+      "teaser": "Six days on a trail first walked by the Pemon people. Waterfalls, quartz plains, and species that exist nowhere else on earth.",
+      "tag": "Trekking",
+      "readTime": "13 min read",
+      "image": "/destinations/angel-falls-tour.jpg"
+    },
+    {
+      "title": "Kite Surfing Margarita: Complete Beginner's Guide",
+      "teaser": "El Yaque beach has been a world kite surfing championship venue. Here's how to make the most of it, whether you're a beginner or an expert.",
+      "tag": "Water Sports",
+      "readTime": "7 min read",
+      "image": "/destinations/margarita.jpeg"
+    }
+  ]
+}

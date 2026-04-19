@@ -1,0 +1,45 @@
+{
+  "heroImage": "/destinations/merida.jpg",
+  "headline": "The Andes at their wildest",
+  "tagline": "Cloud forests, glacial peaks, and world-class paragliding",
+  "intro": [
+    "The Venezuelan Andes sweep down from Colombia into Mérida state, reaching their climax at Pico Bolívar — at 4,978 metres, the country's highest point. The range is compact by Andean standards but dramatic in profile, rising from tropical lowlands to alpine páramo within a single day's drive.",
+    "Mérida city serves as base camp for everything in the region. At 1,600 metres, it has a permanent spring climate and the infrastructure of a university town: good restaurants, knowledgeable guides, and equipment rental shops on every corner. The world's highest cable car once climbed from here to 4,765 metres — restoration work is ongoing.",
+    "The best time to visit is the dry season from December to April, when the peaks clear and the trekking trails dry out. Cloud forest routes in the lower elevations remain accessible year-round, though afternoon showers are common from May onwards."
+  ],
+  "highlights": [
+    "Pico Bolívar at 4,978 m — the highest point in Venezuela",
+    "Paragliding from Teleférico launch sites (one of the best in South America)",
+    "Los Nevados: a 16th-century mountain village at 2,700 m",
+    "Chorros de Milla: waterfalls 10 minutes from the city centre",
+    "Cloud forest biodiversity: over 500 orchid species in the state"
+  ],
+  "quickStats": [
+    { "label": "Best season", "value": "Dec – Apr" },
+    { "label": "Hub city", "value": "Mérida" },
+    { "label": "Starting from", "value": "$35/person" }
+  ],
+  "guides": [
+    {
+      "title": "Trekking in Mérida: Routes for Every Level",
+      "teaser": "From the family-friendly Camino Real to the multi-day approach to Pico Bolívar — a practical route planner.",
+      "tag": "Trekking",
+      "readTime": "9 min read",
+      "image": "/destinations/merida.jpg"
+    },
+    {
+      "title": "Paragliding the Venezuelan Andes",
+      "teaser": "What to expect, which operators to trust, and why the Mérida thermals draw pilots from around the world.",
+      "tag": "Adventure",
+      "readTime": "6 min read",
+      "image": "/hero/adventure.jpg"
+    },
+    {
+      "title": "Los Nevados: The Village the Road Forgot",
+      "teaser": "A colonial-era settlement above 2,700 m, reached by mule track or a very rough jeep road. Worth every hour of the journey.",
+      "tag": "Culture",
+      "readTime": "5 min read",
+      "image": "/destinations/merida.jpg"
+    }
+  ]
+}

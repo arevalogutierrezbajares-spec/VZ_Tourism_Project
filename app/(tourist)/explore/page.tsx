@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTotalCount } from '@/lib/local-listings';
 import { ExploreClient } from './ExploreClient';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export const metadata: Metadata = {
   title: 'Browse All | VZ Explorer',
@@ -42,6 +43,12 @@ export default async function ExplorePage({ searchParams }: Props) {
 
   return (
     <div className="container px-4 py-8">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        className="mb-4"
+        items={[{ label: 'Home', href: '/' }, { label: 'Explore' }]}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Browse Venezuela</h1>

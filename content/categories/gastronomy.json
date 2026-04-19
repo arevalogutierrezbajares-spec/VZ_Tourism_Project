@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/gastronomy.jpg",
+  "headline": "The flavors of Venezuela",
+  "tagline": "Arepas for breakfast, pabellón for lunch, and everything in between",
+  "intro": [
+    "Venezuelan food is built on corn, beans, and plantain — a culinary trio that anchors everything from street breakfasts to elaborate Sunday lunches. The arepa is the national staple: a thick corn flatbread griddled and stuffed with cheese, shredded beef, black beans, or anything else available. Every Venezuelan household has its own recipe.",
+    "The pabellón criollo is the unofficial national dish — shredded beef (carne mechada), black beans (caraotas negras), white rice, and sweet plantains on a single plate. It is simultaneously humble and deeply satisfying, and the best versions are found not in restaurants but in the comedores (informal lunch spots) that dot every Venezuelan town.",
+    "Venezuela also grows some of the world's finest cacao and coffee, though both are frustratingly underexported. Single-origin Venezuelan chocolate and micro-roasted mountain coffee are available in speciality shops in Caracas and Mérida, and increasingly finding their way onto international menus."
+  ],
+  "highlights": [
+    "Arepa: the national staple — griddled, baked, or fried, stuffed with everything",
+    "Pabellón criollo: the complete Venezuelan plate in one dish",
+    "Hallacas: the traditional Christmas dish, wrapped in banana leaf",
+    "Tequeños: cheese-filled dough sticks, served at every Venezuelan gathering",
+    "Venezuelan cacao: some of the finest in the world, grown in Barlovento and Choroní"
+  ],
+  "quickStats": [
+    { "label": "Must-eat", "value": "Arepa reina pepiada" },
+    { "label": "Food capital", "value": "Caracas" },
+    { "label": "Starting from", "value": "$15/person" }
+  ],
+  "guides": [
+    {
+      "title": "The Arepa Bible: Venezuela's National Dish Explained",
+      "teaser": "From the corn to the comal to the 47 possible fillings — a complete guide to Venezuela's most essential food.",
+      "tag": "Food Culture",
+      "readTime": "7 min read",
+      "image": "/hero/gastronomy.jpg"
+    },
+    {
+      "title": "A Food Tour of Caracas: Markets, Restaurants, Street Food",
+      "teaser": "The Mercado de Chacao, the areperas of Sabana Grande, and the fine-dining scene that most travellers miss entirely.",
+      "tag": "City Food",
+      "readTime": "9 min read",
+      "image": "/hero/city_skyline.jpg"
+    },
+    {
+      "title": "Venezuelan Cacao: The World's Best Chocolate Nobody Talks About",
+      "teaser": "Barlovento and Choroní produce cacao that European chocolatiers quietly call irreplaceable. Here's how to taste it at the source.",
+      "tag": "Artisan Food",
+      "readTime": "6 min read",
+      "image": "/destinations/choroni.jpg"
+    }
+  ]
+}

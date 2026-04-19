@@ -55,9 +55,30 @@ function daysUntil(dateStr: string) {
   return differenceInDays(parseISO(dateStr), new Date());
 }
 
-function BookingCard({ booking, past }: { booking: GuestBooking; past?: boolean }) {
+function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; past?: boolean; onCancelled?: (id: string) => void }) {
   const days = past ? null : daysUntil(booking.check_in);
   const withinWeek = days !== null && days <= 7 && days >= 0;
+  const [cancelling, setCancelling] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      await fetch(`/api/bookings/${booking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+      onCancelled?.(booking.id);
+    } catch {
+      // ignore
+    } finally {
+      setCancelling(false);
+      setShowConfirm(false);
+    }
+  };
+
+  const canCancel = !past && booking.status === 'confirmed' && days !== null && days >= 1;
 
   return (
     <Card className="rounded-xl shadow-sm overflow-hidden">
@@ -89,7 +110,7 @@ function BookingCard({ booking, past }: { booking: GuestBooking; past?: boolean 
                 <Cloud className="w-3 h-3" /> Pre-trip info available
               </p>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Link
                 href={`/bookings/${booking.id}`}
                 className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
@@ -100,6 +121,32 @@ function BookingCard({ booking, past }: { booking: GuestBooking; past?: boolean 
                 <button className="text-xs px-3 py-1.5 rounded-lg border text-muted-foreground hover:border-sky-400 hover:text-sky-600 transition-colors">
                   <Star className="w-3 h-3 inline mr-1" />Leave Review
                 </button>
+              )}
+              {canCancel && !showConfirm && (
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  Cancel booking
+                </button>
+              )}
+              {canCancel && showConfirm && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-red-600 font-medium">Are you sure?</span>
+                  <button
+                    onClick={handleCancel}
+                    disabled={cancelling}
+                    className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                  >
+                    {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+                  </button>
+                  <button
+                    onClick={() => setShowConfirm(false)}
+                    className="px-2.5 py-1 rounded-lg border hover:bg-muted transition-colors"
+                  >
+                    Keep
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -251,7 +298,13 @@ export default function TripsPage() {
           <div className="space-y-4">{[1,2].map(i => <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />)}</div>
         ) : upcoming.length > 0 ? (
           <div className="space-y-4">
-            {upcoming.map((b) => <BookingCard key={b.id} booking={b} />)}
+            {upcoming.map((b) => (
+              <BookingCard
+                key={b.id}
+                booking={b}
+                onCancelled={(id) => setBookings((prev) => prev.map((bk) => bk.id === id ? { ...bk, status: 'cancelled' } : bk))}
+              />
+            ))}
           </div>
         ) : (
           <EmptyState tab="upcoming" />

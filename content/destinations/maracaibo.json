@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/maracaibo.jpg",
+  "headline": "Maracaibo",
+  "tagline": "Oil city on a lake, with the world's most reliable lightning storm",
+  "intro": [
+    "Maracaibo is Venezuela's second city — hotter, louder, and more self-assured than Caracas. It sits on the western shore of Lake Maracaibo, the largest lake in South America, and its economic history has been written entirely in petroleum: the first oil well was drilled near here in 1914, and the lake's underwater reserves are among the largest in the world.",
+    "The Catatumbo Lightning — relámpago del Catatumbo — is the city's most extraordinary natural phenomenon. At the mouth of the Catatumbo River, where it meets the lake's southwestern shore, an electrical storm occurs on approximately 260 nights per year. The storms are visible from 400 km away, last up to 10 hours, and produce up to 280 lightning bolts per hour. It is the most reliable lightning show on earth.",
+    "The old colonial quarter of El Saladillo has been undergoing restoration and reveals the city's pre-oil character: tiled colonial houses, a waterfront promenade, and the Rafael Urdaneta Bridge — at 8.7 km, the longest pre-stressed concrete bridge in the world — visible across the lake."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Direct flight from Caracas (1 hr)" },
+    { "label": "Best for lightning", "value": "Sep – Nov (peak season)" },
+    { "label": "Typical budget", "value": "$30–70/day" },
+    { "label": "Temperature", "value": "Hot year-round — 28–35°C average" }
+  ],
+  "topActivities": [
+    { "icon": "⚡", "name": "Catatumbo Lightning", "desc": "Boat tour to the mouth of the Catatumbo River" },
+    { "icon": "🌉", "name": "Rafael Urdaneta Bridge", "desc": "Longest pre-stressed concrete bridge in the world" },
+    { "icon": "🏛️", "name": "El Saladillo", "desc": "Colonial quarter with restored 19th-century buildings" },
+    { "icon": "🐟", "name": "Lake Maracaibo", "desc": "Freshwater fishing and lakeside boat tours" },
+    { "icon": "🍖", "name": "Maracucho food", "desc": "Mandoca, mojito en coco, and pabellón zuliano" }
+  ],
+  "guides": [
+    {
+      "title": "Catatumbo Lightning: The World's Most Reliable Storm",
+      "teaser": "When to go, how to get to the viewing point, and why this natural phenomenon still doesn't get the attention it deserves.",
+      "tag": "Natural Wonder",
+      "readTime": "7 min read",
+      "image": "/destinations/maracaibo.jpg"
+    },
+    {
+      "title": "Maracaibo Food: A Guide to Zulia State Cuisine",
+      "teaser": "Mandoca, patacón zuliano, and the breakfasts that explain why Maracuchos are obsessed with their own food culture.",
+      "tag": "Food Guide",
+      "readTime": "6 min read",
+      "image": "/hero/gastronomy.jpg"
+    }
+  ]
+}

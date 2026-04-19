@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   motion,
   useScroll,
@@ -25,6 +26,9 @@ const HERO_IMAGES = [
 export function DemoHero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [imgIndex, setImgIndex] = useState(0);
+  // Track which images have ever been active so we only fetch them when first needed.
+  // Image 0 is always included (it's the LCP element).
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
   const { scrollY } = useScroll();
   const bgY = useTransform(scrollY, [0, 600], [0, 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
@@ -40,7 +44,11 @@ export function DemoHero() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setImgIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+      setImgIndex((prev) => {
+        const next = (prev + 1) % HERO_IMAGES.length;
+        setLoadedImages((s) => new Set([...s, next]));
+        return next;
+      });
     }, 7000);
     return () => clearInterval(interval);
   }, []);
@@ -59,15 +67,27 @@ export function DemoHero() {
             className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
             style={{ opacity: i === imgIndex ? 1 : 0 }}
           >
-            <img
-              src={src}
-              alt=""
-              className="w-full h-[120%] object-cover"
-              style={{
-                transform: i === imgIndex ? 'scale(1.05)' : 'scale(1)',
-                transition: 'transform 8s ease-out',
-              }}
-            />
+            {/* Only mount an image once it has been (or is about to be) active.
+                This prevents the browser from fetching all 4 images on initial load.
+                Image 0 is always mounted — it is the LCP element. */}
+            {loadedImages.has(i) && (
+              // Extra-tall wrapper so the parallax translate has room without
+              // exposing the section background at the bottom.
+              <div className="relative w-full h-[120%]">
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  priority={i === 0}
+                  sizes="(max-width: 768px) 100vw, 100vw"
+                  className="object-cover"
+                  style={{
+                    transform: i === imgIndex ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'transform 8s ease-out',
+                  }}
+                />
+              </div>
+            )}
           </div>
         ))}
       </motion.div>

@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/los roques1.jpg",
+  "headline": "Los Roques",
+  "tagline": "350 islands. One national park. Zero cars.",
+  "intro": [
+    "Los Roques Archipelago National Park sits 166 km north of Caracas in the southern Caribbean — a 40-minute charter flight into a world of bone-white sand, neon-blue water, and the kind of quiet that feels almost confrontational after any time in a city.",
+    "The archipelago covers 225,000 hectares, making it the largest marine national park in the Caribbean. Gran Roque, the main island, has one paved road (short enough to walk end-to-end in seven minutes) and roughly 200 posadas. Everything else is reef, lagoon, and open ocean.",
+    "Come for the snorkelling and diving — visibility regularly exceeds 30 metres in the outer cays. Stay for the bonefish flats, which attract fly-fishing fanatics from around the world. Leave with sun damage you will not regret."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Charter flight from Caracas (35 min)" },
+    { "label": "Best season", "value": "Year-round; Dec–Apr calmest" },
+    { "label": "Typical budget", "value": "$150–300/day all-in" },
+    { "label": "Language tip", "value": "Spanish only on the islands" }
+  ],
+  "topActivities": [
+    { "icon": "🤿", "name": "Snorkelling", "desc": "30m+ visibility in the outer cays" },
+    { "icon": "🎣", "name": "Bonefishing", "desc": "World-class fly fishing on the flats" },
+    { "icon": "🪂", "name": "Kite surfing", "desc": "Trade winds from November to April" },
+    { "icon": "⛵", "name": "Island hopping", "desc": "Francisquí, Cayo de Agua, Piritu" },
+    { "icon": "🐢", "name": "Turtle watching", "desc": "Nesting season June to October" }
+  ],
+  "guides": [
+    {
+      "title": "Los Roques: A First-Timer's Complete Guide",
+      "teaser": "Everything you need to know before flying in — posadas, boat captains, snorkelling spots, and the islands that are worth the extra detour.",
+      "tag": "Destination Guide",
+      "readTime": "8 min read",
+      "image": "/destinations/los roques1.jpg"
+    },
+    {
+      "title": "Fly Fishing Los Roques: One of the World's Best Bonefish Destinations",
+      "teaser": "The flats around Crasqui and Noronquises hold some of the largest bonefish in the Caribbean. What to bring, who to hire, and when to go.",
+      "tag": "Fishing Guide",
+      "readTime": "7 min read",
+      "image": "/destinations/los roques1.jpg"
+    }
+  ]
+}

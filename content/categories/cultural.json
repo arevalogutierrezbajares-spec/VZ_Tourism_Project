@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/Colonia_Tovar.jpg",
+  "headline": "Five centuries, many cultures",
+  "tagline": "Colonial towns, indigenous ceremonies, and one of the world's great music programmes",
+  "intro": [
+    "Venezuela's cultural depth is easy to underestimate. The country sits at the convergence of Caribbean, Andean, Amazonian, and Llanos traditions — each with its own music, food, craft, and ceremony. Indigenous Wayuu weavings from the Guajira, Pemón basket work from the Gran Sabana, and the hammered silver filigree of Mérida are all living craft traditions, not museum artefacts.",
+    "El Sistema — the state music programme that launched Gustavo Dudamel and hundreds of other world-class musicians — is headquartered in Caracas but visible across the country. Free concerts in provincial music centres happen weekly; the standard is often extraordinary.",
+    "Colonial architecture is concentrated in Coro (a UNESCO World Heritage City), Mérida's pedestrian centre, and the small towns of the Andes like Bailadores and Tovar. The most unlikely cultural landmark is Colonia Tovar, a 19th-century German settlement in the coastal mountains above Caracas, which still holds an annual Oktoberfest and produces its own sausages and beer."
+  ],
+  "highlights": [
+    "Coro: UNESCO World Heritage colonial city, the oldest in western Venezuela",
+    "El Sistema concerts: world-class orchestras in provincial venues, often free",
+    "Los Diablos Danzantes: UNESCO Intangible Heritage festival in June",
+    "Colonia Tovar: Bavarian architecture and strawberry festivals above Caracas",
+    "Pemón and Wayuu indigenous cultures: living traditions open to respectful visitors"
+  ],
+  "quickStats": [
+    { "label": "UNESCO sites", "value": "Coro + El Sistema" },
+    { "label": "Best festival", "value": "Carnival (Feb/Mar)" },
+    { "label": "Starting from", "value": "$25/person" }
+  ],
+  "guides": [
+    {
+      "title": "Venezuela's UNESCO World Heritage Sites",
+      "teaser": "Coro and its port, El Sistema, and the candidates waiting in line — a guide to Venezuela's formally protected cultural landmarks.",
+      "tag": "Heritage",
+      "readTime": "7 min read",
+      "image": "/hero/Colonia_Tovar.jpg"
+    },
+    {
+      "title": "El Sistema: The World's Greatest Music Programme",
+      "teaser": "How a 1975 project in a parking garage became the most influential music education system on earth — and how to experience it in person.",
+      "tag": "Music",
+      "readTime": "8 min read",
+      "image": "/hero/city_skyline.jpg"
+    },
+    {
+      "title": "Colonia Tovar: Bavaria in the Venezuelan Mountains",
+      "teaser": "In 1843, a group of German colonists founded a village in the coastal range above Caracas. Their descendants are still there. So is the schnitzel.",
+      "tag": "Day Trip",
+      "readTime": "6 min read",
+      "image": "/hero/Colonia_Tovar.jpg"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/beach.jpg",
+  "headline": "Where the Caribbean meets the rainforest",
+  "tagline": "2,800 km of coastline — most of it still undiscovered",
+  "intro": [
+    "Venezuela holds one of the most diverse coastlines in the Caribbean, stretching from the turquoise archipelagos of Los Roques to the mangrove-fringed cays of Morrocoy National Park. Unlike the crowded resort strips of other destinations, most of Venezuela's beaches require a little effort — and reward you with near-total solitude.",
+    "The water here runs unusually warm year-round, fed by the Caribbean current, and visibility in the outer archipelagos regularly exceeds 30 metres. Coral reefs, seagrass meadows, and pelagic drop-offs sit within a short boat ride of each other.",
+    "Beach season runs year-round, but December through April brings the driest weather and calmest seas. Venezuelans take to the coast during Semana Santa and the July school holidays — plan accordingly if you prefer quiet."
+  ],
+  "highlights": [
+    "Los Roques: 350 islands in a protected UNESCO-nominated biosphere",
+    "Morrocoy: coral cays by day, flamingo lagoons at sunset",
+    "Margarita Island: kite surfing hub with reliable trade winds",
+    "Choroní: colonial village 10 minutes from black-sand beaches",
+    "Most remote beaches require boat access — that's what keeps them pristine"
+  ],
+  "quickStats": [
+    { "label": "Best season", "value": "Dec – Apr" },
+    { "label": "Top spot", "value": "Los Roques" },
+    { "label": "Starting from", "value": "$45/person" }
+  ],
+  "guides": [
+    {
+      "title": "Los Roques: A First-Timer's Complete Guide",
+      "teaser": "Everything you need to know before flying into Gran Roque — posadas, boats, snorkelling spots, and what not to miss.",
+      "tag": "Destination Guide",
+      "readTime": "8 min read",
+      "image": "/destinations/los roques1.jpg"
+    },
+    {
+      "title": "Morrocoy vs Los Roques: Which Should You Choose?",
+      "teaser": "Both are stunning. One is closer, cheaper, and driveable. The other is remoter, pricier, and unforgettable. Here's how to decide.",
+      "tag": "Comparison",
+      "readTime": "5 min read",
+      "image": "/destinations/morrocoy.jpg"
+    },
+    {
+      "title": "The Best Snorkelling Sites in Venezuela",
+      "teaser": "From the outer reefs of Crasqui to the shallow seagrass beds of Francisquí — a ranked guide to the clearest water.",
+      "tag": "Activity Guide",
+      "readTime": "6 min read",
+      "image": "/hero/beach.jpg"
+    }
+  ]
+}

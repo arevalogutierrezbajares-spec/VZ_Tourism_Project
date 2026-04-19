@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { MapPin, Calendar, DollarSign, Tag } from 'lucide-react';
+import { ShareButton } from '@/components/itinerary/ShareButton';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/server';
 import { ItineraryStopCard } from '@/components/itinerary/ItineraryStopCard';
@@ -120,7 +121,10 @@ export default async function ItineraryPage({ params }: Props) {
           )}
         </div>
 
-        <ReactionBar likes={it.likes} saves={it.saves} className="-ml-2" />
+        <div className="flex items-center gap-3 flex-wrap">
+          <ReactionBar likes={it.likes} saves={it.saves} className="-ml-2" />
+          <ShareButton title={it.title} />
+        </div>
 
         {/* Discount code callout — shown when creator attached an active code */}
         {discountDisplay && (

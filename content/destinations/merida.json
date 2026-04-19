@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/merida.jpg",
+  "headline": "Mérida",
+  "tagline": "The Andes, a university town, and 860 flavours of ice cream",
+  "intro": [
+    "Mérida sits at 1,625 metres in a narrow valley between two Andean ridges, the city's colonial streets fanning out from Plaza Bolívar while the peaks of the Sierra Nevada rise immediately to the south. It is Venezuela's most outdoor-focused city — the kind of place where paragliding helmets share shelf space with university textbooks.",
+    "The Universidad de Los Andes, founded in 1785, gives Mérida its energy: cheap food, late nights, good bookshops, and the particular intellectual restlessness of a town where almost everyone is studying something. The city's food scene has benefited accordingly.",
+    "The cable car (teleférico) that once climbed to 4,765 metres — the world's highest, by some measures — has been under restoration for years but remains a symbol of Mérida's ambitions. The trails it served are still walkable with a guide."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Flight from Caracas (1 hr) or bus (8 hrs)" },
+    { "label": "Best season", "value": "Dec – Apr (dry season)" },
+    { "label": "Typical budget", "value": "$40–80/day" },
+    { "label": "Altitude", "value": "1,625 m above sea level" }
+  ],
+  "topActivities": [
+    { "icon": "🪂", "name": "Paragliding", "desc": "Some of the best thermals in South America" },
+    { "icon": "🥾", "name": "Trekking", "desc": "Routes from easy cloud forest to Pico Bolívar" },
+    { "icon": "♨️", "name": "Hot springs", "desc": "Thermal baths at Agua Caliente, 40 min away" },
+    { "icon": "🍦", "name": "Heladería Coromoto", "desc": "860 flavours — a Guinness World Record" },
+    { "icon": "🌿", "name": "Cloud forest", "desc": "Henri Pittier & La Culata day hikes" }
+  ],
+  "guides": [
+    {
+      "title": "Trekking in Mérida: Routes for Every Level",
+      "teaser": "Day hikes to multi-day expeditions — a practical route planner for the Venezuelan Andes.",
+      "tag": "Trekking",
+      "readTime": "9 min read",
+      "image": "/destinations/merida.jpg"
+    },
+    {
+      "title": "Mérida's Food Scene: Beyond the Tourist Track",
+      "teaser": "The comedores (lunch counters), the best arepas in the city, and where to find Venezuelan coffee done properly.",
+      "tag": "Food Guide",
+      "readTime": "6 min read",
+      "image": "/hero/gastronomy.jpg"
+    }
+  ]
+}

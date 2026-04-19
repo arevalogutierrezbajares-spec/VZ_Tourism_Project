@@ -1,0 +1,39 @@
+{
+  "heroImage": "/destinations/caracas1.jpg",
+  "headline": "Caracas",
+  "tagline": "The capital that refuses to be straightforward",
+  "intro": [
+    "Caracas divides opinions sharply. Critics point to its density, its noise, its traffic. People who know it point to El Ávila — the 2,765-metre mountain that forms the city's northern wall, visible from almost any rooftop and reachable on foot in two hours — and to the quality of a restaurant scene that has been forced, by adversity, to become genuinely creative.",
+    "The city sits in a narrow east-west valley at around 900 metres, which gives it a permanent mild climate quite unlike the tropical heat of the coast. The neighbourhoods that matter most for visitors are concentrated in the eastern half: Altamira, Las Mercedes, Chacao, and El Hatillo (a colonial town on the southern periphery).",
+    "The art scene is serious. The Museo de Arte Contemporáneo Sofía Imber, the Museo de Bellas Artes, and the Galería de Arte Nacional are all within walking distance of each other in the Parque Los Caobos complex — a remarkable concentration of Venezuelan and international work."
+  ],
+  "quickFacts": [
+    { "label": "How to get there", "value": "Maiquetía Simón Bolívar International Airport" },
+    { "label": "Best base", "value": "Altamira or Chacao neighbourhoods" },
+    { "label": "Typical budget", "value": "$40–100/day" },
+    { "label": "El Ávila access", "value": "Sabas Nieves trailhead, 2 hrs to the ridge" }
+  ],
+  "topActivities": [
+    { "icon": "⛰️", "name": "El Ávila hike", "desc": "Up to the ridge for views over the city and coast" },
+    { "icon": "🎨", "name": "Museum circuit", "desc": "Parque Los Caobos — 3 major museums in one park" },
+    { "icon": "🍽️", "name": "Restaurant scene", "desc": "Altamira and Las Mercedes for the best tables" },
+    { "icon": "🎵", "name": "El Sistema concert", "desc": "Check FESNOJIV schedule for public performances" },
+    { "icon": "🏘️", "name": "El Hatillo", "desc": "Colonial town with craft market on the city fringe" }
+  ],
+  "guides": [
+    {
+      "title": "48 Hours in Caracas: A Practical City Guide",
+      "teaser": "Where to stay, what to eat, which museums to visit, and the El Ávila hike every visitor should do at least once.",
+      "tag": "City Guide",
+      "readTime": "10 min read",
+      "image": "/destinations/caracas1.jpg"
+    },
+    {
+      "title": "The El Ávila Hike: Caracas's Best Urban Escape",
+      "teaser": "Trail conditions, what to bring, best time of day, and the view that makes the city finally make sense.",
+      "tag": "Hiking",
+      "readTime": "6 min read",
+      "image": "/hero/amacer-en-el-avila-vista.jpg"
+    }
+  ]
+}

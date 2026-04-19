@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/city_skyline.jpg",
+  "headline": "Urban Venezuela, unfiltered",
+  "tagline": "Capital energy, Andean culture, Caribbean swagger",
+  "intro": [
+    "Venezuelan cities are contradictions lived at full volume — freeways that end abruptly, colonial squares packed at midnight, food scenes that could compete with any major metropolis. They're not the reason most people come to Venezuela, but they're often what visitors remember most vividly.",
+    "Caracas sits in a narrow valley at 900 metres, with El Ávila mountain forming an improbable green wall behind every rooftop. The city's energy is kinetic: jazz bars in Altamira, world-class contemporary art in Chacao, the chaotic sensory overload of Mercado de Chacao on a Saturday morning.",
+    "Mérida offers a different rhythm — a university city at 1,600 metres where students and outdoor guides share the same streets, and helado de paila (hand-churned ice cream) comes in 860 flavours at a single shop on Plaza Bolívar."
+  ],
+  "highlights": [
+    "Caracas: El Ávila National Park starts at the edge of the city",
+    "Mérida: university town with the best restaurant-to-resident ratio in Venezuela",
+    "Maracaibo: Catatumbo lightning viewable from the lakeside promenade",
+    "Colonia Tovar: a Bavarian village at 1,800 m, one hour from Caracas",
+    "Food scene: arepas, cachapas, and pabellón criollo done properly"
+  ],
+  "quickStats": [
+    { "label": "Main gateway", "value": "Maiquetía Airport" },
+    { "label": "Best base", "value": "Caracas or Mérida" },
+    { "label": "Starting from", "value": "$30/person" }
+  ],
+  "guides": [
+    {
+      "title": "48 Hours in Caracas: A Practical City Guide",
+      "teaser": "Neighbourhoods worth knowing, restaurants that are actually open, and the El Ávila hike every visitor should do.",
+      "tag": "City Guide",
+      "readTime": "10 min read",
+      "image": "/hero/city_skyline.jpg"
+    },
+    {
+      "title": "Colonia Tovar: Venezuela's Little Bavaria",
+      "teaser": "A 19th-century German settlement in the coastal mountain range, complete with half-timbered houses and strawberry farms.",
+      "tag": "Day Trip",
+      "readTime": "5 min read",
+      "image": "/hero/Colonia_Tovar.jpg"
+    },
+    {
+      "title": "Maracaibo Beyond the Stereotypes",
+      "teaser": "Venezuela's most misunderstood city has one of the country's richest food cultures, a dramatic lake, and the world's most reliable lightning storm.",
+      "tag": "Destination Guide",
+      "readTime": "7 min read",
+      "image": "/destinations/maracaibo.jpg"
+    }
+  ]
+}

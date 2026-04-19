@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { MapPin, Search, ChevronDown, Heart, PlusCircle, CheckCircle } from 'lucide-react';
+import { MapPin, Search, ChevronDown, Heart, PlusCircle, CheckCircle, LayoutGrid, Map, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFavoritesStore } from '@/stores/favorites-store';
 import { useItineraryStore } from '@/stores/itinerary-store';
+import { useMapStore } from '@/stores/map-store';
+import type { MapPin as MapPinType } from '@/types/map';
+
+const MapContainer = dynamic(
+  () => import('@/components/map/MapContainer').then((m) => m.MapContainer),
+  { ssr: false }
+);
 
 interface ApiListing {
   id: string;
@@ -23,6 +31,8 @@ interface ApiListing {
   website: string | null;
   cover_image_url: string | null;
   platform_status?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 const CATEGORIES = [
@@ -56,6 +66,29 @@ const REGION_LABELS: Record<string, string> = {
   falcon: 'Falcón',
   venezuela: 'Venezuela',
 };
+
+// Fallback coordinates per region (lng, lat) for listings without GPS data
+const REGION_COORDS: Record<string, [number, number]> = {
+  caracas:   [-66.9036, 10.4806],
+  losroques: [-66.7522, 11.9402],
+  merida:    [-71.1443,  8.5897],
+  margarita: [-63.9587, 10.9731],
+  morrocoy:  [-68.2163, 10.8604],
+  canaima:   [-62.8547,  6.2372],
+  choroni:   [-67.6214, 10.4987],
+  falcon:    [-68.9913, 11.4480],
+  venezuela: [-66.5897,  8.0000],
+};
+
+const SORT_OPTIONS = [
+  { id: 'default', label: 'Recommended' },
+  { id: 'rating', label: 'Highest rated' },
+  { id: 'reviews', label: 'Most reviewed' },
+  { id: 'price_asc', label: 'Price: low to high' },
+  { id: 'price_desc', label: 'Price: high to low' },
+] as const;
+
+type SortOption = typeof SORT_OPTIONS[number]['id'];
 
 const PAGE_SIZE = 24;
 
@@ -103,11 +136,12 @@ function generateTags(listing: ApiListing): Tag[] {
   const tags: Tag[] = [];
   const region = listing.region?.toLowerCase() ?? '';
   const type = listing.type?.toLowerCase() ?? '';
+  const category = listing.category?.toLowerCase() ?? '';
   const rating = listing.rating ?? 0;
   const reviews = listing.review_count ?? 0;
   const name = listing.title?.toLowerCase() ?? '';
 
-  // Location tags
+  // Location tags — wired to real listing attributes
   if (['losroques', 'morrocoy', 'choroni', 'margarita'].includes(region)) {
     tags.push({ label: 'Beachfront', icon: '🏖️', color: 'bg-cyan-50 text-cyan-700' });
   }
@@ -121,34 +155,43 @@ function generateTags(listing: ApiListing): Tag[] {
     tags.push({ label: 'City Center', icon: '🏙️', color: 'bg-slate-50 text-slate-700' });
   }
 
-  // Activity tags
-  if (region === 'losroques') {
+  // Activity tags — wired to category + region
+  if (region === 'losroques' || (category === 'experience' && region === 'margarita')) {
     tags.push({ label: 'Diving', icon: '🤿', color: 'bg-teal-50 text-teal-700' });
   }
-  if (['merida', 'canaima'].includes(region)) {
+  if (['merida', 'canaima'].includes(region) || category === 'adventure' || name.includes('hik') || name.includes('trek')) {
     tags.push({ label: 'Hiking', icon: '🥾', color: 'bg-green-50 text-green-700' });
   }
-  if (region === 'canaima') {
+  if (region === 'canaima' || name.includes('nature') || name.includes('wildlife')) {
     tags.push({ label: 'Nature', icon: '🌿', color: 'bg-lime-50 text-lime-700' });
   }
 
-  // Quality tags
+  // Type-specific tags — wired to real listing.type
+  if (type === 'posada' || type === 'casa vacacional') {
+    tags.push({ label: 'Boutique Stay', icon: '🏡', color: 'bg-orange-50 text-orange-700' });
+  }
+  if (type === 'tours' || type === 'tour' || category === 'experience') {
+    tags.push({ label: 'Guided Tour', icon: '🎒', color: 'bg-violet-50 text-violet-700' });
+  }
+  if (name.includes('spa') || name.includes('wellness') || category === 'wellness') {
+    tags.push({ label: 'Spa & Wellness', icon: '💆', color: 'bg-pink-50 text-pink-700' });
+  }
+  if (name.includes('eco') || name.includes('natural') || name.includes('reserva')) {
+    tags.push({ label: 'Eco-Friendly', icon: '🌱', color: 'bg-green-50 text-green-700' });
+  }
+
+  // Quality tags — wired to real rating + review_count
   if (rating >= 4.5) {
     tags.push({ label: 'Top Rated', icon: '🏆', color: 'bg-amber-50 text-amber-700' });
   }
   if (reviews >= 500) {
     tags.push({ label: 'Popular', icon: '🔥', color: 'bg-rose-50 text-rose-700' });
   }
+  if (reviews >= 50 && reviews < 500 && rating >= 4.0) {
+    tags.push({ label: 'Local Favorite', icon: '❤️', color: 'bg-rose-50 text-rose-700' });
+  }
   if (rating >= 4.0 && reviews < 50) {
     tags.push({ label: 'Hidden Gem', icon: '💎', color: 'bg-purple-50 text-purple-700' });
-  }
-
-  // Type tags
-  if (type === 'posada') {
-    tags.push({ label: 'Boutique Stay', icon: '🏡', color: 'bg-orange-50 text-orange-700' });
-  }
-  if (name.includes('eco') || name.includes('natural')) {
-    tags.push({ label: 'Eco-Friendly', icon: '🌱', color: 'bg-green-50 text-green-700' });
   }
 
   return tags.slice(0, 4);
@@ -170,6 +213,29 @@ function estimateListingPrice(listing: ApiListing): number {
     return rating >= 4.5 ? 45 : 30;
   }
   return 60;
+}
+
+function listingToPin(listing: ApiListing): MapPinType {
+  const fallback = REGION_COORDS[listing.region?.toLowerCase() ?? ''] ?? REGION_COORDS.venezuela;
+  // Small deterministic jitter to spread co-located fallback pins
+  const seed = listing.id.charCodeAt(0) / 255;
+  const lat = listing.latitude ?? fallback[1] + (seed - 0.5) * 0.04;
+  const lng = listing.longitude ?? fallback[0] + (seed - 0.5) * 0.04;
+  return {
+    id: listing.id,
+    lat,
+    lng,
+    title: listing.title,
+    category: listing.category ?? 'other',
+    rating: listing.rating ?? undefined,
+    reviewCount: listing.review_count,
+    region: listing.region ?? undefined,
+    city: listing.city ?? undefined,
+    isVerified:
+      listing.platform_status === 'verified' ||
+      listing.platform_status === 'founding_partner',
+    listingId: listing.id,
+  };
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -414,6 +480,10 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+
+  const { setPins } = useMapStore();
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -451,6 +521,13 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
     return () => { cancelled = true; };
   }, [buildUrl]);
 
+  // Sync listings → map store when in map view
+  useEffect(() => {
+    if (viewMode === 'map' && listings.length > 0) {
+      setPins(listings.map(listingToPin));
+    }
+  }, [viewMode, listings, setPins]);
+
   const loadMore = async () => {
     setLoadingMore(true);
     const res = await fetch(buildUrl(offset));
@@ -462,9 +539,18 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
   const hasMore = offset < count;
 
+  // Client-side sort
+  const sortedListings = [...listings].sort((a, b) => {
+    if (sortBy === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
+    if (sortBy === 'reviews') return b.review_count - a.review_count;
+    if (sortBy === 'price_asc') return estimateListingPrice(a) - estimateListingPrice(b);
+    if (sortBy === 'price_desc') return estimateListingPrice(b) - estimateListingPrice(a);
+    return 0; // default: server order
+  });
+
   return (
     <div className="space-y-6">
-      {/* Search + region filter row */}
+      {/* Search + region + view toggle row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -491,25 +577,72 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
-      </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit">
-        {CATEGORIES.map(({ id, label, icon }) => (
+        {/* View toggle */}
+        <div className="flex rounded-xl border overflow-hidden bg-background">
           <button
-            key={id}
-            onClick={() => setCategory(id)}
+            onClick={() => setViewMode('grid')}
             className={cn(
-              'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all',
-              category === id
-                ? 'bg-background shadow-sm text-foreground'
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors',
+              viewMode === 'grid'
+                ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
+            aria-label="Grid view"
           >
-            <span>{icon}</span>
-            {label}
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Grid</span>
           </button>
-        ))}
+          <button
+            onClick={() => setViewMode('map')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors',
+              viewMode === 'map'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+            aria-label="Map view"
+          >
+            <Map className="w-4 h-4" />
+            <span className="hidden sm:inline">Map</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Category tabs + sort row */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit">
+          {CATEGORIES.map(({ id, label, icon }) => (
+            <button
+              key={id}
+              onClick={() => setCategory(id)}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                category === id
+                  ? 'bg-background shadow-sm text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <span>{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort select */}
+        <div className="relative flex items-center gap-1.5">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="appearance-none pl-1 pr-6 py-1.5 bg-transparent text-sm text-muted-foreground focus:outline-none cursor-pointer"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        </div>
       </div>
 
       {/* Result count */}
@@ -519,39 +652,48 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
         </p>
       )}
 
-      {/* Listing grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: '360px' }} />
-          ))}
+      {/* Map view */}
+      {viewMode === 'map' && (
+        <div className="w-full rounded-2xl overflow-hidden border" style={{ height: '65vh' }}>
+          <MapContainer className="w-full h-full" showControls />
         </div>
-      ) : listings.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-2xl mb-2">🔍</p>
-          <h3 className="font-semibold text-lg">No results found</h3>
-          <p className="text-muted-foreground mt-1">Try adjusting your filters or search term.</p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+      )}
+
+      {/* Grid view */}
+      {viewMode === 'grid' && (
+        loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: '360px' }} />
             ))}
           </div>
-
-          {hasMore && (
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-colors disabled:opacity-50"
-              >
-                {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
-              </button>
+        ) : sortedListings.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-2xl mb-2">🔍</p>
+            <h3 className="font-semibold text-lg">No results found</h3>
+            <p className="text-muted-foreground mt-1">Try adjusting your filters or search term.</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedListings.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
             </div>
-          )}
-        </>
+
+            {hasMore && (
+              <div className="flex justify-center pt-4">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
+                </button>
+              </div>
+            )}
+          </>
+        )
       )}
     </div>
   );

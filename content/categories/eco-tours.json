@@ -1,0 +1,45 @@
+{
+  "heroImage": "/hero/nature_tour.webp",
+  "headline": "Into the wildest biodiversity on earth",
+  "tagline": "Tepuis, orinoco delta, and savannas that go on forever",
+  "intro": [
+    "Venezuela is one of the most biologically diverse countries on the planet — 1,417 recorded bird species, the world's highest waterfall, an ancient plateau landscape that inspired Conan Doyle's The Lost World, and a river delta the size of a small country. Most of it receives fewer visitors in a year than a minor European museum gets in a week.",
+    "The Gran Sabana in the southeast is the centrepiece: a rolling savanna dotted with tepuis — flat-topped sandstone mountains that have been isolated for 1.8 billion years, evolving their own endemic species on every summit. Angel Falls drops off the edge of Auyán-tepui with a 979-metre freefall, the longest uninterrupted waterfall on earth.",
+    "Los Llanos in the west and centre is Venezuela's answer to the African savanna: during the dry season, wildlife concentrates around shrinking waterholes and anacondas are spotted from horseback. Orinoco River delta expeditions take you into indigenous Warao communities and a maze of channels where freshwater dolphins surface alongside your dugout canoe."
+  ],
+  "highlights": [
+    "Gran Sabana: 3 million hectares of ancient tepui landscape",
+    "Angel Falls (Salto Ángel): 979 m — the world's highest waterfall",
+    "Los Llanos: capybara, anaconda, giant anteater, and 300+ bird species",
+    "Orinoco Delta: largest river delta in the Caribbean basin",
+    "Henri Pittier National Park: the most biodiverse place per km² on earth"
+  ],
+  "quickStats": [
+    { "label": "Best season", "value": "Jun – Nov (waterfalls)" },
+    { "label": "Key region", "value": "Gran Sabana" },
+    { "label": "Starting from", "value": "$80/person" }
+  ],
+  "guides": [
+    {
+      "title": "Angel Falls: The Complete Expedition Guide",
+      "teaser": "How to get to Canaima, when to go for the best falls, what to pack, and which tour operators are worth trusting.",
+      "tag": "Expedition Guide",
+      "readTime": "11 min read",
+      "image": "/destinations/angel-falls-tour.jpg"
+    },
+    {
+      "title": "Los Llanos Safari: Venezuela's Serengeti",
+      "teaser": "Horseback rides through flooded savanna, capybara at every turn, and anacondas the guides photograph like it's routine.",
+      "tag": "Wildlife",
+      "readTime": "8 min read",
+      "image": "/hero/nature_tour.webp"
+    },
+    {
+      "title": "Trekking to the Summit of Roraima",
+      "teaser": "The world's oldest plateau. Six days on the trail. Endemic species found nowhere else. One of South America's great adventures.",
+      "tag": "Trekking",
+      "readTime": "12 min read",
+      "image": "/hero/adventure.jpg"
+    }
+  ]
+}
