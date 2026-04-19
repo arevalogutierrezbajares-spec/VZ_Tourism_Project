@@ -52,7 +52,7 @@ export function PinPreviewCard({ pin, onClose }: PinPreviewCardProps) {
     <Card className="w-72 shadow-xl border-0 overflow-hidden">
       {pin.imageUrl && (
         <div className="relative h-32">
-          <Image src={pin.imageUrl} alt={pin.title} fill className="object-cover" />
+          <Image src={pin.imageUrl} alt={pin.title} fill sizes="288px" className="object-cover" />
           <Button
             variant="ghost"
             size="icon"

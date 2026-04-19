@@ -57,7 +57,7 @@ Respond in the same language the user writes in.`;
  */
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return new Response(JSON.stringify({ error: 'AI not configured' }), {
+    return new Response(JSON.stringify({ error: 'The AI trip planner is temporarily unavailable. Please try again later.' }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' },
     });

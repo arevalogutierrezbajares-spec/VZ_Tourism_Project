@@ -41,7 +41,7 @@ export function CreatorProfileCard({ creator, compact = false }: CreatorProfileC
     <div className="space-y-4">
       {creator.cover_image_url && (
         <div className="relative h-32 rounded-xl overflow-hidden">
-          <Image src={creator.cover_image_url} alt={creator.username} fill className="object-cover" />
+          <Image src={creator.cover_image_url} alt={creator.username} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
         </div>
       )}
       <div className="flex items-end gap-4 px-2 -mt-8">

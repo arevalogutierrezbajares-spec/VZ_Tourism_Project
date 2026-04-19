@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Compass, LayoutDashboard, PlusCircle, Tag, BarChart2, ChevronRight, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/auth-store';
 
 const navItems = [
   { href: '/creator/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -21,12 +22,16 @@ export default function CreatorPortalLayout({ children }: { children: React.Reac
   useEffect(() => {
     const supabase = createClient();
     if (!supabase) {
-      router.replace('/auth/login?next=' + encodeURIComponent(pathname));
+      const zustandUser = useAuthStore.getState().user;
+      if (zustandUser) { setChecking(false); return; }
+      router.replace('/login?next=' + encodeURIComponent(pathname));
       return;
     }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
-        router.replace('/auth/login?next=' + encodeURIComponent(pathname));
+        const zustandUser = useAuthStore.getState().user;
+        if (zustandUser) { setChecking(false); return; }
+        router.replace('/login?next=' + encodeURIComponent(pathname));
       } else {
         setChecking(false);
       }

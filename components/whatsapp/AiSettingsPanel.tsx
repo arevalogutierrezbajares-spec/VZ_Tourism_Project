@@ -683,7 +683,7 @@ function RulesTab({ cfg, onChange, onSave, saving }: {
             <Slider
               value={[local.response_delay_ms]}
               min={0} max={5000} step={500}
-              onValueChange={([v]) => setLocal((l) => ({ ...l, response_delay_ms: v ?? 0 }))}
+              onValueChange={(v) => setLocal((l) => ({ ...l, response_delay_ms: (Array.isArray(v) ? v[0] : v) ?? 0 }))}
             />
             <p className="text-[10px] text-muted-foreground text-center mt-1">{delayLabel(local.response_delay_ms)}</p>
           </div>
@@ -710,7 +710,7 @@ function RulesTab({ cfg, onChange, onSave, saving }: {
           <Slider
             value={[local.sentiment_threshold]}
             min={0} max={1} step={0.05}
-            onValueChange={([v]) => setLocal((l) => ({ ...l, sentiment_threshold: v ?? 0.3 }))}
+            onValueChange={(v) => setLocal((l) => ({ ...l, sentiment_threshold: (Array.isArray(v) ? v[0] : v) ?? 0.3 }))}
           />
           <div className="flex justify-between text-[10px] text-muted-foreground">
             <span>Hair-trigger</span>

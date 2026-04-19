@@ -111,7 +111,10 @@ export function PlanningChatPanel({
           signal: controller.signal,
         });
 
-        if (!response.ok) throw new Error('Failed');
+        if (!response.ok) {
+          const errBody = await response.json().catch(() => ({}));
+          throw new Error(errBody.error || 'Trip planner is temporarily unavailable');
+        }
         if (!response.body) throw new Error('No stream');
 
         const reader = response.body.getReader();
@@ -159,7 +162,13 @@ export function PlanningChatPanel({
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
         console.error('Chat error:', error);
-        toast.error('Failed to send message');
+        const errorMsg = (error as Error).message || 'Failed to send message';
+        toast.error(errorMsg);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: `Something went wrong: ${errorMsg}. Please try sending your message again.` },
+        ]);
+        setStreamingText('');
       } finally {
         setIsStreaming(false);
       }

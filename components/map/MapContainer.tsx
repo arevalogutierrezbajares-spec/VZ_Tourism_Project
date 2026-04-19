@@ -98,6 +98,7 @@ export function MapContainer({
   const mapInstanceRef = useRef<MapboxMap | null>(null);
   const tooltipRef = useRef<MapboxPopup | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
 
   const {
@@ -343,7 +344,15 @@ export function MapContainer({
 
       mapInstanceRef.current = map;
 
+      const loadTimeout = setTimeout(() => {
+        if (!initialLoadDone) {
+          setMapError('Map took too long to load. Check your connection and try again.');
+          setMapLoaded(true);
+        }
+      }, 10000);
+
       map.on('load', async () => {
+        clearTimeout(loadTimeout);
         // Add nav controls
         const NavigationControl = (
           mapboxgl as { NavigationControl: new () => unknown }
@@ -359,6 +368,14 @@ export function MapContainer({
         setMapLoaded(true);
       });
 
+      map.on('error', () => {
+        clearTimeout(loadTimeout);
+        if (!initialLoadDone) {
+          setMapError('Map failed to load');
+          setMapLoaded(true);
+        }
+      });
+
       // Re-add layers only after style CHANGES (dark mode toggle), not during initial load
       map.on('styledata', () => {
         if (!initialLoadDone) return;
@@ -366,7 +383,11 @@ export function MapContainer({
       });
     }
 
-    initMap().catch(console.error);
+    initMap().catch((err) => {
+      console.error('Map init error:', err);
+      setMapError('Map failed to initialize');
+      setMapLoaded(true);
+    });
 
     return () => {
       if (mapInstanceRef.current) {
@@ -418,7 +439,23 @@ export function MapContainer({
         </div>
       )}
 
-      {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && (
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900 dark:to-blue-900 z-10">
+          <div className="text-center space-y-3 p-6">
+            <div className="text-4xl">🗺️</div>
+            <h3 className="font-semibold text-lg">Map unavailable</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">{mapError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900 dark:to-blue-900">
           <div className="text-center space-y-2 p-6">
             <div className="text-4xl">🗺️</div>

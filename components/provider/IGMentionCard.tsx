@@ -22,6 +22,7 @@ export function IGMentionCard({ mention, onApprove }: IGMentionCardProps) {
             src={mention.media_url}
             alt={mention.caption || 'Instagram post'}
             fill
+            sizes="(max-width: 640px) 100vw, 33vw"
             className="object-cover"
           />
         </div>

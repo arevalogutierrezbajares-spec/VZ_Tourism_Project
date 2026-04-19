@@ -160,7 +160,7 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
                   <div className="flex gap-2 mt-2">
                     {review.photos.slice(0, 3).map((url, i) => (
                       <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden">
-                        <Image src={url} alt={`Review photo ${i + 1}`} fill className="object-cover" />
+                        <Image src={url} alt={`Review photo ${i + 1}`} fill sizes="64px" className="object-cover" />
                       </div>
                     ))}
                   </div>

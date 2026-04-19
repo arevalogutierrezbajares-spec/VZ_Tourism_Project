@@ -548,7 +548,7 @@ function Step1Verify({
       <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
         {listing.cover_image_url && (
           <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
-            <Image src={listing.cover_image_url} alt={listing.name} fill className="object-cover" />
+            <Image src={listing.cover_image_url} alt={listing.name} fill sizes="56px" className="object-cover" />
           </div>
         )}
         <div>
@@ -735,7 +735,7 @@ function Step2Review({
                   selected ? 'border-blue-500' : 'border-transparent opacity-60'
                 }`}
               >
-                <Image src={url} alt="" fill className="object-cover" />
+                <Image src={url} alt="" fill sizes="(max-width: 640px) 33vw, 120px" className="object-cover" />
                 {selected && (
                   <div className="absolute top-1 right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
@@ -1426,7 +1426,7 @@ function Step6Review({
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         {displayPhotos[0] && (
           <div className="relative h-40">
-            <Image src={displayPhotos[0]} alt={data.listing_name} fill className="object-cover" />
+            <Image src={displayPhotos[0]} alt={data.listing_name} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
             <div className="absolute top-2 left-2 inline-flex items-center gap-1 bg-amber-400 text-amber-900 text-xs font-semibold px-2 py-0.5 rounded-full">
               <Star className="w-3 h-3 fill-amber-900" />
               Founding Partner
@@ -1558,7 +1558,7 @@ function StepGoLive({
         <div className="mx-4 mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           {listing.cover_image_url && (
             <div className="relative h-36">
-              <Image src={listing.cover_image_url} alt={listing.name} fill className="object-cover" />
+              <Image src={listing.cover_image_url} alt={listing.name} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
             </div>
           )}
           <div className="p-4">

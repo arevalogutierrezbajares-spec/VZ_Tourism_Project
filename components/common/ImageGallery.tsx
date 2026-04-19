@@ -34,6 +34,8 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               src={images[0].url}
               alt={images[0].alt || ''}
               fill
+              priority
+              sizes="(max-width: 768px) 100vw, 800px"
               className="object-cover hover:scale-105 transition-transform duration-300"
             />
           </div>
@@ -47,6 +49,8 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 src={images[0].url}
                 alt={images[0].alt || ''}
                 fill
+                priority
+                sizes="(max-width: 768px) 50vw, 400px"
                 className="object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
@@ -61,6 +65,8 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                     src={img.url}
                     alt={img.alt || ''}
                     fill
+                    loading="eager"
+                    sizes="(max-width: 768px) 50vw, 400px"
                     className="object-cover hover:scale-105 transition-transform duration-300"
                   />
                   {i === 1 && images.length > 3 && (
@@ -112,6 +118,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               src={images[lightboxIndex].url}
               alt={images[lightboxIndex].alt || ''}
               fill
+              sizes="(max-width: 896px) 100vw, 896px"
               className="object-contain"
             />
           </div>

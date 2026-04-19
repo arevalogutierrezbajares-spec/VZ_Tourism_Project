@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { MapPin, Heart, Plus, Compass, Waves, Mountain, Building2, Utensils, Zap, Bird } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useItineraryStore } from '@/stores/itinerary-store';
 
 const Instagram = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
@@ -96,6 +98,7 @@ function PhotoCard({
 }) {
   const [saved, setSaved] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const { current, days, addStop, openPanel } = useItineraryStore();
 
   return (
     <div
@@ -191,7 +194,32 @@ function PhotoCard({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              // Could open trip planner — for now just visual feedback
+              if (!current) {
+                toast('Start planning a trip first!', { icon: '🗺️' });
+                return;
+              }
+              const targetDay = days.length > 0 ? days[days.length - 1].day : 1;
+              const stopCount = days.length > 0 ? days[days.length - 1].stops.length : 0;
+              addStop({
+                itinerary_id: current.id,
+                listing_id: null,
+                day: targetDay,
+                order: stopCount + 1,
+                title: item.caption,
+                description: item.description || null,
+                latitude: item.lat,
+                longitude: item.lng,
+                location_name: item.region_name,
+                start_time: null,
+                end_time: null,
+                duration_hours: null,
+                cost_usd: 0,
+                transport_to_next: null,
+                transport_duration_minutes: null,
+                notes: null,
+              });
+              openPanel();
+              toast.success(`Added "${item.caption}" to your trip`);
             }}
           >
             <Plus className="w-3 h-3" />
@@ -224,13 +252,40 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
     ? items
     : items.filter((item) => item.category === activeCategory);
 
+  const { current, days, addStop, openPanel } = useItineraryStore();
+
   const handleAddToTrip = useCallback((item: DiscoverItem) => {
     setSavedTrip((prev) => {
       if (prev.some((i) => i.id === item.id)) return prev;
       return [...prev, item];
     });
     setSelectedItem(null);
-  }, []);
+
+    if (current) {
+      const targetDay = days.length > 0 ? days[days.length - 1].day : 1;
+      const stopCount = days.length > 0 ? days[days.length - 1].stops.length : 0;
+      addStop({
+        itinerary_id: current.id,
+        listing_id: null,
+        day: targetDay,
+        order: stopCount + 1,
+        title: item.caption,
+        description: item.description || null,
+        latitude: item.lat,
+        longitude: item.lng,
+        location_name: item.region_name,
+        start_time: null,
+        end_time: null,
+        duration_hours: null,
+        cost_usd: 0,
+        transport_to_next: null,
+        transport_duration_minutes: null,
+        notes: null,
+      });
+      openPanel();
+      toast.success(`Added "${item.caption}" to your trip`);
+    }
+  }, [current, days, addStop, openPanel]);
 
   return (
     <div className="min-h-screen" style={{ background: '#f8f9fa' }}>

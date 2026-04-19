@@ -114,18 +114,16 @@ describe('PlanningChatPanel', () => {
 
   // ─── Close button ─────────────────────────────────────────────────────────
 
-  it('does not render close button when onClose is not provided', () => {
-    render(<PlanningChatPanel />);
-    // No X button visible
-    expect(screen.queryByRole('button', { name: '' })).toBeNull();
-  });
+  it('has more buttons when onClose is provided than without', () => {
+    const { unmount: u1 } = render(<PlanningChatPanel />);
+    const countWithout = screen.getAllByRole('button').length;
+    u1();
 
-  it('renders close button when onClose prop is provided', () => {
     const mockClose = jest.fn();
     render(<PlanningChatPanel onClose={mockClose} />);
-    const buttons = screen.getAllByRole('button');
-    // There should be buttons — find the icon-only close button
-    expect(buttons.length).toBeGreaterThan(0);
+    const countWith = screen.getAllByRole('button').length;
+
+    expect(countWith).toBeGreaterThan(countWithout);
   });
 
   // ─── Panel mode: hidden when closed ──────────────────────────────────────
@@ -176,7 +174,7 @@ describe('PlanningChatPanel', () => {
   it('adds user message to chat after submitting', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([
+      body: makeSSEBody([
         { type: 'text', text: 'Here is your itinerary!' },
         { type: 'done' },
       ]),
@@ -197,7 +195,7 @@ describe('PlanningChatPanel', () => {
   it('calls /api/itineraries/conversation with the message', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([{ type: 'done' }]),
+      body: makeSSEBody([{ type: 'done' }]),
     });
 
     render(<PlanningChatPanel />);
@@ -220,7 +218,7 @@ describe('PlanningChatPanel', () => {
   it('clears input after sending', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([{ type: 'done' }]),
+      body: makeSSEBody([{ type: 'done' }]),
     });
 
     render(<PlanningChatPanel />);
@@ -239,7 +237,7 @@ describe('PlanningChatPanel', () => {
   it('shows assistant response after streaming completes', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([
+      body: makeSSEBody([
         { type: 'text', text: 'Here is your plan for Mérida!' },
         { type: 'done' },
       ]),
@@ -263,7 +261,7 @@ describe('PlanningChatPanel', () => {
   it('clicking a default starter sends the message', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([{ type: 'done' }]),
+      body: makeSSEBody([{ type: 'done' }]),
     });
 
     render(<PlanningChatPanel />);
@@ -298,7 +296,7 @@ describe('PlanningChatPanel', () => {
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([
+      body: makeSSEBody([
         { type: 'itinerary', data: itineraryData },
         { type: 'done' },
       ]),
@@ -323,7 +321,7 @@ describe('PlanningChatPanel', () => {
   it('strips XML tags from displayed streaming text', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([
+      body: makeSSEBody([
         {
           type: 'text',
           text: 'Here is your plan. <day-plan day="1">...</day-plan> Enjoy!',
@@ -355,7 +353,7 @@ describe('PlanningChatPanel', () => {
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      body: makeSSEStream([
+      body: makeSSEBody([
         { type: 'day-plan', data: dayData },
         { type: 'done' },
       ]),

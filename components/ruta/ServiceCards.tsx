@@ -1,8 +1,23 @@
 'use client'
 
-export function ServiceCards() {
-  const services = [
+import type { RutaRideType } from '@/types/ruta'
+
+interface ServiceCardsProps {
+  onServiceSelect?: (service: RutaRideType) => void
+}
+
+export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
+  const services: Array<{
+    type: RutaRideType
+    icon: string
+    title: string
+    description: string
+    price: string
+    priceContext: string
+    specs: string[]
+  }> = [
     {
+      type: 'airport',
       icon: '\u2708',
       title: 'Airport Transfer',
       description:
@@ -17,6 +32,7 @@ export function ServiceCards() {
       ],
     },
     {
+      type: 'inter_city',
       icon: '\u2194',
       title: 'Inter-City',
       description:
@@ -31,6 +47,7 @@ export function ServiceCards() {
       ],
     },
     {
+      type: 'intra_city',
       icon: '\u25C9',
       title: 'Intra-City',
       description:
@@ -46,6 +63,17 @@ export function ServiceCards() {
     },
   ]
 
+  function handleSelect(type: RutaRideType) {
+    if (onServiceSelect) {
+      onServiceSelect(type)
+    }
+    // Scroll to booking form
+    const el = document.getElementById('book')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
   return (
     <section id="services" className="px-6 md:px-16 py-24">
       <div className="max-w-7xl mx-auto">
@@ -59,7 +87,7 @@ export function ServiceCards() {
           {services.map((service) => (
             <div
               key={service.title}
-              className="p-8 md:p-12"
+              className="p-8 md:p-12 flex flex-col"
               style={{
                 background: 'rgba(255,255,255,0.02)',
                 border: '1px solid rgba(255,255,255,0.05)',
@@ -80,7 +108,7 @@ export function ServiceCards() {
                 {service.priceContext}
               </div>
               <ul
-                className="space-y-2 pt-5"
+                className="space-y-2 pt-5 mb-8"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
               >
                 {service.specs.map((spec) => (
@@ -97,6 +125,17 @@ export function ServiceCards() {
                   </li>
                 ))}
               </ul>
+              <button
+                onClick={() => handleSelect(service.type)}
+                className="mt-auto w-full py-3 text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-90"
+                style={{
+                  border: '1px solid rgba(201,169,110,0.4)',
+                  color: '#c9a96e',
+                  background: 'transparent',
+                }}
+              >
+                Book {service.title}
+              </button>
             </div>
           ))}
         </div>

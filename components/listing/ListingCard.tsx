@@ -30,7 +30,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
         )}>
           {listing.cover_image_url && (
             <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-              <Image src={listing.cover_image_url} alt={listing.title} fill className="object-cover" />
+              <Image src={listing.cover_image_url} alt={listing.title} fill sizes="64px" className="object-cover" />
             </div>
           )}
           <div className="flex-1 min-w-0">
@@ -66,6 +66,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               src={listing.cover_image_url}
               alt={listing.title}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (

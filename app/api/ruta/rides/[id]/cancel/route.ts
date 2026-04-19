@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { calculateRefund } from '@/lib/ruta/cancellation'
 import { createRutaRefund } from '@/lib/ruta/stripe'
 import { isValidTransition } from '@/lib/ruta/ride-status'
+import { validateAccessToken } from '@/lib/ruta/access-token'
 import type { RutaRideStatus } from '@/types/ruta'
 
 export async function POST(
@@ -10,6 +11,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: rideId } = await params
+  const token = request.nextUrl.searchParams.get('token')
 
   const supabase = await createClient()
   const serviceClient = await createServiceClient()
@@ -37,18 +39,19 @@ export async function POST(
 
   // Determine who is cancelling
   const isOwner = user && ride.passenger_user_id === user.id
+  const isTokenOwner = !isOwner && token && validateAccessToken(token, ride.passenger_access_token)
   const userMeta = user?.app_metadata as Record<string, unknown> | undefined
   const rutaRole = userMeta?.ruta_role as string | undefined
   const isDispatcher = rutaRole === 'ruta_dispatcher' || rutaRole === 'ruta_admin'
 
-  if (!isOwner && !isDispatcher) {
+  if (!isOwner && !isTokenOwner && !isDispatcher) {
     return NextResponse.json(
       { error: 'Forbidden: you can only cancel your own rides' },
       { status: 403 }
     )
   }
 
-  const cancelledBy = isDispatcher && !isOwner ? 'ops' : 'passenger'
+  const cancelledBy = isDispatcher && !isOwner && !isTokenOwner ? 'ops' : 'passenger'
   const newStatus: RutaRideStatus = cancelledBy === 'ops'
     ? 'cancelled_by_ops'
     : 'cancelled_by_passenger'

@@ -115,7 +115,7 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
  * Get a photo URL for a Google Places photo reference.
  */
 export function getPhotoUrl(photoName: string, maxWidth = 800): string {
-  return `${BASE_URL}/${photoName}/media?maxWidthPx=${maxWidth}&key=${API_KEY}`;
+  return `/api/places/photo?ref=${encodeURIComponent(photoName)}&maxWidth=${maxWidth}`;
 }
 
 /**

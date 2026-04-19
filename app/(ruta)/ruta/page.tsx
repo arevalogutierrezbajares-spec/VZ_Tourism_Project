@@ -5,7 +5,16 @@ import { RutaNav } from '@/components/ruta/RutaNav'
 import { BookingForm } from '@/components/ruta/BookingForm'
 import { ServiceCards } from '@/components/ruta/ServiceCards'
 import { SecuritySection } from '@/components/ruta/SecuritySection'
+import { ContactSection } from '@/components/ruta/ContactSection'
 import type { RutaRideType } from '@/types/ruta'
+
+const FOOTER_NAV = [
+  { label: 'Services', href: '#services' },
+  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Security', href: '#security' },
+  { label: 'Contact', href: '#contact' },
+  { label: 'Book Now', href: '#book' },
+]
 
 export default function RutaLandingPage() {
   const [activeService, setActiveService] = useState<RutaRideType>('airport')
@@ -15,7 +24,7 @@ export default function RutaLandingPage() {
       <RutaNav />
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-16 pt-24 pb-16 relative">
+      <section id="hero" className="min-h-screen flex flex-col justify-center px-6 md:px-16 pt-24 pb-16 relative">
         {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-20"
@@ -42,7 +51,7 @@ export default function RutaLandingPage() {
               built for how Venezuela actually works.
             </p>
 
-            {/* Trust Badges - above fold, next to form */}
+            {/* Trust Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
               {[
                 { value: 'B5', label: 'Armor Rating', desc: 'Ballistic protection' },
@@ -126,10 +135,10 @@ export default function RutaLandingPage() {
       </section>
 
       {/* Service Tiers */}
-      <ServiceCards />
+      <ServiceCards onServiceSelect={setActiveService} />
 
       {/* How It Works */}
-      <section className="px-6 md:px-16 py-24">
+      <section id="how-it-works" className="px-6 md:px-16 py-24">
         <div className="max-w-7xl mx-auto">
           <h2
             className="text-xs uppercase tracking-widest mb-16"
@@ -180,19 +189,72 @@ export default function RutaLandingPage() {
       {/* Security Protocol */}
       <SecuritySection />
 
+      {/* Contact */}
+      <ContactSection />
+
       {/* Footer */}
-      <footer className="px-6 md:px-16 py-12 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div
-            className="text-lg font-bold tracking-widest"
-            style={{ color: '#c9a96e' }}
-          >
-            RUTA
+      <footer className="px-6 md:px-16 py-16 border-t border-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Left: Logo + compliance */}
+            <div>
+              <div
+                className="text-lg font-bold tracking-widest mb-4"
+                style={{ color: '#c9a96e' }}
+              >
+                RUTA<span style={{ color: '#c9a96e' }}>.</span>
+              </div>
+              <p
+                className="text-[10px] uppercase tracking-wider leading-relaxed"
+                style={{ color: 'rgba(255,255,255,0.25)' }}
+              >
+                RUTA Security Services LLC is a Florida-registered entity
+                operating in compliance with US OFAC requirements and applicable
+                Venezuelan regulations. Client payments processed in USD. No
+                bolivar transactions.
+              </p>
+            </div>
+
+            {/* Center: Nav links */}
+            <div className="flex flex-col items-start md:items-center gap-3">
+              {FOOTER_NAV.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="text-xs uppercase tracking-wider transition-colors hover:text-white"
+                  style={{ color: 'rgba(255,255,255,0.35)' }}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+
+            {/* Right: Contact + legal */}
+            <div className="flex flex-col items-start md:items-end gap-3">
+              <a
+                href="https://wa.me/584121234567"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs transition-colors hover:text-white"
+                style={{ color: '#c9a96e' }}
+              >
+                WhatsApp: +58 412 123 4567
+              </a>
+              <a
+                href="mailto:ops@rutasecurity.com"
+                className="text-xs transition-colors hover:text-white"
+                style={{ color: 'rgba(255,255,255,0.35)' }}
+              >
+                ops@rutasecurity.com
+              </a>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                Miami, FL | Caracas, VZ
+              </span>
+              <span className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.15)' }}>
+                &copy; {new Date().getFullYear()} RUTA Security Services LLC. All times in VET (UTC-4).
+              </span>
+            </div>
           </div>
-          <p className="text-xs" style={{ color: '#444' }}>
-            &copy; 2026 RUTA Executive Security Transport. Venezuela. All times
-            in VET (UTC-4).
-          </p>
         </div>
       </footer>
     </>
