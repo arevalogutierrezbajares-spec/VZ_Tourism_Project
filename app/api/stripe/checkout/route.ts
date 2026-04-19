@@ -10,10 +10,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { bookingId, successUrl, cancelUrl } = body as {
+  const { bookingId, successUrl, cancelUrl, discountCode } = body as {
     bookingId?: string;
     successUrl?: string;
     cancelUrl?: string;
+    discountCode?: string;
   };
 
   if (!bookingId) {
@@ -28,23 +29,56 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Booking is not pending payment' }, { status: 400 });
   }
 
+  // Apply discount code before creating Stripe session
+  let chargeAmount = booking.total_usd;
+  let discountCodeId: string | undefined;
+  let discountAmountUsd = 0;
+
+  if (discountCode?.trim()) {
+    try {
+      const validateRes = await fetch(
+        new URL('/api/discount-codes/validate', request.url).href,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: discountCode.trim(), booking_total_usd: booking.total_usd }),
+        }
+      );
+      if (validateRes.ok) {
+        const validation = await validateRes.json();
+        if (validation.valid) {
+          chargeAmount = validation.net_total_usd;
+          discountCodeId = validation.code_id;
+          discountAmountUsd = validation.discount_amount_usd;
+        }
+      }
+      // If validation fails or code is invalid, proceed with original price (silent degradation)
+    } catch {
+      // Validation service unavailable — proceed without discount
+    }
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3111';
 
   try {
     const session = await createCheckoutSession({
       bookingId,
       listingTitle: booking.listing_name,
-      amountUsd: booking.total_usd,
+      amountUsd: chargeAmount,
       touristEmail: booking.guest_email,
       successUrl: successUrl || `${appUrl}/booking/confirmation?id=${bookingId}`,
       cancelUrl:
         cancelUrl ||
         (booking.listing_slug ? `${appUrl}/listing/${booking.listing_slug}` : `${appUrl}/`),
-      metadata: { bookingId },
+      metadata: {
+        bookingId,
+        ...(discountCodeId ? { discount_code_id: discountCodeId } : {}),
+      },
     });
 
     updateBookingStatus(bookingId, 'pending', {
       stripe_checkout_session_id: session.id,
+      ...(discountCodeId ? { discount_code_id: discountCodeId, discount_amount_usd: discountAmountUsd } : {}),
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });

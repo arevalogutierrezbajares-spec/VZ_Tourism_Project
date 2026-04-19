@@ -82,3 +82,18 @@ DO $$ BEGIN
     BEFORE UPDATE ON discount_codes
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Atomic increment for webhook use — avoids read-modify-write race
+CREATE OR REPLACE FUNCTION increment_discount_code_use(
+  p_code_id UUID,
+  p_revenue NUMERIC DEFAULT 0
+) RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE discount_codes
+  SET
+    times_used = times_used + 1,
+    total_revenue_generated = total_revenue_generated + p_revenue
+  WHERE id = p_code_id;
+END;
+$$;

@@ -52,17 +52,38 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as {
           id?: string;
-          metadata?: { bookingId?: string; booking_id?: string };
+          metadata?: { bookingId?: string; booking_id?: string; discount_code_id?: string };
           payment_intent?: string;
         };
         const bookingId = session.metadata?.bookingId || session.metadata?.booking_id;
+        const discountCodeId = session.metadata?.discount_code_id;
         const extra = { payment_intent_id: session.payment_intent as string | undefined };
+
         if (bookingId) {
           if (supabase) await updateSupabaseBooking(supabase, bookingId, 'confirmed', extra);
           updateBookingStatus(bookingId, 'confirmed', extra);
         } else if (session.id) {
           if (supabase) await updateSupabaseBookingBySession(supabase, session.id, 'confirmed', extra);
           updateBookingBySessionId(session.id, 'confirmed', extra);
+        }
+
+        // Record discount code usage and increment counter atomically
+        if (supabase && discountCodeId && bookingId) {
+          const booking = getBooking(bookingId);
+          const discountAmount = booking?.discount_amount_usd ?? 0;
+
+          // Fire both in parallel — webhook must not fail if these do
+          await Promise.allSettled([
+            supabase.from('discount_code_uses').insert({
+              code_id: discountCodeId,
+              guest_booking_id: bookingId,
+              discount_amount_usd: discountAmount,
+            }),
+            supabase.rpc('increment_discount_code_use', {
+              p_code_id: discountCodeId,
+              p_revenue: discountAmount,
+            }),
+          ]);
         }
         break;
       }

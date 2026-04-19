@@ -32,6 +32,8 @@ export interface LocalBooking {
   confirmation_code: string;
   special_requests?: string;
   notes?: string;
+  discount_code_id?: string;
+  discount_amount_usd?: number;
   created_at: string;
   updated_at: string;
 }
