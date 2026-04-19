@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { RutaI18nProvider, useRutaI18n } from '@/lib/ruta/i18n'
 import { RutaNav } from '@/components/ruta/RutaNav'
 import { BookingForm } from '@/components/ruta/BookingForm'
 import { ServiceCards } from '@/components/ruta/ServiceCards'
@@ -8,16 +9,25 @@ import { SecuritySection } from '@/components/ruta/SecuritySection'
 import { ContactSection } from '@/components/ruta/ContactSection'
 import type { RutaRideType } from '@/types/ruta'
 
-const FOOTER_NAV = [
-  { label: 'Services', href: '#services' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Security', href: '#security' },
-  { label: 'Contact', href: '#contact' },
-  { label: 'Book Now', href: '#book' },
-]
-
 export default function RutaLandingPage() {
+  return (
+    <RutaI18nProvider>
+      <RutaLandingContent />
+    </RutaI18nProvider>
+  )
+}
+
+function RutaLandingContent() {
+  const { t } = useRutaI18n()
   const [activeService, setActiveService] = useState<RutaRideType>('airport')
+
+  const footerNav = [
+    { label: t.nav.services, href: '#services' },
+    { label: t.nav.howItWorks, href: '#how-it-works' },
+    { label: t.nav.security, href: '#security' },
+    { label: t.nav.contact, href: '#contact' },
+    { label: t.nav.bookNow, href: '#book' },
+  ]
 
   return (
     <>
@@ -39,26 +49,19 @@ export default function RutaLandingPage() {
           {/* Left: Headline + Trust */}
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight mb-6 tracking-tight">
-              Secure{' '}
+              {t.hero.titlePre}
               <span className="font-bold" style={{ color: '#c9a96e' }}>
-                Executive
-              </span>{' '}
-              Transport in Venezuela
+                {t.hero.titleAccent}
+              </span>
+              {t.hero.titlePost}
             </h1>
             <p className="text-lg mb-8 max-w-lg" style={{ color: '#999' }}>
-              Armored vehicles. Armed security. Instant booking. From Maiquetia
-              to Caracas, Margarita to Merida. The executive transport service
-              built for how Venezuela actually works.
+              {t.hero.subtitle}
             </p>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              {[
-                { value: 'B5', label: 'Armor Rating', desc: 'Ballistic protection' },
-                { value: '24/7', label: 'Operations', desc: 'Always available' },
-                { value: 'GPS', label: 'Live Tracking', desc: 'Real-time monitoring' },
-                { value: '100%', label: 'Vetted', desc: 'Background checked' },
-              ].map((badge) => (
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {t.badges.map((badge) => (
                 <div key={badge.label} className="text-center">
                   <div
                     className="text-2xl font-bold"
@@ -84,7 +87,7 @@ export default function RutaLandingPage() {
               className="flex items-center gap-3 text-sm"
               style={{ color: '#666' }}
             >
-              <span>Prefer to speak with someone?</span>
+              <span>{t.hero.speakWithSomeone}</span>
               <a
                 href="https://wa.me/584121234567"
                 target="_blank"
@@ -92,7 +95,7 @@ export default function RutaLandingPage() {
                 className="underline hover:no-underline"
                 style={{ color: '#c9a96e' }}
               >
-                WhatsApp our ops team
+                {t.hero.whatsappOps}
               </a>
             </div>
           </div>
@@ -112,16 +115,10 @@ export default function RutaLandingPage() {
             className="text-xs uppercase tracking-widest mb-8"
             style={{ color: '#666' }}
           >
-            Trusted by corporate travel departments and executive teams
+            {t.trustedBy.heading}
           </p>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            {[
-              'Fortune 500 Energy',
-              'International NGOs',
-              'Diplomatic Corps',
-              'Mining & Resources',
-              'Consulting Firms',
-            ].map((client) => (
+            {t.trustedBy.clients.map((client) => (
               <span
                 key={client}
                 className="text-sm font-medium"
@@ -144,37 +141,16 @@ export default function RutaLandingPage() {
             className="text-xs uppercase tracking-widest mb-16"
             style={{ color: '#c9a96e' }}
           >
-            How It Works
+            {t.howItWorks.sectionTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[
-              {
-                step: '01',
-                title: 'Book Online',
-                desc: 'Select your service, enter your route, and get an instant price. No emails, no contracts.',
-              },
-              {
-                step: '02',
-                title: 'Receive Driver Details',
-                desc: "Your driver's name, photo, vehicle description, and plate number. Sent via email and WhatsApp.",
-              },
-              {
-                step: '03',
-                title: 'Meet at Pickup',
-                desc: 'Your driver arrives in a discrete armored vehicle. Professional, punctual, secure.',
-              },
-              {
-                step: '04',
-                title: 'Tracked in Real Time',
-                desc: 'Live GPS tracking throughout your ride. Our operations center monitors every active transfer.',
-              },
-            ].map((item) => (
-              <div key={item.step}>
+            {t.howItWorks.steps.map((item, i) => (
+              <div key={i}>
                 <div
                   className="text-3xl font-bold mb-4"
                   style={{ color: '#c9a96e', opacity: 0.3 }}
                 >
-                  {item.step}
+                  {String(i + 1).padStart(2, '0')}
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: '#999' }}>
@@ -208,18 +184,15 @@ export default function RutaLandingPage() {
                 className="text-[10px] uppercase tracking-wider leading-relaxed"
                 style={{ color: 'rgba(255,255,255,0.25)' }}
               >
-                RUTA Security Services LLC is a Florida-registered entity
-                operating in compliance with US OFAC requirements and applicable
-                Venezuelan regulations. Client payments processed in USD. No
-                bolivar transactions.
+                {t.footer.compliance}
               </p>
             </div>
 
             {/* Center: Nav links */}
             <div className="flex flex-col items-start md:items-center gap-3">
-              {FOOTER_NAV.map((item) => (
+              {footerNav.map((item) => (
                 <a
-                  key={item.label}
+                  key={item.href}
                   href={item.href}
                   className="text-xs uppercase tracking-wider transition-colors hover:text-white"
                   style={{ color: 'rgba(255,255,255,0.35)' }}
@@ -248,10 +221,10 @@ export default function RutaLandingPage() {
                 ops@rutasecurity.com
               </a>
               <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                Miami, FL | Caracas, VZ
+                {t.footer.location}
               </span>
               <span className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.15)' }}>
-                &copy; {new Date().getFullYear()} RUTA Security Services LLC. All times in VET (UTC-4).
+                &copy; {new Date().getFullYear()} RUTA Security Services LLC. {t.footer.allTimes}
               </span>
             </div>
           </div>

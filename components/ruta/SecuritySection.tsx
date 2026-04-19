@@ -1,28 +1,9 @@
 'use client'
 
+import { useRutaI18n } from '@/lib/ruta/i18n'
+
 export function SecuritySection() {
-  const features = [
-    {
-      title: 'Armored Fleet',
-      description:
-        'B4-B5 rated vehicles. Bulletproof glass, reinforced chassis. Standard appearance from outside.',
-    },
-    {
-      title: 'Vetted Drivers',
-      description:
-        'Background checked, professionally trained, licensed to carry. Minimum 5 years experience.',
-    },
-    {
-      title: 'Live Monitoring',
-      description:
-        'GPS tracking on every vehicle. Operations center monitors all active rides around the clock.',
-    },
-    {
-      title: 'Route Intelligence',
-      description:
-        'Pre-trip risk assessment. Real-time route adjustments. Geofenced alert zones across Venezuela.',
-    },
-  ]
+  const { t } = useRutaI18n()
 
   return (
     <section
@@ -36,25 +17,21 @@ export function SecuritySection() {
             className="text-xs uppercase tracking-widest mb-8"
             style={{ color: '#c9a96e' }}
           >
-            Security Protocol
+            {t.security.sectionLabel}
           </h2>
           <h3 className="text-3xl md:text-4xl font-light mb-6">
-            Your safety is operational, not aspirational
+            {t.security.heading}
           </h3>
           <p className="text-base leading-relaxed mb-4" style={{ color: '#999' }}>
-            Every RUTA vehicle is armored to B4-B5 ballistic standards. Every
-            driver is vetted, trained, and armed. Every route is assessed for
-            risk before departure.
+            {t.security.p1}
           </p>
           <p className="text-base leading-relaxed" style={{ color: '#999' }}>
-            Live GPS tracking and in-vehicle monitoring provide real-time
-            oversight from our operations center. This is not a standard ride
-            service. This is executive security.
+            {t.security.p2}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {features.map((feat) => (
+          {t.security.features.map((feat) => (
             <div
               key={feat.title}
               className="p-6"

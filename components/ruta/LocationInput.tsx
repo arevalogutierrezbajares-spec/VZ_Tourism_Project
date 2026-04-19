@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useId } from 'react'
 import type { LocationResult } from './AirportSelect'
+import { useRutaI18n } from '@/lib/ruta/i18n'
 
 interface GeoResult {
   id: string
@@ -29,6 +30,7 @@ export function LocationInput({
   placeholder,
   types = 'address,poi',
 }: LocationInputProps) {
+  const { t } = useRutaI18n()
   const [query, setQuery] = useState(value?.address || '')
   const [results, setResults] = useState<GeoResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -171,7 +173,7 @@ export function LocationInput({
         >
           {noResults && (
             <div className="px-4 py-3 text-sm" style={{ color: '#888' }}>
-              No locations found. Try a more specific address or landmark name.
+              {t.booking.noLocations}
             </div>
           )}
           {results.map((result) => (

@@ -6,23 +6,12 @@ import type { RutaRideType, RutaVehicleClass, RutaPaymentMethod } from '@/types/
 import { RUTA_MIN_LEAD_TIMES } from '@/types/ruta'
 import { AirportSelect, type LocationResult } from './AirportSelect'
 import { LocationInput } from './LocationInput'
+import { useRutaI18n } from '@/lib/ruta/i18n'
 
 interface BookingFormProps {
   activeService: RutaRideType
   onServiceChange: (service: RutaRideType) => void
 }
-
-const SERVICE_TABS: { type: RutaRideType; label: string }[] = [
-  { type: 'airport', label: 'Airport' },
-  { type: 'inter_city', label: 'Inter-City' },
-  { type: 'intra_city', label: 'Intra-City' },
-]
-
-const VEHICLE_OPTIONS: { value: RutaVehicleClass; label: string }[] = [
-  { value: 'sedan', label: 'Armored Sedan' },
-  { value: 'suv', label: 'Armored SUV' },
-  { value: 'van', label: 'Executive Van' },
-]
 
 interface QuoteResult {
   price_usd: number
@@ -39,6 +28,7 @@ interface QuoteResult {
 }
 
 export function BookingForm({ activeService, onServiceChange }: BookingFormProps) {
+  const { t } = useRutaI18n()
   const router = useRouter()
   const [pickupLocation, setPickupLocation] = useState<LocationResult | null>(null)
   const [dropoffLocation, setDropoffLocation] = useState<LocationResult | null>(null)
@@ -59,6 +49,18 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
+  const serviceTabs: { type: RutaRideType; label: string }[] = [
+    { type: 'airport', label: t.booking.tabs.airport },
+    { type: 'inter_city', label: t.booking.tabs.interCity },
+    { type: 'intra_city', label: t.booking.tabs.intraCity },
+  ]
+
+  const vehicleOptions: { value: RutaVehicleClass; label: string }[] = [
+    { value: 'sedan', label: t.booking.vehicleSedan },
+    { value: 'suv', label: t.booking.vehicleSuv },
+    { value: 'van', label: t.booking.vehicleVan },
+  ]
+
   const getMinDateTime = useCallback(() => {
     const leadMinutes = RUTA_MIN_LEAD_TIMES[activeService]
     const min = new Date(Date.now() + leadMinutes * 60 * 1000)
@@ -75,12 +77,12 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
 
   const handleGetQuote = async () => {
     const missing: string[] = []
-    if (!pickupLocation) missing.push('pickup location')
-    if (!dropoffLocation) missing.push('destination')
-    if (!date) missing.push('date')
-    if (!time) missing.push('time')
+    if (!pickupLocation) missing.push(activeService === 'airport' ? t.booking.pickupAirport : t.booking.pickupLocation)
+    if (!dropoffLocation) missing.push(t.booking.destination)
+    if (!date) missing.push(t.booking.date)
+    if (!time) missing.push(t.booking.time)
     if (missing.length > 0) {
-      setQuoteError(`Please fill in: ${missing.join(', ')}.`)
+      setQuoteError(`${t.booking.fillIn}: ${missing.join(', ')}.`)
       return
     }
 
@@ -115,7 +117,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       setQuoteError(
         err instanceof Error
           ? err.message
-          : "We couldn't calculate your price right now. Please try again or contact us via WhatsApp for an instant quote."
+          : t.booking.quoteError
       )
     } finally {
       setQuoteLoading(false)
@@ -124,11 +126,11 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
 
   const handleCheckout = async () => {
     if (!passengerName.trim() || !passengerEmail.trim() || !passengerPhone.trim()) {
-      setCheckoutError('Please fill in all passenger details.')
+      setCheckoutError(t.booking.fillPassenger)
       return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(passengerEmail)) {
-      setCheckoutError('Please enter a valid email address.')
+      setCheckoutError(t.booking.invalidEmail)
       return
     }
     if (!quote || !pickupLocation || !dropoffLocation) return
@@ -171,7 +173,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       }
     } catch (err) {
       setCheckoutError(
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+        err instanceof Error ? err.message : t.booking.somethingWrong
       )
     } finally {
       setCheckoutLoading(false)
@@ -196,7 +198,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         className="text-xs uppercase tracking-widest mb-6"
         style={{ color: '#c9a96e' }}
       >
-        Book Your Transfer
+        {t.booking.title}
       </h2>
 
       {/* Service Tabs */}
@@ -205,7 +207,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         role="tablist"
         aria-label="Service type"
       >
-        {SERVICE_TABS.map((tab) => (
+        {serviceTabs.map((tab) => (
           <button
             key={tab.type}
             role="tab"
@@ -236,17 +238,17 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           <AirportSelect
             value={pickupLocation}
             onChange={setPickupLocation}
-            label="Pickup Airport"
+            label={t.booking.pickupAirport}
           />
         ) : (
           <LocationInput
             value={pickupLocation}
             onChange={setPickupLocation}
-            label="Pickup Location"
+            label={t.booking.pickupLocation}
             placeholder={
               activeService === 'inter_city'
-                ? 'City name (e.g., Caracas, Valencia)'
-                : 'Address, hotel, or landmark'
+                ? t.booking.placeholderCity
+                : t.booking.placeholderAddress
             }
             types={pickupTypes}
           />
@@ -258,13 +260,13 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         <LocationInput
           value={dropoffLocation}
           onChange={setDropoffLocation}
-          label="Destination"
+          label={t.booking.destination}
           placeholder={
             activeService === 'airport'
-              ? 'Hotel, address, or landmark'
+              ? t.booking.placeholderDestAirport
               : activeService === 'inter_city'
-                ? 'Destination city (e.g., Merida, Maracaibo)'
-                : 'Address, hotel, or landmark'
+                ? t.booking.placeholderDestInterCity
+                : t.booking.placeholderAddress
           }
           types={dropoffTypes}
         />
@@ -278,7 +280,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             className="block text-xs uppercase tracking-wider mb-2"
             style={{ color: '#999' }}
           >
-            Date {date && <span style={{ color: '#c9a96e' }}>&#10003;</span>}
+            {t.booking.date} {date && <span style={{ color: '#c9a96e' }}>&#10003;</span>}
           </label>
           {/* Visible placeholder layer when empty */}
           {!date && (
@@ -286,7 +288,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               className="absolute left-0 right-0 py-3.5 px-4 text-sm pointer-events-none"
               style={{ color: '#666', top: '28px' }}
             >
-              Select date
+              {t.booking.selectDate}
             </div>
           )}
           <input
@@ -309,7 +311,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             className="block text-xs uppercase tracking-wider mb-2"
             style={{ color: '#999' }}
           >
-            Time (VET, UTC-4) {time && <span style={{ color: '#c9a96e' }}>&#10003;</span>}
+            {t.booking.time} {time && <span style={{ color: '#c9a96e' }}>&#10003;</span>}
           </label>
           {/* Visible placeholder layer when empty */}
           {!time && (
@@ -317,7 +319,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               className="absolute left-0 right-0 py-3.5 px-4 text-sm pointer-events-none"
               style={{ color: '#666', top: '28px' }}
             >
-              Select time
+              {t.booking.selectTime}
             </div>
           )}
           <input
@@ -344,7 +346,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             className="block text-xs uppercase tracking-wider mb-2"
             style={{ color: '#999' }}
           >
-            Passengers
+            {t.booking.passengers}
           </label>
           <select
             id="passengers"
@@ -357,10 +359,11 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               color: '#e8e8e8',
             }}
           >
-            <option value="1">1 Passenger</option>
-            <option value="2">2 Passengers</option>
-            <option value="3">3 Passengers</option>
-            <option value="4">4 Passengers</option>
+            {[1, 2, 3, 4].map((n) => (
+              <option key={n} value={String(n)}>
+                {t.booking.passengerCount(n)}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -369,7 +372,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             className="block text-xs uppercase tracking-wider mb-2"
             style={{ color: '#999' }}
           >
-            Vehicle
+            {t.booking.vehicle}
           </label>
           <select
             id="vehicleClass"
@@ -385,7 +388,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               color: '#e8e8e8',
             }}
           >
-            {VEHICLE_OPTIONS.map((opt) => (
+            {vehicleOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -407,10 +410,10 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         {quoteLoading ? (
           <span className="flex items-center justify-center gap-2">
             <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            Calculating...
+            {t.booking.calculating}
           </span>
         ) : (
-          'Get Instant Quote'
+          t.booking.getQuote
         )}
       </button>
 
@@ -438,10 +441,10 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
         >
           <div className="flex justify-between items-baseline mb-4">
             <span className="text-xs uppercase tracking-wider" style={{ color: '#999' }}>
-              Your Quote
+              {t.booking.yourQuote}
             </span>
             <span className="text-xs" style={{ color: '#666' }}>
-              Valid for 15 min
+              {t.booking.validFor}
             </span>
           </div>
           <div className="text-4xl font-bold mb-4" style={{ color: '#c9a96e' }}>
@@ -451,19 +454,19 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           <div className="space-y-1 text-xs mb-6" style={{ color: '#888' }}>
             {quote.breakdown.base_fare > 0 && (
               <div className="flex justify-between">
-                <span>Base fare</span>
+                <span>{t.booking.baseFare}</span>
                 <span>${quote.breakdown.base_fare.toFixed(2)}</span>
               </div>
             )}
             {quote.breakdown.distance_charge > 0 && (
               <div className="flex justify-between">
-                <span>Distance ({quote.distance_km} km)</span>
+                <span>{t.booking.distance} ({quote.distance_km} km)</span>
                 <span>${quote.breakdown.distance_charge.toFixed(2)}</span>
               </div>
             )}
             {quote.breakdown.time_charge > 0 && (
               <div className="flex justify-between">
-                <span>Time ({quote.duration_minutes} min)</span>
+                <span>{t.booking.timeCost} ({quote.duration_minutes} min)</span>
                 <span>${quote.breakdown.time_charge.toFixed(2)}</span>
               </div>
             )}
@@ -480,16 +483,16 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
               style={{ background: '#c9a96e', color: '#0a0a0a' }}
             >
-              Book Now - ${quote.price_usd.toFixed(2)}
+              {t.booking.bookNowPrice} - ${quote.price_usd.toFixed(2)}
             </button>
           ) : (
             <div className="space-y-4 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="text-xs uppercase tracking-wider" style={{ color: '#999' }}>
-                Passenger Details
+                {t.booking.passengerDetails}
               </p>
               <input
                 type="text"
-                placeholder="Full Name *"
+                placeholder={t.booking.fullName}
                 value={passengerName}
                 onChange={(e) => setPassengerName(e.target.value)}
                 className="w-full py-3 px-4 text-sm outline-none"
@@ -502,7 +505,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="email"
-                  placeholder="Email *"
+                  placeholder={t.booking.email}
                   value={passengerEmail}
                   onChange={(e) => setPassengerEmail(e.target.value)}
                   className="w-full py-3 px-4 text-sm outline-none"
@@ -514,7 +517,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                 />
                 <input
                   type="tel"
-                  placeholder="Phone *"
+                  placeholder={t.booking.phone}
                   value={passengerPhone}
                   onChange={(e) => setPassengerPhone(e.target.value)}
                   className="w-full py-3 px-4 text-sm outline-none"
@@ -527,7 +530,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               </div>
 
               <p className="text-xs uppercase tracking-wider mt-2" style={{ color: '#999' }}>
-                Payment Method
+                {t.booking.paymentMethod}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {(['stripe', 'zelle'] as const).map((method) => (
@@ -541,7 +544,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                       color: paymentMethod === method ? '#c9a96e' : '#888',
                     }}
                   >
-                    {method === 'stripe' ? 'Credit Card' : 'Zelle'}
+                    {method === 'stripe' ? t.booking.creditCard : t.booking.zelle}
                   </button>
                 ))}
               </div>
@@ -565,10 +568,10 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                 {checkoutLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Processing...
+                    {t.booking.processing}
                   </span>
                 ) : (
-                  `Confirm & Pay $${quote.price_usd.toFixed(2)}`
+                  `${t.booking.confirmPay} $${quote.price_usd.toFixed(2)}`
                 )}
               </button>
             </div>
@@ -596,7 +599,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               className="underline hover:no-underline text-xs"
               style={{ color: '#c9a96e' }}
             >
-              Contact our ops team for a manual quote
+              {t.booking.manualQuote}
             </a>
           </div>
         </div>
@@ -604,16 +607,16 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
 
       {/* Lead time notice */}
       <p className="mt-4 text-xs text-center" style={{ color: '#555' }}>
-        {activeService === 'airport' && 'Minimum 2 hours before pickup.'}
-        {activeService === 'inter_city' && 'Minimum 4 hours before pickup.'}
-        {activeService === 'intra_city' && 'Minimum 1 hour before pickup.'}
+        {activeService === 'airport' && t.booking.leadTimeAirport}
+        {activeService === 'inter_city' && t.booking.leadTimeInterCity}
+        {activeService === 'intra_city' && t.booking.leadTimeIntraCity}
         {' '}
         <a
           href="https://wa.me/584121234567"
           className="underline"
           style={{ color: '#c9a96e' }}
         >
-          Need sooner? Call us.
+          {t.booking.needSooner}
         </a>
       </p>
     </div>

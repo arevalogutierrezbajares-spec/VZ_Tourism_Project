@@ -1,5 +1,7 @@
 'use client'
 
+import { useRutaI18n } from '@/lib/ruta/i18n'
+
 export interface LocationResult {
   address: string
   lat: number
@@ -22,6 +24,8 @@ interface AirportSelectProps {
 }
 
 export function AirportSelect({ value, onChange, label }: AirportSelectProps) {
+  const { t } = useRutaI18n()
+
   return (
     <div>
       <label
@@ -57,7 +61,7 @@ export function AirportSelect({ value, onChange, label }: AirportSelectProps) {
           color: value ? '#e8e8e8' : '#888',
         }}
       >
-        <option value="">Select airport...</option>
+        <option value="">{t.booking.selectAirport}</option>
         {AIRPORTS.map((airport) => (
           <option key={airport.code} value={`${airport.name} (${airport.code})`}>
             {airport.code} — {airport.name}, {airport.city}

@@ -6,7 +6,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const SONNET_MODEL = 'claude-sonnet-4-5-20241022';
+const SONNET_MODEL = 'claude-sonnet-4-5';
 
 const PLANNING_SYSTEM_PROMPT = `You are VZ Explorer, a friendly and knowledgeable AI travel planner for Venezuela. You're having a conversation with a traveler to help them build their perfect itinerary.
 

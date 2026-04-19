@@ -1,12 +1,15 @@
 'use client'
 
 import type { RutaRideType } from '@/types/ruta'
+import { useRutaI18n } from '@/lib/ruta/i18n'
 
 interface ServiceCardsProps {
   onServiceSelect?: (service: RutaRideType) => void
 }
 
 export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
+  const { t } = useRutaI18n()
+
   const services: Array<{
     type: RutaRideType
     icon: string
@@ -19,47 +22,29 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
     {
       type: 'airport',
       icon: '\u2708',
-      title: 'Airport Transfer',
-      description:
-        'Fixed-rate armored transfers between Venezuelan airports and your destination. Meet-and-greet at arrivals. Discrete, professional, on time.',
-      price: 'From $280 USD',
-      priceContext: 'CCS to Caracas, all-inclusive',
-      specs: [
-        'CCS, PMV, MAR, BLA, VLN airports',
-        'Fixed pricing, no surprises',
-        'Flight tracking for delays',
-        'Armed driver + B5 armored vehicle',
-      ],
+      title: t.services.airport.title,
+      description: t.services.airport.description,
+      price: t.services.airport.price,
+      priceContext: t.services.airport.priceContext,
+      specs: t.services.airport.specs,
     },
     {
       type: 'inter_city',
       icon: '\u2194',
-      title: 'Inter-City',
-      description:
-        'Long-distance secure transport between Venezuelan cities. Convoy option available for high-risk corridors. Route intelligence briefing included.',
-      price: 'From $12/km',
-      priceContext: 'Plus base fare, distance calculated',
-      specs: [
-        'All major city routes',
-        'Optional armed escort convoy',
-        'Pre-trip route risk assessment',
-        'Satellite tracking throughout',
-      ],
+      title: t.services.interCity.title,
+      description: t.services.interCity.description,
+      price: t.services.interCity.price,
+      priceContext: t.services.interCity.priceContext,
+      specs: t.services.interCity.specs,
     },
     {
       type: 'intra_city',
       icon: '\u25C9',
-      title: 'Intra-City',
-      description:
-        'Executive movement within city limits. Hourly or point-to-point. Ideal for meetings, site visits, and daily executive schedules.',
-      price: 'From $95/hour',
-      priceContext: 'Or per-trip pricing available',
-      specs: [
-        'Hourly or per-trip booking',
-        'Multi-stop itineraries',
-        'Standby driver between meetings',
-        'Armed close protection add-on',
-      ],
+      title: t.services.intraCity.title,
+      description: t.services.intraCity.description,
+      price: t.services.intraCity.price,
+      priceContext: t.services.intraCity.priceContext,
+      specs: t.services.intraCity.specs,
     },
   ]
 
@@ -81,12 +66,12 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
           className="text-xs uppercase tracking-widest mb-16"
           style={{ color: '#c9a96e' }}
         >
-          Service Tiers
+          {t.services.sectionTitle}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px">
           {services.map((service) => (
             <div
-              key={service.title}
+              key={service.type}
               className="p-8 md:p-12 flex flex-col"
               style={{
                 background: 'rgba(255,255,255,0.02)',
@@ -111,9 +96,9 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
                 className="space-y-2 pt-5 mb-8"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
               >
-                {service.specs.map((spec) => (
+                {service.specs.map((spec, i) => (
                   <li
-                    key={spec}
+                    key={i}
                     className="flex items-start gap-3 text-xs"
                     style={{ color: '#999' }}
                   >
@@ -134,7 +119,7 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
                   background: 'transparent',
                 }}
               >
-                Book {service.title}
+                {t.services.bookPrefix} {service.title}
               </button>
             </div>
           ))}

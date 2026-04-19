@@ -1,18 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-
-const NAV_LINKS = [
-  { label: 'Services', href: '#services' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Security', href: '#security' },
-  { label: 'Contact', href: '#contact' },
-]
+import { useRutaI18n, LOCALE_LABELS, LOCALE_FLAGS, type RutaLocale } from '@/lib/ruta/i18n'
 
 export function RutaNav() {
+  const { locale, setLocale, t } = useRutaI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
+
+  const navLinks = [
+    { label: t.nav.services, href: '#services' },
+    { label: t.nav.howItWorks, href: '#how-it-works' },
+    { label: t.nav.security, href: '#security' },
+    { label: t.nav.contact, href: '#contact' },
+  ]
 
   useEffect(() => {
     function onScroll() {
@@ -34,8 +38,24 @@ export function RutaNav() {
     }
   }, [menuOpen])
 
+  // Close language dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   function handleLinkClick() {
     setMenuOpen(false)
+  }
+
+  function handleLangSelect(l: RutaLocale) {
+    setLocale(l)
+    setLangOpen(false)
   }
 
   return (
@@ -59,15 +79,58 @@ export function RutaNav() {
             className="text-[10px] tracking-wider"
             style={{ color: '#666' }}
           >
-            Executive Security Transport
+            {t.nav.tagline}
           </div>
         </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((item) => (
+          {/* Language selector */}
+          <div ref={langRef} className="relative">
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 text-xs uppercase tracking-wider transition-colors hover:text-white"
+              style={{ color: '#888' }}
+              aria-label="Select language"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+              </svg>
+              {LOCALE_FLAGS[locale]}
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {langOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 py-1 min-w-[140px]"
+                style={{
+                  background: '#1a1a1a',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                }}
+              >
+                {(Object.keys(LOCALE_LABELS) as RutaLocale[]).map((code) => (
+                  <button
+                    key={code}
+                    onClick={() => handleLangSelect(code)}
+                    className="w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/5 flex items-center gap-3"
+                    style={{
+                      color: locale === code ? '#c9a96e' : '#999',
+                    }}
+                  >
+                    <span className="w-6 text-center font-medium">{LOCALE_FLAGS[code]}</span>
+                    {LOCALE_LABELS[code]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {navLinks.map((item) => (
             <a
-              key={item.label}
+              key={item.href}
               href={item.href}
               className="text-xs uppercase tracking-wider transition-colors hover:text-white"
               style={{ color: '#888' }}
@@ -83,7 +146,7 @@ export function RutaNav() {
               color: '#0a0a0a',
             }}
           >
-            Book Now
+            {t.nav.bookNow}
           </a>
         </div>
 
@@ -91,7 +154,7 @@ export function RutaNav() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden relative w-8 h-8 flex flex-col justify-center items-center gap-1.5"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
           aria-expanded={menuOpen}
         >
           <span
@@ -124,9 +187,27 @@ export function RutaNav() {
           className="fixed inset-0 z-40 flex flex-col justify-center items-center gap-8 md:hidden"
           style={{ background: 'rgba(10,10,10,0.98)' }}
         >
-          {NAV_LINKS.map((item) => (
+          {/* Mobile language selector */}
+          <div className="flex flex-wrap justify-center gap-3 mb-4">
+            {(Object.keys(LOCALE_LABELS) as RutaLocale[]).map((code) => (
+              <button
+                key={code}
+                onClick={() => handleLangSelect(code)}
+                className="px-3 py-1.5 text-xs uppercase tracking-wider transition-colors"
+                style={{
+                  border: `1px solid ${locale === code ? '#c9a96e' : 'rgba(255,255,255,0.1)'}`,
+                  color: locale === code ? '#c9a96e' : '#666',
+                  background: locale === code ? 'rgba(201,169,110,0.05)' : 'transparent',
+                }}
+              >
+                {LOCALE_FLAGS[code]}
+              </button>
+            ))}
+          </div>
+
+          {navLinks.map((item) => (
             <a
-              key={item.label}
+              key={item.href}
               href={item.href}
               onClick={handleLinkClick}
               className="text-2xl font-light uppercase tracking-widest transition-colors hover:text-white"
@@ -145,7 +226,7 @@ export function RutaNav() {
               color: '#0a0a0a',
             }}
           >
-            Book Now
+            {t.nav.bookNow}
           </a>
 
           <div className="mt-8 flex flex-col items-center gap-3">
