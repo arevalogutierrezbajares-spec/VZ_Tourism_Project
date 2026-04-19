@@ -2,9 +2,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { MapPin, Calendar, DollarSign, Users } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { ItineraryStopCard } from '@/components/itinerary/ItineraryStopCard';
 import { ReferralTracker } from '@/components/itinerary/ReferralTracker';
@@ -35,6 +34,8 @@ export default async function ItineraryPage({ params }: Props) {
   const { id } = await params;
 
   let itinerary = null;
+  let discountDisplay: { code: string; label: string } | null = null;
+
   try {
     const supabase = await createClient();
     if (supabase) {
@@ -44,6 +45,22 @@ export default async function ItineraryPage({ params }: Props) {
         .eq('id', id)
         .single();
       itinerary = data;
+
+      // If itinerary has a referral_code, look up the discount details for display
+      if (data?.referral_code) {
+        const { data: codeData } = await supabase
+          .from('discount_codes')
+          .select('code, type, value')
+          .eq('code', data.referral_code)
+          .eq('status', 'active')
+          .single();
+        if (codeData) {
+          const label = codeData.type === 'percentage'
+            ? `${codeData.value}% off`
+            : `$${codeData.value} off`;
+          discountDisplay = { code: codeData.code, label };
+        }
+      }
     }
   } catch {
     // Supabase not configured
@@ -104,6 +121,23 @@ export default async function ItineraryPage({ params }: Props) {
         </div>
 
         <ReactionBar likes={it.likes} saves={it.saves} className="-ml-2" />
+
+        {/* Discount code callout — shown when creator attached an active code */}
+        {discountDisplay && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+            <Tag className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-amber-900 dark:text-amber-100">
+                Use code{' '}
+                <span className="font-mono font-bold">{discountDisplay.code}</span>
+                {' '}for <span className="font-semibold">{discountDisplay.label}</span> on any booking from this itinerary
+              </span>
+            </div>
+            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300 flex-shrink-0">
+              {discountDisplay.label}
+            </Badge>
+          </div>
+        )}
 
         {/* Book CTA */}
         <BookActions itineraryId={it.id} itineraryTitle={it.title} />

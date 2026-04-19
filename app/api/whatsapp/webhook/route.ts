@@ -6,6 +6,7 @@ import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
 import { buildLiveContext } from '@/lib/whatsapp-context';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
+import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 
 // Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies.
@@ -88,11 +89,14 @@ async function handleMessage(
   // 1. Look up posada config by phone_number_id
   const { data: config } = await supabase
     .from('posada_whatsapp_config')
-    .select('*, providers(id, business_name, description, region)')
+    .select('*, access_token_vault_id, providers(id, business_name, description, region)')
     .eq('phone_number_id', phoneNumberId)
-    .single() as { data: (PosadaWhatsappConfig & { providers: { id: string; business_name: string; description: string; region: string } }) | null };
+    .single() as { data: (PosadaWhatsappConfig & { access_token_vault_id: string | null; providers: { id: string; business_name: string; description: string; region: string } }) | null };
 
   if (!config) return; // Unknown number — ignore
+
+  // Decrypt access token (Vault if available, plaintext fallback)
+  const accessToken = await getWhatsAppToken(supabase, config);
 
   const provider = config.providers;
 
@@ -182,7 +186,7 @@ async function handleMessage(
       provider.business_name,
       config.tone_language
     );
-    await sendAndPersist(supabase, conv.id, config, from, botReply, true);
+    await sendAndPersist(supabase, conv.id, config, accessToken, from, botReply, true);
 
     await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
     await supabase.from('wa_escalations').insert({
@@ -233,7 +237,7 @@ async function handleMessage(
   const replyEn = detectedLang && detectedLang !== 'en'
     ? await detectAndTranslate(reply).then((r) => r.english).catch(() => null)
     : null;
-  await sendAndPersist(supabase, conv.id, config, from, reply, true, detectedLang, replyEn);
+  await sendAndPersist(supabase, conv.id, config, accessToken, from, reply, true, detectedLang, replyEn);
 
   // 13b. If AI flagged uncertainty — escalate and notify provider
   if (needsHuman) {
@@ -248,7 +252,7 @@ async function handleMessage(
   // 14. Mark inbound as read
   await markWhatsAppRead({
     phoneNumberId: config.phone_number_id,
-    accessToken: config.access_token,
+    accessToken: accessToken,
     messageId: waMessageId,
   });
 }
@@ -258,6 +262,7 @@ async function sendAndPersist(
   supabase: any,
   convId: string,
   config: PosadaWhatsappConfig,
+  accessToken: string,
   to: string,
   body: string,
   isAi: boolean,
@@ -266,7 +271,7 @@ async function sendAndPersist(
 ) {
   const result = await sendWhatsAppText({
     phoneNumberId: config.phone_number_id,
-    accessToken: config.access_token,
+    accessToken,
     to,
     body,
   });

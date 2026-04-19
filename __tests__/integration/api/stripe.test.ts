@@ -115,6 +115,79 @@ describe('POST /api/stripe/checkout', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
   });
+
+  it('applies discount code and charges net_total_usd when code is valid', async () => {
+    const mockFetch = jest.fn();
+    global.fetch = mockFetch;
+
+    const { POST } = await import('@/app/api/stripe/checkout/route');
+    mockGetBooking.mockReturnValueOnce({
+      id: 'b1',
+      total_usd: 200,
+      status: 'pending',
+      listing_name: 'Posada Sol',
+      guest_email: 'g@test.com',
+      listing_slug: 'posada-sol',
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        valid: true,
+        code_id: 'code-uuid',
+        discount_amount_usd: 40,
+        net_total_usd: 160,
+      }),
+    });
+
+    const req = makeRequest('http://localhost/api/stripe/checkout', {
+      bookingId: 'b1',
+      discountCode: 'VZ20',
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({ amountUsd: 160 })
+    );
+    expect(mockUpdateBookingStatus).toHaveBeenCalledWith(
+      'b1',
+      'pending',
+      expect.objectContaining({
+        discount_code_id: 'code-uuid',
+        discount_amount_usd: 40,
+      })
+    );
+  });
+
+  it('falls back to full price when discount code is invalid', async () => {
+    const mockFetch = jest.fn();
+    global.fetch = mockFetch;
+
+    const { POST } = await import('@/app/api/stripe/checkout/route');
+    mockGetBooking.mockReturnValueOnce({
+      id: 'b1',
+      total_usd: 200,
+      status: 'pending',
+      listing_name: 'Posada Sol',
+      guest_email: 'g@test.com',
+      listing_slug: 'posada-sol',
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ valid: false }),
+    });
+
+    const req = makeRequest('http://localhost/api/stripe/checkout', {
+      bookingId: 'b1',
+      discountCode: 'BADC0DE',
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({ amountUsd: 200 })
+    );
+  });
 });
 
 // ─── POST /api/stripe/webhooks ───────────────────────────────────────────────

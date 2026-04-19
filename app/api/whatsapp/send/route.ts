@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendWhatsAppText } from '@/lib/whatsapp-api';
+import { getWhatsAppToken } from '@/lib/whatsapp/token';
 
 /**
  * POST /api/whatsapp/send
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
   // Fetch WhatsApp config for this provider
   const { data: config } = await supabase
     .from('posada_whatsapp_config')
-    .select('phone_number_id, access_token')
+    .select('phone_number_id, access_token, access_token_vault_id')
     .eq('provider_id', provider.id)
     .single();
 
@@ -55,9 +56,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'WhatsApp not configured for this provider' }, { status: 400 });
   }
 
+  // Decrypt token (Vault if available, plaintext fallback)
+  const accessToken = await getWhatsAppToken(supabase, config);
+
   const result = await sendWhatsAppText({
     phoneNumberId: config.phone_number_id,
-    accessToken: config.access_token,
+    accessToken,
     to: conv.guest_phone,
     body: messageBody.trim(),
   });

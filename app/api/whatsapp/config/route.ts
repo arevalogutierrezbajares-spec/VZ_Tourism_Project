@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/whatsapp/config
@@ -87,9 +88,39 @@ export async function PUT(request: NextRequest) {
     }
   }
 
+  // If access_token is being set, attempt Vault encryption via service client
+  // (service client needed because upsert_wa_access_token is SECURITY DEFINER)
+  let vaultUpdates: Record<string, unknown> = {};
+  if (typeof updates.access_token === 'string') {
+    try {
+      const serviceSupabase = await createServiceClient();
+      if (serviceSupabase) {
+        // First upsert the row to ensure we have an id, then write to Vault
+        const { data: existing } = await serviceSupabase
+          .from('posada_whatsapp_config')
+          .select('id')
+          .eq('provider_id', provider.id)
+          .single();
+
+        if (existing?.id) {
+          const { data: vaultId } = await serviceSupabase.rpc('upsert_wa_access_token', {
+            p_config_id: existing.id,
+            p_token: updates.access_token,
+          });
+          if (vaultId) {
+            // Token stored in Vault — store reference, keep plaintext as fallback during migration
+            vaultUpdates = { access_token_vault_id: vaultId };
+          }
+        }
+      }
+    } catch {
+      // Vault not available — plaintext stored as-is
+    }
+  }
+
   const { data, error } = await supabase
     .from('posada_whatsapp_config')
-    .upsert({ provider_id: provider.id, ...updates }, { onConflict: 'provider_id' })
+    .upsert({ provider_id: provider.id, ...updates, ...vaultUpdates }, { onConflict: 'provider_id' })
     .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, updated_at')
     .single();
 

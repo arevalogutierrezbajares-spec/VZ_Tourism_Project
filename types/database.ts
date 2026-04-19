@@ -159,6 +159,7 @@ export interface Itinerary {
   is_template: boolean;
   is_influencer_pick: boolean;
   referral_code: string | null;
+  creator_text?: string | null;
   total_days: number;
   estimated_cost_usd: number;
   regions: string[];
@@ -419,6 +420,7 @@ export interface PosadaWhatsappConfig {
   provider_id: string;
   phone_number_id: string;
   access_token: string;
+  access_token_vault_id?: string | null;
   verify_token: string;
   // Persona
   persona_name: string;
