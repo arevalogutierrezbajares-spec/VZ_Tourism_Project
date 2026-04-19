@@ -72,8 +72,17 @@ All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 - **Depends on:** Creator Suite Phase 1 shipped and 70% match rate validated.
 - **Priority:** P2 — monitor first, fix if target is missed
 
+## P2 — Run Photo URL Migration
+
+**Rewrite any stale Google Places URLs in the database**
+
+- **What:** `scripts/migrate-photo-urls.mjs` scans `listing_photos.url` and `listings.photos_json` for raw `places.googleapis.com` URLs (which leak the API key) and rewrites them to use the `/api/places/photo` proxy.
+- **How:** `SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-photo-urls.mjs --dry-run` (preview), then without `--dry-run` to apply.
+- **Priority:** P2 — run once after deploying the photo proxy route
+
 ## Completed
 
 - All P0 + P1 UX items shipped — **Completed: v0.3.0.0 (2026-04-18)**
 - `@testing-library/dom` installed — **Completed: v0.3.0.0 (2026-04-18)**
 - `BookingForm` null-safety fix — **Completed: v0.3.0.0 (2026-04-18)**
+- QA remediation (10 issues, health 56→production) — **Completed: v0.3.2.0 (2026-04-19)**
