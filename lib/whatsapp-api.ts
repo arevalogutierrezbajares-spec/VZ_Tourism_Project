@@ -22,14 +22,24 @@ async function waPost(
   accessToken: string,
   body: Record<string, unknown>
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const res = await fetch(`${WA_BASE}${path}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+  let res: Response;
+  try {
+    res = await fetch(`${WA_BASE}${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken.trim().replace(/\s+/g, '')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    return { success: false, error: `fetch error: ${String(err)}` };
+  }
+  clearTimeout(timeout);
 
   if (!res.ok) {
     const text = await res.text();

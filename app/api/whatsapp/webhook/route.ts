@@ -152,9 +152,11 @@ async function handleMessage(
     .eq('id', conv.id);
 
   // Fallback unread increment (rpc may not exist yet)
-  await supabase.rpc('increment_wa_unread', { conv_id: conv.id }).catch(() =>
-    supabase.from('wa_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conv.id)
-  );
+  try {
+    await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
+  } catch {
+    await supabase.from('wa_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conv.id);
+  }
 
   // 7. If conversation is in human or closed mode — skip AI
   if (conv.status === 'human' || conv.status === 'closed') return;
@@ -239,7 +241,7 @@ async function handleMessage(
     await supabase.from('wa_escalations').insert({
       conversation_id: conv.id,
       reason: `AI requested human review: ${hitlReason}`,
-      trigger_type: 'ai_uncertainty',
+      trigger_type: 'sentiment',
     });
   }
 
@@ -272,10 +274,9 @@ async function sendAndPersist(
   if (!result.success) {
     console.error('[whatsapp/webhook] sendWhatsAppText failed:', result.error);
     // Still persist so the provider can see the attempted reply in the dashboard.
-    // The message will appear but without a wa_message_id, indicating delivery failure.
   }
 
-  await supabase.from('wa_messages').insert({
+  const { error: insertError } = await supabase.from('wa_messages').insert({
     conversation_id: convId,
     wa_message_id: result.messageId ?? null,
     role: 'outbound',
@@ -285,6 +286,9 @@ async function sendAndPersist(
     is_ai: isAi,
     flagged: false,
   });
+  if (insertError) {
+    console.error('[whatsapp/webhook] wa_messages insert failed:', insertError.message);
+  }
 
   await supabase
     .from('wa_conversations')

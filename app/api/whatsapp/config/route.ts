@@ -23,7 +23,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('posada_whatsapp_config')
-    .select('id, provider_id, phone_number_id, persona_name, persona_bio, tone_formality, tone_language, response_length, booking_pressure, upsell_enabled, custom_instructions, ai_enabled, verify_token, created_at, updated_at')
+    .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, created_at, updated_at')
     .eq('provider_id', provider.id)
     .single();
 
@@ -63,8 +63,12 @@ export async function PUT(request: NextRequest) {
 
   const allowed = [
     'phone_number_id', 'access_token', 'persona_name', 'persona_bio',
-    'tone_formality', 'tone_language', 'response_length', 'booking_pressure',
-    'upsell_enabled', 'custom_instructions', 'ai_enabled',
+    'greeting_style', 'custom_greeting',
+    'tone_formality', 'tone_language', 'response_length', 'booking_pressure', 'emoji_style',
+    'upsell_enabled', 'sentiment_threshold', 'value_escalation_usd', 'escalation_keywords',
+    'response_delay_ms',
+    'working_hours_enabled', 'working_hours', 'after_hours_message',
+    'custom_instructions', 'ai_enabled',
   ];
 
   const updates = Object.fromEntries(
@@ -86,7 +90,7 @@ export async function PUT(request: NextRequest) {
   const { data, error } = await supabase
     .from('posada_whatsapp_config')
     .upsert({ provider_id: provider.id, ...updates }, { onConflict: 'provider_id' })
-    .select('id, provider_id, phone_number_id, persona_name, persona_bio, tone_formality, tone_language, response_length, booking_pressure, upsell_enabled, custom_instructions, ai_enabled, verify_token, updated_at')
+    .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, updated_at')
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

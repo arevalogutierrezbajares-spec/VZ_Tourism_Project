@@ -395,20 +395,56 @@ export type WaResponseLength = 'brief' | 'standard' | 'detailed';
 export type WaBookingPressure = 'soft' | 'direct';
 export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_uncertainty';
 
+export type WaEmojiStyle = 'frequent' | 'moderate' | 'none';
+export type WaGreetingStyle = 'friendly' | 'professional' | 'custom';
+
+export interface WaWorkingHoursDay {
+  active: boolean;
+  start: string; // "HH:MM"
+  end: string;   // "HH:MM"
+}
+
+export interface WaWorkingHours {
+  mon: WaWorkingHoursDay;
+  tue: WaWorkingHoursDay;
+  wed: WaWorkingHoursDay;
+  thu: WaWorkingHoursDay;
+  fri: WaWorkingHoursDay;
+  sat: WaWorkingHoursDay;
+  sun: WaWorkingHoursDay;
+}
+
 export interface PosadaWhatsappConfig {
   id: string;
   provider_id: string;
   phone_number_id: string;
   access_token: string;
   verify_token: string;
+  // Persona
   persona_name: string;
   persona_bio: string | null;
+  greeting_style: WaGreetingStyle;
+  custom_greeting: string | null;
+  // Tone & communication
   tone_formality: WaToneFormality;
   tone_language: WaToneLanguage;
   response_length: WaResponseLength;
   booking_pressure: WaBookingPressure;
+  emoji_style: WaEmojiStyle;
+  // Smart rules
   upsell_enabled: boolean;
+  sentiment_threshold: number;
+  value_escalation_usd: number;
+  escalation_keywords: string[];
+  // Humanisation
+  response_delay_ms: number;
+  // Availability
+  working_hours_enabled: boolean;
+  working_hours: WaWorkingHours | null;
+  after_hours_message: string | null;
+  // Custom prompt
   custom_instructions: string | null;
+  // Master switch
   ai_enabled: boolean;
   created_at: string;
   updated_at: string;
