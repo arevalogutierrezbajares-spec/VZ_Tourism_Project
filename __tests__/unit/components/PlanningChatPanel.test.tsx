@@ -76,33 +76,23 @@ describe('PlanningChatPanel', () => {
 
   it('renders the welcome message on empty state', () => {
     render(<PlanningChatPanel />);
-    expect(
-      screen.getByText(/Hey! I'm your Venezuela trip planner/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Where in Venezuela/i)).toBeInTheDocument();
   });
 
-  it('renders default starter prompts when no renderStarters is provided', () => {
+  it('does not render built-in starter prompts (starters live in the right panel)', () => {
     render(<PlanningChatPanel />);
-    expect(
-      screen.getByText('I want to explore beaches and nature for about a week')
-    ).toBeInTheDocument();
-    expect(screen.getByText('Plan a 3-day adventure trip for two')).toBeInTheDocument();
-    expect(screen.getByText("What's the best way to see Angel Falls?")).toBeInTheDocument();
-    expect(
-      screen.getByText("I have 5 days, mix of culture and relaxation")
-    ).toBeInTheDocument();
-  });
-
-  it('renders custom starters when renderStarters is provided', () => {
-    const customStarters = (send: (t: string) => void) => (
-      <button onClick={() => send('custom message')}>Custom starter</button>
-    );
-    render(<PlanningChatPanel renderStarters={customStarters} />);
-    expect(screen.getByText('Custom starter')).toBeInTheDocument();
-    // Default starters should NOT appear
+    // The built-in text starters were removed — starters are now rendered externally
     expect(
       screen.queryByText('I want to explore beaches and nature for about a week')
     ).toBeNull();
+  });
+
+  it('calls onReady with a sendMessage function on mount', async () => {
+    const mockOnReady = jest.fn();
+    render(<PlanningChatPanel onReady={mockOnReady} />);
+    await waitFor(() => {
+      expect(mockOnReady).toHaveBeenCalledWith(expect.any(Function));
+    });
   });
 
   it('renders the message input field', () => {
@@ -254,29 +244,32 @@ describe('PlanningChatPanel', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Here is your plan for Mérida!')).toBeInTheDocument();
+      expect(
+        screen.getByText((c) => c.includes('Here is your plan for Mérida!'))
+      ).toBeInTheDocument();
     });
   });
 
-  it('clicking a default starter sends the message', async () => {
+  it('calling the function from onReady sends the message', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       body: makeSSEBody([{ type: 'done' }]),
     });
 
-    render(<PlanningChatPanel />);
+    let externalSend: ((t: string) => void) | undefined;
+    render(<PlanningChatPanel onReady={(fn) => { externalSend = fn; }} />);
+
+    // onReady fires on mount — wait for it
+    await waitFor(() => expect(externalSend).toBeDefined());
+
     await act(async () => {
-      fireEvent.click(
-        screen.getByText('I want to explore beaches and nature for about a week')
-      );
+      externalSend!('Beach trip please');
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/itineraries/conversation',
       expect.objectContaining({
-        body: expect.stringContaining(
-          'I want to explore beaches and nature for about a week'
-        ),
+        body: expect.stringContaining('Beach trip please'),
       })
     );
   });
@@ -313,9 +306,9 @@ describe('PlanningChatPanel', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Itinerary Ready')).toBeInTheDocument();
+      expect(screen.getByText('Itinerary Ready', { selector: 'span' })).toBeInTheDocument();
     });
-    expect(screen.getByText('Caracas Museum')).toBeInTheDocument();
+    expect(screen.getByText((c) => c.includes('Caracas Museum'))).toBeInTheDocument();
   });
 
   it('strips XML tags from displayed streaming text', async () => {
@@ -341,7 +334,10 @@ describe('PlanningChatPanel', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Here is your plan. Enjoy!')).toBeInTheDocument();
+      // Use a function matcher to handle potential whitespace normalization and nested elements
+      expect(
+        screen.getByText((content) => content.includes('Here is your plan.') && content.includes('Enjoy!'))
+      ).toBeInTheDocument();
     });
   });
 

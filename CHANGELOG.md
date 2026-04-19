@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4.0] - 2026-04-19
+
+### Added
+- **SmartStarters in itinerary panel** — vibe selector (6 icons: beaches, mountains, culture, adventure, wildlife, cities) and duration chips (3 / 5 / 7 / 10 days) live in the right-panel trip preview. Selecting both auto-sends a structured prompt to the AI — zero typing required
+- **Rich AI message rendering** — destination suggestion lines (`**Name** — desc`) become mini cards with a map-pin icon; bullets get styled dots; numbered lists get bold numbers; `**bold**` renders inline. Replaces flat whitespace-pre-wrap text
+
+### Changed
+- **AI concierge prompt rewrite** — system prompt is now punchy: ONE question per reply, max 3 sentences, bold for destinations. Eliminates walls of text and multi-question replies
+- **onReady ref pattern** — PlanningChatPanel exposes `sendMessage` via a stable ref (fires once on mount, ref updated every render). Enables SmartStarters in parent to inject messages
+- **PlanningChatPanel tests** — 7 tests revised for new API (welcome text, no built-in starters, onReady callback, external send, renderMarkdown matchers, Itinerary Ready card)
+
 ## [0.3.0.0] - 2026-04-18
 
 ### Added

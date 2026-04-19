@@ -21,6 +21,88 @@ import toast from 'react-hot-toast';
 import type { AIGeneratedDay } from '@/types/database';
 import { buildStopFromAI } from '@/types/database';
 
+// ─── Markdown renderer ────────────────────────────────────────────────────────
+
+function renderInline(text: string): React.ReactNode {
+  // Split by **bold** spans
+  const parts = text.split(/\*\*([^*]+)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold">
+            {part}
+          </strong>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
+function renderMarkdown(text: string): React.ReactNode {
+  const lines = text.split('\n');
+  const nodes: React.ReactNode[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!line.trim()) {
+      if (nodes.length > 0) nodes.push(<div key={`sp-${i}`} className="h-1" />);
+      continue;
+    }
+
+    // Destination card: **Name** — description
+    if (/^\*\*[^*]+\*\*\s*[—–-]/.test(line)) {
+      nodes.push(
+        <div
+          key={i}
+          className="flex items-start gap-2 rounded-lg border border-border/60 bg-background/50 px-3 py-2 text-sm"
+        >
+          <MapPin className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+          <span>{renderInline(line)}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Bullet list item
+    if (/^[-•]\s/.test(line)) {
+      nodes.push(
+        <div key={i} className="flex items-start gap-2 text-sm">
+          <span className="text-primary mt-1.5 shrink-0 text-[8px]">●</span>
+          <span>{renderInline(line.slice(2))}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Numbered list
+    const numMatch = line.match(/^(\d+)\.\s(.*)/);
+    if (numMatch) {
+      nodes.push(
+        <div key={i} className="flex items-start gap-2 text-sm">
+          <span className="font-semibold text-primary/80 shrink-0 text-xs mt-0.5 min-w-[16px]">
+            {numMatch[1]}.
+          </span>
+          <span>{renderInline(numMatch[2])}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Regular text
+    nodes.push(
+      <p key={i} className="text-sm">
+        {renderInline(line)}
+      </p>
+    );
+  }
+
+  return <div className="space-y-1.5">{nodes}</div>;
+}
+
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -36,8 +118,8 @@ interface PlanningChatPanelProps {
   onItinerary?: (days: AIGeneratedDay[]) => void;
   /** Render mode: 'panel' for legacy side panel, 'full' for /plan page */
   mode?: 'panel' | 'full';
-  /** Render function for SmartStarters — receives sendMessage callback */
-  renderStarters?: (sendMessage: (text: string) => void) => React.ReactNode;
+  /** Called once sendMessage is ready — lets parent wire SmartStarters externally */
+  onReady?: (send: (text: string) => void) => void;
   className?: string;
 }
 
@@ -55,7 +137,7 @@ export function PlanningChatPanel({
   onDayPlan,
   onItinerary,
   mode = 'panel',
-  renderStarters,
+  onReady,
   className,
 }: PlanningChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -176,6 +258,15 @@ export function PlanningChatPanel({
     [messages, isStreaming, onDayPlan, onItinerary]
   );
 
+  // Keep a stable ref so the wrapper we pass to onReady always calls the latest sendMessage.
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+  useEffect(() => {
+    onReady?.((text) => sendMessageRef.current(text));
+    // onReady is intentionally called once on mount — the wrapper delegates to the latest sendMessage via ref.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
@@ -206,13 +297,6 @@ export function PlanningChatPanel({
     setGeneratedItinerary(null);
     onClose?.();
   };
-
-  const defaultStarters = [
-    "I want to explore beaches and nature for about a week",
-    "Plan a 3-day adventure trip for two",
-    "What's the best way to see Angel Falls?",
-    "I have 5 days, mix of culture and relaxation",
-  ];
 
   if (mode === 'panel' && !isOpen) return null;
 
@@ -264,43 +348,18 @@ export function PlanningChatPanel({
       {/* Messages */}
       <ScrollArea className="flex-1">
         <div className={cn('space-y-4', isFullMode ? 'p-5' : 'p-4')}>
-          {/* Welcome + starters */}
+          {/* Welcome */}
           {messages.length === 0 && !isStreaming && (
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-3.5 h-3.5" />
-                </div>
-                <div className={cn(
-                  'rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50',
-                  isFullMode ? 'max-w-[75%]' : 'max-w-[85%]'
-                )}>
-                  <p>
-                    Hey! I&apos;m your Venezuela trip planner. Tell me what
-                    kind of experience you&apos;re looking for and I&apos;ll
-                    help build your perfect itinerary.
-                  </p>
-                </div>
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                <Bot className="w-3.5 h-3.5" />
               </div>
-
-              {/* SmartStarters for full mode, fallback text starters for panel mode */}
-              {renderStarters ? renderStarters(sendMessage) : (
-                <div className="space-y-1.5 ml-9">
-                  <p className="text-xs text-muted-foreground">
-                    Try one of these:
-                  </p>
-                  {defaultStarters.map((s, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => sendMessage(s)}
-                      className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed hover:border-primary/40 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-foreground"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className={cn(
+                'rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50',
+                isFullMode ? 'max-w-[75%]' : 'max-w-[85%]'
+              )}>
+                <p>Where in Venezuela? 🇻🇪</p>
+              </div>
             </div>
           )}
 
@@ -336,7 +395,10 @@ export function PlanningChatPanel({
                     : 'bg-muted/50 rounded-tl-sm'
                 )}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === 'assistant'
+                  ? renderMarkdown(msg.content)
+                  : <p className="whitespace-pre-wrap">{msg.content}</p>
+                }
               </div>
             </div>
           ))}
@@ -351,9 +413,7 @@ export function PlanningChatPanel({
                 'rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50',
                 isFullMode ? 'max-w-[75%]' : 'max-w-[85%]'
               )}>
-                <p className="whitespace-pre-wrap">
-                  {cleanStreamText(streamingText)}
-                </p>
+                {renderMarkdown(cleanStreamText(streamingText))}
                 <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
               </div>
             </div>

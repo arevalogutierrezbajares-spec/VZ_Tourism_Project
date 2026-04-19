@@ -82,6 +82,7 @@ All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 
 ## Completed
 
+- SmartStarters in itinerary panel + rich AI message rendering + punchy AI prompt — **Completed: v0.3.4.0 (2026-04-19)**
 - All P0 + P1 UX items shipped — **Completed: v0.3.0.0 (2026-04-18)**
 - `@testing-library/dom` installed — **Completed: v0.3.0.0 (2026-04-18)**
 - `BookingForm` null-safety fix — **Completed: v0.3.0.0 (2026-04-18)**

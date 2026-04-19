@@ -1,9 +1,9 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, MapPin, Save, Share2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Share2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlanningChatPanel } from '@/components/itinerary/PlanningChatPanel';
 import { SmartStarters } from '@/components/itinerary/SmartStarters';
@@ -43,6 +43,9 @@ function PlanPage() {
     save,
     setItinerary,
   } = useItineraryStore();
+
+  // Ref to sendMessage from PlanningChatPanel (exposed via onReady)
+  const sendMessageRef = useRef<((msg: string) => void) | null>(null);
 
   // Initialize a local itinerary if none exists
   useEffect(() => {
@@ -170,10 +173,9 @@ function PlanPage() {
         />
       ))}
       {days.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <MapPin className="w-8 h-8 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">Start chatting to build your trip</p>
-        </div>
+        <SmartStarters
+          onSend={(msg) => sendMessageRef.current?.(msg)}
+        />
       )}
     </div>
   );
@@ -231,9 +233,7 @@ function PlanPage() {
             mode="full"
             onDayPlan={handleDayPlan}
             onItinerary={handleItinerary}
-            renderStarters={(sendMessage) => (
-              <SmartStarters onSend={sendMessage} className="ml-9" />
-            )}
+            onReady={(send) => { sendMessageRef.current = send; }}
           />
         </div>
 
