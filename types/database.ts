@@ -214,6 +214,61 @@ export interface ItineraryStop {
   listing?: Listing;
 }
 
+// AI-generated stop shape — emitted by Claude in <day-plan> and <itinerary-json> tags.
+// Used by PlanningChatPanel, ItineraryDaySection, ItineraryStopCard (swap alternatives).
+export interface AIGeneratedStop {
+  listing_id: string | null;
+  title: string;
+  description: string;
+  location_name: string;
+  latitude: number | null;
+  longitude: number | null;
+  cost_usd: number;
+  duration_hours: number | null;
+  transport_to_next?: string | null;
+  transport_duration_minutes?: number | null;
+  reason?: string;
+}
+
+// A day of stops as emitted by Claude in <day-plan> or <itinerary-json> tags.
+export interface AIGeneratedDay {
+  day: number;
+  title: string;
+  stops: AIGeneratedStop[];
+}
+
+/**
+ * Convert an AI-generated stop into the shape expected by itinerary-store.addStop().
+ * Eliminates the 3x duplicated payload construction across PlanningChatPanel,
+ * ItineraryDaySection, and the <day-plan> parser.
+ */
+export function buildStopFromAI(
+  raw: AIGeneratedStop,
+  itineraryId: string,
+  day: number,
+  order: number
+): Omit<ItineraryStop, 'id' | 'created_at'> {
+  return {
+    itinerary_id: itineraryId,
+    listing_id: raw.listing_id || null,
+    day,
+    order,
+    title: raw.title,
+    description: raw.description || null,
+    latitude: raw.latitude ?? null,
+    longitude: raw.longitude ?? null,
+    location_name: raw.location_name || null,
+    cost_usd: raw.cost_usd || 0,
+    duration_hours: raw.duration_hours ?? null,
+    start_time: null,
+    end_time: null,
+    transport_to_next: raw.transport_to_next ?? null,
+    transport_duration_minutes: raw.transport_duration_minutes ?? null,
+    notes: null,
+    source_type: 'ai_suggested',
+  };
+}
+
 // itinerary_conversations table exists in DB (migration 009) for future use.
 // The current conversation route uses stateless SSE streaming.
 // These types are defined here for when conversation persistence is implemented.

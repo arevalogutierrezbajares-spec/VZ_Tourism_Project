@@ -67,7 +67,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
 
     if (selected === 'ai') {
       handleClose();
-      router.push('/map?mode=ai');
+      router.push('/plan');
     } else if (selected === 'map') {
       handleClose();
       router.push('/map');
@@ -79,7 +79,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
       }
       const encoded = encodeURIComponent(pasteText.trim().slice(0, 800));
       handleClose();
-      router.push(`/map?plan=${encoded}`);
+      router.push(`/plan?plan=${encoded}`);
     }
   }
 

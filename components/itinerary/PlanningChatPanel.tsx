@@ -18,36 +18,44 @@ import { Badge } from '@/components/ui/badge';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import type { AIGeneratedDay } from '@/types/database';
+import { buildStopFromAI } from '@/types/database';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-interface GeneratedDay {
-  day: number;
-  title: string;
-  stops: {
-    listing_id: string | null;
-    title: string;
-    description: string;
-    location_name: string;
-    latitude: number | null;
-    longitude: number | null;
-    cost_usd: number;
-    duration_hours: number | null;
-  }[];
-}
-
 interface PlanningChatPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
+  /** When true, renders as side panel with fixed positioning (legacy). When false, fills parent. */
+  isOpen?: boolean;
+  onClose?: () => void;
+  /** Called when a <day-plan> event arrives from the stream */
+  onDayPlan?: (day: AIGeneratedDay) => void;
+  /** Called when the full <itinerary-json> arrives */
+  onItinerary?: (days: AIGeneratedDay[]) => void;
+  /** Render mode: 'panel' for legacy side panel, 'full' for /plan page */
+  mode?: 'panel' | 'full';
+  /** Render function for SmartStarters — receives sendMessage callback */
+  renderStarters?: (sendMessage: (text: string) => void) => React.ReactNode;
   className?: string;
 }
 
+// Strip XML tags from displayed text
+function cleanStreamText(text: string): string {
+  return text
+    .replace(/<itinerary-json>[\s\S]*?<\/itinerary-json>/g, '')
+    .replace(/<day-plan[\s\S]*?<\/day-plan>/g, '')
+    .trim();
+}
+
 export function PlanningChatPanel({
-  isOpen,
+  isOpen = true,
   onClose,
+  onDayPlan,
+  onItinerary,
+  mode = 'panel',
+  renderStarters,
   className,
 }: PlanningChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -55,7 +63,7 @@ export function PlanningChatPanel({
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [generatedItinerary, setGeneratedItinerary] = useState<
-    GeneratedDay[] | null
+    AIGeneratedDay[] | null
   >(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -127,13 +135,14 @@ export function PlanningChatPanel({
               if (payload.type === 'text') {
                 fullText += payload.text;
                 setStreamingText(fullText);
+              } else if (payload.type === 'day-plan') {
+                // Progressive building — a single day was confirmed
+                onDayPlan?.(payload.data);
               } else if (payload.type === 'itinerary') {
                 setGeneratedItinerary(payload.data);
+                onItinerary?.(payload.data);
               } else if (payload.type === 'done') {
-                // Clean the displayed text — remove itinerary JSON tags
-                const cleanText = fullText
-                  .replace(/<itinerary-json>[\s\S]*?<\/itinerary-json>/g, '')
-                  .trim();
+                const cleanText = cleanStreamText(fullText);
                 setMessages((prev) => [
                   ...prev,
                   { role: 'assistant', content: cleanText },
@@ -148,13 +157,14 @@ export function PlanningChatPanel({
           }
         }
       } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
         console.error('Chat error:', error);
         toast.error('Failed to send message');
       } finally {
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming]
+    [messages, isStreaming, onDayPlan, onItinerary]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -165,37 +175,15 @@ export function PlanningChatPanel({
   const handleAcceptItinerary = () => {
     if (!generatedItinerary) return;
 
+    const itineraryId = current?.id || '';
     const currentDays = useItineraryStore.getState().days;
-    for (
-      let i = currentDays.length;
-      i < generatedItinerary.length;
-      i++
-    ) {
+    for (let i = currentDays.length; i < generatedItinerary.length; i++) {
       addDay();
     }
 
     for (const genDay of generatedItinerary) {
       for (let i = 0; i < genDay.stops.length; i++) {
-        const stop = genDay.stops[i];
-        addStop({
-          itinerary_id: current?.id || '',
-          listing_id: stop.listing_id || null,
-          day: genDay.day,
-          order: i,
-          title: stop.title,
-          description: stop.description || null,
-          latitude: stop.latitude ?? null,
-          longitude: stop.longitude ?? null,
-          location_name: stop.location_name || null,
-          cost_usd: stop.cost_usd || 0,
-          duration_hours: stop.duration_hours ?? null,
-          start_time: null,
-          end_time: null,
-          transport_to_next: null,
-          transport_duration_minutes: null,
-          notes: null,
-          source_type: 'ai_suggested',
-        });
+        addStop(buildStopFromAI(genDay.stops[i], itineraryId, genDay.day, i));
       }
     }
 
@@ -207,60 +195,77 @@ export function PlanningChatPanel({
       `Added ${generatedItinerary.length}-day itinerary with ${totalStops} stops!`
     );
     setGeneratedItinerary(null);
-    onClose();
+    onClose?.();
   };
 
-  const starters = [
+  const defaultStarters = [
     "I want to explore beaches and nature for about a week",
     "Plan a 3-day adventure trip for two",
     "What's the best way to see Angel Falls?",
     "I have 5 days, mix of culture and relaxation",
   ];
 
-  if (!isOpen) return null;
+  if (mode === 'panel' && !isOpen) return null;
+
+  const isFullMode = mode === 'full';
 
   return (
     <div
       className={cn(
-        'fixed right-80 top-0 h-full w-96 bg-background shadow-2xl border-l z-30',
         'flex flex-col',
+        isFullMode
+          ? 'h-full w-full bg-background'
+          : 'fixed right-80 top-0 h-full w-96 bg-background shadow-2xl border-l z-30',
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className={cn(
+        'flex items-center justify-between border-b',
+        isFullMode ? 'p-5' : 'p-4'
+      )}>
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
+          <div className={cn(
+            'rounded-full bg-primary flex items-center justify-center',
+            isFullMode ? 'w-8 h-8' : 'w-7 h-7'
+          )}>
+            <Bot className={cn(isFullMode ? 'w-4.5 h-4.5' : 'w-4 h-4', 'text-white')} />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Trip Planner</h3>
+            <h3 className={cn('font-semibold', isFullMode ? 'text-base' : 'text-sm')}>
+              Trip Planner
+            </h3>
             <p className="text-xs text-muted-foreground">
               AI-powered itinerary assistant
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-7 h-7"
-          onClick={onClose}
-        >
-          <X className="w-4 h-4" />
-        </Button>
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-7 h-7"
+            onClick={onClose}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Messages */}
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
-          {/* Welcome message */}
+        <div className={cn('space-y-4', isFullMode ? 'p-5' : 'p-4')}>
+          {/* Welcome + starters */}
           {messages.length === 0 && !isStreaming && (
             <div className="space-y-4">
               <div className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
                   <Bot className="w-3.5 h-3.5" />
                 </div>
-                <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50 max-w-[85%]">
+                <div className={cn(
+                  'rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50',
+                  isFullMode ? 'max-w-[75%]' : 'max-w-[85%]'
+                )}>
                   <p>
                     Hey! I&apos;m your Venezuela trip planner. Tell me what
                     kind of experience you&apos;re looking for and I&apos;ll
@@ -269,21 +274,24 @@ export function PlanningChatPanel({
                 </div>
               </div>
 
-              <div className="space-y-1.5 ml-9">
-                <p className="text-xs text-muted-foreground">
-                  Try one of these:
-                </p>
-                {starters.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => sendMessage(s)}
-                    className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed hover:border-primary/40 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-foreground"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+              {/* SmartStarters for full mode, fallback text starters for panel mode */}
+              {renderStarters ? renderStarters(sendMessage) : (
+                <div className="space-y-1.5 ml-9">
+                  <p className="text-xs text-muted-foreground">
+                    Try one of these:
+                  </p>
+                  {defaultStarters.map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => sendMessage(s)}
+                      className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed hover:border-primary/40 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-foreground"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -312,7 +320,8 @@ export function PlanningChatPanel({
               </div>
               <div
                 className={cn(
-                  'rounded-2xl px-4 py-2.5 text-sm max-w-[85%] leading-relaxed',
+                  'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                  isFullMode ? 'max-w-[75%]' : 'max-w-[85%]',
                   msg.role === 'user'
                     ? 'bg-primary text-white rounded-tr-sm'
                     : 'bg-muted/50 rounded-tl-sm'
@@ -329,12 +338,12 @@ export function PlanningChatPanel({
               <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
                 <Bot className="w-3.5 h-3.5" />
               </div>
-              <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50 max-w-[85%]">
+              <div className={cn(
+                'rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted/50',
+                isFullMode ? 'max-w-[75%]' : 'max-w-[85%]'
+              )}>
                 <p className="whitespace-pre-wrap">
-                  {streamingText.replace(
-                    /<itinerary-json>[\s\S]*?<\/itinerary-json>/g,
-                    ''
-                  )}
+                  {cleanStreamText(streamingText)}
                 </p>
                 <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
               </div>
@@ -414,7 +423,7 @@ export function PlanningChatPanel({
       </ScrollArea>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t">
+      <form onSubmit={handleSubmit} className={cn('border-t', isFullMode ? 'p-5' : 'p-4')}>
         <div className="flex gap-2">
           <Input
             ref={inputRef}
@@ -422,12 +431,13 @@ export function PlanningChatPanel({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe your ideal trip..."
             disabled={isStreaming}
-            className="flex-1"
+            className={cn('flex-1', isFullMode && 'h-11')}
           />
           <Button
             type="submit"
             size="icon"
             disabled={!input.trim() || isStreaming}
+            className={cn(isFullMode && 'h-11 w-11')}
           >
             {isStreaming ? (
               <Loader2 className="w-4 h-4 animate-spin" />

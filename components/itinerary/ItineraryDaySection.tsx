@@ -5,21 +5,10 @@ import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryStopCard } from './ItineraryStopCard';
 import { useItineraryStore } from '@/stores/itinerary-store';
-import type { ItineraryStop } from '@/types/database';
+import type { ItineraryStop, AIGeneratedStop } from '@/types/database';
+import { buildStopFromAI } from '@/types/database';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-interface SuggestedStop {
-  listing_id: string | null;
-  title: string;
-  description: string;
-  location_name: string;
-  latitude: number | null;
-  longitude: number | null;
-  cost_usd: number;
-  duration_hours: number | null;
-  reason: string;
-}
 
 interface ItineraryDaySectionProps {
   day: number;
@@ -45,7 +34,7 @@ export function ItineraryDaySection({
   const dragStopIdRef = useRef<string | null>(null);
   const dragSourceDayRef = useRef<number | null>(null);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [suggestions, setSuggestions] = useState<SuggestedStop[]>([]);
+  const [suggestions, setSuggestions] = useState<AIGeneratedStop[]>([]);
   const { addStop, current, days } = useItineraryStore();
 
   const handleDragStart = (stopId: string, sourceDay: number) => {
@@ -106,26 +95,8 @@ export function ItineraryDaySection({
     }
   };
 
-  const handleAcceptSuggestion = (suggestion: SuggestedStop) => {
-    addStop({
-      itinerary_id: current?.id || '',
-      listing_id: suggestion.listing_id,
-      day,
-      order: stops.length,
-      title: suggestion.title,
-      description: suggestion.description || null,
-      latitude: suggestion.latitude ?? null,
-      longitude: suggestion.longitude ?? null,
-      location_name: suggestion.location_name || null,
-      cost_usd: suggestion.cost_usd || 0,
-      duration_hours: suggestion.duration_hours ?? null,
-      start_time: null,
-      end_time: null,
-      transport_to_next: null,
-      transport_duration_minutes: null,
-      notes: null,
-      source_type: 'ai_suggested',
-    });
+  const handleAcceptSuggestion = (suggestion: AIGeneratedStop) => {
+    addStop(buildStopFromAI(suggestion, current?.id || '', day, stops.length));
     setSuggestions((prev) => prev.filter((s) => s.title !== suggestion.title));
     toast.success(`Added "${suggestion.title}"`);
   };

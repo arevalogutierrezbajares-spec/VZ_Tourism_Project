@@ -27,28 +27,33 @@ Key knowledge:
 
 Safety levels: Green (safe), Yellow (normal precautions), Orange (increased caution), Red (extreme caution)
 
-When the traveler is happy with a plan, output a STRUCTURED ITINERARY wrapped in <itinerary-json> tags:
+PROGRESSIVE BUILDING — output a <day-plan> tag each time the traveler agrees on a day's plan:
+<day-plan day="1" title="Caracas Arrival">
+[{"listing_id": "uuid-or-null", "title": "...", "description": "...", "location_name": "...", "latitude": ..., "longitude": ..., "cost_usd": ..., "duration_hours": ..., "transport_to_next": "25 min drive", "transport_duration_minutes": 25}]
+</day-plan>
+
+Output a <day-plan> tag each time you and the traveler agree on a day's activities. Don't wait until the entire trip is confirmed. If the traveler asks to revise a day, emit a new <day-plan> with the same day number (it replaces the previous one).
+
+When the FULL trip is finalized, also output the complete plan in <itinerary-json> tags:
 <itinerary-json>
 [
   {
     "day": 1,
     "title": "Day title",
     "stops": [
-      {"listing_id": "uuid-or-null", "title": "...", "description": "...", "location_name": "...", "latitude": ..., "longitude": ..., "cost_usd": ..., "duration_hours": ...}
+      {"listing_id": "uuid-or-null", "title": "...", "description": "...", "location_name": "...", "latitude": ..., "longitude": ..., "cost_usd": ..., "duration_hours": ..., "transport_to_next": "...", "transport_duration_minutes": ...}
     ]
   }
 ]
 </itinerary-json>
-
-Only output the <itinerary-json> block when the user explicitly confirms they want to build/create/finalize the itinerary. During normal conversation, just chat naturally.
 
 Respond in the same language the user writes in.`;
 
 /**
  * POST /api/itineraries/conversation
  *
- * Streaming conversational planning endpoint. Uses Sonnet for fast responses.
- * When the user confirms a plan, Claude outputs structured itinerary JSON.
+ * True streaming conversational planning endpoint. Uses Sonnet for fast responses.
+ * Streams text token-by-token via SSE. Emits <day-plan> and <itinerary-json> events.
  */
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -82,7 +87,6 @@ export async function POST(request: NextRequest) {
 
       const client = getAnthropicClient();
 
-      // Build properly typed messages
       let apiMessages: Anthropic.MessageParam[] = inputMessages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -94,7 +98,8 @@ export async function POST(request: NextRequest) {
         while (iterations < 6) {
           iterations++;
 
-          const response = await client.messages.create({
+          // True streaming — tokens arrive as they're generated
+          const claudeStream = client.messages.stream({
             model: SONNET_MODEL,
             max_tokens: 3000,
             system: PLANNING_SYSTEM_PROMPT,
@@ -102,19 +107,47 @@ export async function POST(request: NextRequest) {
             messages: apiMessages,
           });
 
-          // Stream text blocks to the client
+          // If the client disconnects, abort the Claude stream
+          if (request.signal) {
+            request.signal.addEventListener('abort', () => {
+              claudeStream.abort();
+            }, { once: true });
+          }
+
           let fullText = '';
-          for (const block of response.content) {
-            if (block.type === 'text') {
-              fullText += block.text;
-              const words = block.text.split(/(\s+)/);
-              for (const word of words) {
-                emit({ type: 'text', text: word });
+
+          // Stream text deltas to the client in real-time
+          for await (const event of claudeStream) {
+            if (event.type === 'content_block_delta') {
+              if (event.delta.type === 'text_delta') {
+                fullText += event.delta.text;
+                emit({ type: 'text', text: event.delta.text });
               }
             }
           }
 
-          // Check for itinerary JSON in the response
+          const finalMessage = await claudeStream.finalMessage();
+
+          // Parse <day-plan> tags from the accumulated text (attribute order agnostic)
+          const dayPlanTagRegex = /<day-plan\s([^>]*)>\s*([\s\S]*?)\s*<\/day-plan>/g;
+          let dayMatch;
+          while ((dayMatch = dayPlanTagRegex.exec(fullText)) !== null) {
+            try {
+              const attrs = dayMatch[1];
+              const dayNum = attrs.match(/day="(\d+)"/)?.[1];
+              const title = attrs.match(/title="([^"]*)"/)?.[1];
+              if (!dayNum) continue;
+              const stops = JSON.parse(dayMatch[2]);
+              emit({
+                type: 'day-plan',
+                data: { day: parseInt(dayNum, 10), title: title || `Day ${dayNum}`, stops },
+              });
+            } catch {
+              // Malformed day-plan JSON — silently skip, text is still shown
+            }
+          }
+
+          // Parse <itinerary-json> tags (full trip finalization)
           const itineraryMatch = fullText.match(
             /<itinerary-json>([\s\S]*?)<\/itinerary-json>/
           );
@@ -127,11 +160,11 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Handle tool use with properly typed messages
-          if (response.stop_reason === 'tool_use') {
+          // Handle tool use — loop back with tool results
+          if (finalMessage.stop_reason === 'tool_use') {
             const toolResultContent: Anthropic.ToolResultBlockParam[] = [];
 
-            for (const block of response.content) {
+            for (const block of finalMessage.content) {
               if (block.type === 'tool_use') {
                 const result = await handleToolCall(
                   block.name,
@@ -148,7 +181,7 @@ export async function POST(request: NextRequest) {
 
             apiMessages = [
               ...apiMessages,
-              { role: 'assistant', content: response.content },
+              { role: 'assistant', content: finalMessage.content },
               { role: 'user', content: toolResultContent },
             ];
           } else {
@@ -158,6 +191,7 @@ export async function POST(request: NextRequest) {
 
         emit({ type: 'done' });
       } catch (err) {
+        if (request.signal?.aborted) return;
         const message = err instanceof Error ? err.message : 'Conversation failed';
         emit({ type: 'error', message });
       } finally {

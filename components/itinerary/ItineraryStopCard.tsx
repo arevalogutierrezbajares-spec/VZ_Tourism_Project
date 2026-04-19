@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import {
   Clock,
   MapPin,
@@ -11,46 +12,54 @@ import {
   Loader2,
   ArrowLeftRight,
   X,
+  ImageOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useItineraryStore } from '@/stores/itinerary-store';
-import type { ItineraryStop } from '@/types/database';
-import { formatCurrency, formatDuration } from '@/lib/utils';
+import type { ItineraryStop, AIGeneratedStop } from '@/types/database';
+import { formatDuration } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-interface Alternative {
-  listing_id: string | null;
-  title: string;
-  description: string;
-  location_name: string;
-  latitude: number | null;
-  longitude: number | null;
-  cost_usd: number;
-  duration_hours: number | null;
-  reason: string;
-}
 
 interface ItineraryStopCardProps {
   stop: ItineraryStop;
   onRemove?: (id: string) => void;
+  onSwapRequest?: (stop: ItineraryStop) => void;
   isDraggable?: boolean;
+  /** Show listing photo when available */
+  showPhoto?: boolean;
+  /** Show transport connector below this card */
+  showTransport?: boolean;
   className?: string;
 }
 
 export function ItineraryStopCard({
   stop,
   onRemove,
+  onSwapRequest,
   isDraggable,
+  showPhoto = false,
+  showTransport = true,
   className,
 }: ItineraryStopCardProps) {
   const [isLoadingAlts, setIsLoadingAlts] = useState(false);
-  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+  const [alternatives, setAlternatives] = useState<AIGeneratedStop[]>([]);
+  const [imgError, setImgError] = useState(false);
   const { updateStop, current, days } = useItineraryStore();
+
+  const coverUrl = stop.listing?.cover_image_url;
+  const hasPhoto = showPhoto && coverUrl && !imgError;
 
   const handleGetAlternatives = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // If a swap request handler is provided (full mode), use that instead
+    if (onSwapRequest) {
+      onSwapRequest(stop);
+      return;
+    }
+
     if (alternatives.length > 0) {
       setAlternatives([]);
       return;
@@ -87,7 +96,7 @@ export function ItineraryStopCard({
     }
   };
 
-  const handleSwap = (alt: Alternative) => {
+  const handleSwap = (alt: AIGeneratedStop) => {
     updateStop(stop.id, {
       listing_id: alt.listing_id,
       title: alt.title,
@@ -106,14 +115,38 @@ export function ItineraryStopCard({
 
   return (
     <div className={cn('space-y-1', className)}>
-      <div className="flex gap-3 p-3 bg-background rounded-xl border hover:shadow-sm transition-shadow group">
-        {isDraggable && (
+      <div className={cn(
+        'flex gap-3 p-3 bg-background rounded-xl border hover:shadow-sm transition-shadow group',
+        hasPhoto && 'p-0 overflow-hidden'
+      )}>
+        {/* Listing photo */}
+        {hasPhoto && (
+          <div className="relative w-20 h-20 shrink-0">
+            <Image
+              src={coverUrl!}
+              alt={stop.title}
+              fill
+              className="object-cover"
+              sizes="80px"
+              onError={() => setImgError(true)}
+            />
+          </div>
+        )}
+
+        {/* Photo fallback placeholder (only in showPhoto mode when no image) */}
+        {showPhoto && !hasPhoto && (
+          <div className="w-20 h-20 shrink-0 bg-muted flex items-center justify-center rounded-l-xl">
+            <ImageOff className="w-5 h-5 text-muted-foreground/40" />
+          </div>
+        )}
+
+        {isDraggable && !showPhoto && (
           <div className="flex items-center cursor-grab text-muted-foreground/50 hover:text-muted-foreground">
             <GripVertical className="w-4 h-4" />
           </div>
         )}
 
-        <div className="flex-1 min-w-0 space-y-1">
+        <div className={cn('flex-1 min-w-0 space-y-1', hasPhoto && 'p-3')}>
           <div className="flex items-start gap-2">
             <p className="font-medium text-sm line-clamp-1 flex-1">{stop.title}</p>
             <div className="flex items-center gap-0.5 shrink-0">
@@ -179,18 +212,19 @@ export function ItineraryStopCard({
               </Badge>
             )}
           </div>
-
-          {stop.transport_to_next && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground italic">
-              <span>&rarr;</span>
-              <span>{stop.transport_to_next}</span>
-              {stop.transport_duration_minutes && (
-                <span>({stop.transport_duration_minutes} min)</span>
-              )}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Transport connector */}
+      {showTransport && stop.transport_to_next && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pl-4 py-1">
+          <div className="w-px h-3 bg-border" />
+          <span className="italic">
+            {stop.transport_to_next}
+            {stop.transport_duration_minutes && ` (${stop.transport_duration_minutes} min)`}
+          </span>
+        </div>
+      )}
 
       {/* Alternatives dropdown */}
       {alternatives.length > 0 && (
