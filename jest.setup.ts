@@ -108,8 +108,21 @@ jest.mock('react-hot-toast', () => ({
 // ─── Global fetch mock ──────────────────────────────────────────────────────
 global.fetch = jest.fn();
 
+// ─── Node.js globals (TextEncoder/TextDecoder) ──────────────────────────────
+// jsdom does not expose these — wire them from Node's 'util' module
+const { TextEncoder: NodeTextEncoder, TextDecoder: NodeTextDecoder } = require('util');
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = NodeTextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  // @ts-expect-error — assignable for test purposes
+  global.TextDecoder = NodeTextDecoder;
+}
+
 // ─── Browser globals (jsdom environment only) ───────────────────────────────
 if (typeof window !== 'undefined') {
+  // scrollIntoView is not implemented in jsdom
+  window.HTMLElement.prototype.scrollIntoView = jest.fn();
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: jest.fn().mockImplementation((query: string) => ({

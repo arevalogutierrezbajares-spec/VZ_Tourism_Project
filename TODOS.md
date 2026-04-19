@@ -52,6 +52,26 @@ All pre-existing test failures resolved — **Completed: v0.3.1.0 (2026-04-18)**
 - **Depends on:** Supabase project with Vault enabled (available on Pro plan)
 - **Priority:** P1 — before onboarding real providers
 
+## P1 — PMS DESIGN.md (from design review)
+
+**Create PMS DESIGN.md from plan tokens when PMS repo is initialized**
+
+- **What:** The Posada PMS design tokens (colors, typography, spacing, radii, shadows, buttons, motion) are currently specified in the plan file (`tomas-deploy-whatsapp-ai-design-20260419-041500.md`, Section "UX Architecture > Design System"). When the PMS monorepo is created in Week 1, these tokens need to live in the PMS repo's own DESIGN.md file and Tailwind config.
+- **Why:** The VZ Tourism Platform's DESIGN.md covers the marketplace (oklch teal-blue, Fraunces, editorial). The PMS is a separate product with different tokens (#0F766E teal, Inter, dense/functional). Without a PMS-specific DESIGN.md, implementer agents will either guess or pull from the wrong design system.
+- **How:** Architect Agent extracts the token tables from the plan file into `DESIGN.md` at the PMS repo root + generates `tailwind.config.ts` with the CSS variables. One-time setup task.
+- **Depends on:** PMS monorepo initialization (Week 1, Architect Agent)
+- **Priority:** P1 — Week 1, blocks all UI work
+
+## P2 — Creator Suite: Listing Match Quality
+
+**Improve `matchSpotsBatch` with trigram similarity scoring**
+
+- **What:** `lib/match-spots.ts` uses `ilike.%term%` title matching against the listings DB. Scores matches client-side by exact/partial string overlap. Works with the current listing count.
+- **Why:** As the listings table grows beyond ~500 entries, false positives increase and match quality degrades. The 70% match confidence target for the creator TikTok import flow depends on accurate matches. If that target is missed, this is the first place to investigate.
+- **How:** Replace the current scoring with Postgres `similarity()` function (pg_trgm extension, already enabled via `gin_trgm_ops` indexes). A single `SELECT *, similarity(title, $query) AS score FROM listings WHERE similarity(title, $query) > 0.3 ORDER BY score DESC` returns ranked candidates without the client-side scoring loop.
+- **Depends on:** Creator Suite Phase 1 shipped and 70% match rate validated.
+- **Priority:** P2 — monitor first, fix if target is missed
+
 ## Completed
 
 - All P0 + P1 UX items shipped — **Completed: v0.3.0.0 (2026-04-18)**
