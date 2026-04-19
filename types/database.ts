@@ -510,7 +510,46 @@ export interface CreatorProfile {
   following: number;
   total_itineraries: number;
   is_verified: boolean;
+  discount_codes_enabled?: boolean;
   created_at: string;
   updated_at: string;
   user?: User;
 }
+
+// ─── Discount Codes ───────────────────────────────────────────────────────────
+
+export interface DiscountCode {
+  id: string;
+  creator_id: string;
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  min_booking_usd: number;
+  max_uses: number | null;
+  times_used: number;
+  total_revenue_generated: number;
+  expires_at: string | null;
+  status: 'active' | 'paused' | 'expired';
+  listing_ids: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DiscountCodeUse {
+  id: string;
+  code_id: string;
+  guest_booking_id: string | null;
+  discount_amount_usd: number;
+  used_at: string;
+}
+
+export interface DiscountValidationResult {
+  valid: boolean;
+  code_id: string;
+  creator_id: string;
+  discount_amount_usd: number;
+  net_total_usd: number;
+  error?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
