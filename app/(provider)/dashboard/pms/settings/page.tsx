@@ -88,6 +88,8 @@ export default function PmsSettingsPage() {
       setSaveMsg('Guardado');
       refresh();
       setTimeout(() => setSaveMsg(null), 3000);
+      // Fire-and-forget: sync PMS data to WhatsApp AI knowledge base
+      fetch('/api/whatsapp/knowledge/sync-pms', { method: 'POST' }).catch(() => {});
     } catch (err) {
       setSaveMsg(err instanceof PmsApiError ? err.message : 'Error al guardar');
     } finally {

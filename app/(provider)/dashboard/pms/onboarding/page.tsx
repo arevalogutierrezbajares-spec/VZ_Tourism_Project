@@ -129,6 +129,8 @@ export default function PmsOnboardingPage() {
 
         setCompleted(true);
         setStep(4);
+        // Fire-and-forget: sync PMS data to WhatsApp AI knowledge base
+        fetch('/api/whatsapp/knowledge/sync-pms', { method: 'POST' }).catch(() => {});
       }
     } catch (err) {
       setError(err instanceof PmsApiError ? err.message : 'Error saving');

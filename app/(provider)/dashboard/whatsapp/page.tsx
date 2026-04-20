@@ -20,6 +20,7 @@ import type {
   WaConversation, WaMessage, WaConversationStatus, WaBookingStage,
 } from '@/types/database';
 import toast from 'react-hot-toast';
+import StatsStrip from '@/components/whatsapp/StatsStrip';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -216,33 +217,6 @@ function DayDivider({ label }: { label: string }) {
   );
 }
 
-// ─── Stats Strip ─────────────────────────────────────────────────────────────
-
-function StatsStrip({ conversations }: { conversations: WaConversation[] }) {
-  const counts = {
-    total:     conversations.length,
-    ai:        conversations.filter((c) => c.status === 'ai').length,
-    human:     conversations.filter((c) => c.status === 'human').length,
-    escalated: conversations.filter((c) => c.status === 'escalated').length,
-  };
-
-  return (
-    <div className="grid grid-cols-4 divide-x border-b">
-      {[
-        { label: 'Total',     value: counts.total,     color: 'text-foreground'  },
-        { label: 'AI',        value: counts.ai,        color: 'text-green-600'   },
-        { label: 'Human',     value: counts.human,     color: 'text-blue-600'    },
-        { label: 'Escalated', value: counts.escalated, color: 'text-red-600'     },
-      ].map(({ label, value, color }) => (
-        <div key={label} className="py-2.5 text-center">
-          <p className={cn('text-base font-bold', color)}>{value}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Empty States ─────────────────────────────────────────────────────────────
 
 function NotConfiguredState() {
@@ -257,9 +231,9 @@ function NotConfiguredState() {
           Connect your WhatsApp Business number to start receiving and managing guest messages.
         </p>
         <Button variant="outline" size="sm" className="mt-4" asChild>
-          <a href="/dashboard/settings">
+          <a href="/dashboard/whatsapp/setup">
             <Settings className="w-3.5 h-3.5 mr-1.5" />
-            Go to Settings
+            Set up WhatsApp
           </a>
         </Button>
       </CardContent>
