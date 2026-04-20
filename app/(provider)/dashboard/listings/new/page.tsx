@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,12 +15,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { listingSchema } from '@/lib/validators';
 import { LISTING_CATEGORIES, VENEZUELA_REGIONS } from '@/lib/constants';
+import { ImagePlus, X } from 'lucide-react';
 
 type ListingForm = z.infer<typeof listingSchema>;
 
 export default function NewListingPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ListingForm>({
     resolver: zodResolver(listingSchema) as any,
@@ -37,13 +42,52 @@ export default function NewListingPage() {
 
   const isPublished = watch('is_published');
 
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setPhotoFiles((prev) => [...prev, ...files]);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setPhotoPreviews((prev) => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    // Reset input so the same file can be re-selected if removed
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removePhoto(index: number) {
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
+    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function uploadPhotos(): Promise<string[]> {
+    const urls: string[] = [];
+    for (const file of photoFiles) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload?bucket=listings', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.url) urls.push(json.url);
+      }
+    }
+    return urls;
+  }
+
   async function onSubmit(data: ListingForm) {
     setIsLoading(true);
     try {
+      const uploadedUrls = await uploadPhotos();
+      const photos = uploadedUrls.length > 0 ? uploadedUrls : (data.photos ?? []);
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, photos }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create listing');
@@ -156,6 +200,51 @@ export default function NewListingPage() {
                 <Input id="max_guests" type="number" min={1} {...register('max_guests', { valueAsNumber: true })} />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Photos</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <input
+              ref={fileInputRef}
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="sr-only"
+              onChange={handlePhotoSelect}
+            />
+            {photoPreviews.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {photoPreviews.map((src, i) => (
+                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                      aria-label={`Remove photo ${i + 1}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <ImagePlus className="w-4 h-4 mr-2" />
+              {photoPreviews.length > 0 ? 'Add more photos' : 'Add photos'}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Upload photos of your experience. First photo will be used as the cover image.
+            </p>
           </CardContent>
         </Card>
 
