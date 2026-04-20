@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function ProviderBookingActions({ bookingId, status }: Props) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -46,7 +48,7 @@ export function ProviderBookingActions({ bookingId, status }: Props) {
           ? 'Marked as completed'
           : 'Booking cancelled';
       toast.success(label);
-      window.location.reload();
+      router.refresh();
     } catch {
       toast.error('Failed to update booking');
     } finally {
