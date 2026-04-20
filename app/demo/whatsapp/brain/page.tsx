@@ -228,7 +228,7 @@ export default function DemoBrainPage() {
   const [k, setK] = useState<typeof EMPTY>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [flash, setFlash] = useState<{ section: string; ok: boolean } | null>(null);
+  const [flash, setFlash] = useState<{ section: string; ok: boolean; localOnly?: boolean } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   const LS_KEY = 'demo_posada_knowledge';
@@ -271,7 +271,7 @@ export default function DemoBrainPage() {
           try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
           return merged;
         });
-        setFlash({ section, ok: true });
+        setFlash({ section, ok: true, localOnly: true });
       }
     } catch {
       // Network error — save to localStorage
@@ -280,7 +280,7 @@ export default function DemoBrainPage() {
         try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
         return merged;
       });
-      setFlash({ section, ok: true });
+      setFlash({ section, ok: true, localOnly: true });
     } finally {
       setSaving(null);
       setTimeout(() => setFlash(null), 2500);
@@ -380,7 +380,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'overview' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved — Sofía will use this in her next reply.' : 'Save failed. Try again.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved — Sofía will use this in her next reply.') : 'Save failed. Try again.'}
                   </p>
                 )}
                 <SaveBtn section="overview" saving={saving}
@@ -396,7 +396,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'rooms' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved — Sofía can now quote accurate prices.' : 'Save failed. Try again.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved — Sofía can now quote accurate prices.') : 'Save failed. Try again.'}
                   </p>
                 )}
                 <SaveBtn section="rooms" saving={saving}
@@ -420,7 +420,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'amenities' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved.' : 'Save failed.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved.') : 'Save failed.'}
                   </p>
                 )}
                 <SaveBtn section="amenities" saving={saving}
@@ -460,7 +460,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'policies' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved.' : 'Save failed.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved.') : 'Save failed.'}
                   </p>
                 )}
                 <SaveBtn section="policies" saving={saving}
@@ -476,7 +476,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'faqs' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved — Sofía now has scripted answers for common questions.' : 'Save failed.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved — Sofía now has scripted answers for common questions.') : 'Save failed.'}
                   </p>
                 )}
                 <SaveBtn section="faqs" saving={saving}
@@ -509,7 +509,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'booking' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved.' : 'Save failed.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved.') : 'Save failed.'}
                   </p>
                 )}
                 <SaveBtn section="booking" saving={saving}
@@ -548,7 +548,7 @@ export default function DemoBrainPage() {
                 {flash?.section === 'local' && (
                   <p className={cn('text-xs flex items-center gap-1', flash.ok ? 'text-green-600' : 'text-destructive')}>
                     <CheckCircle2 className="w-3 h-3" />
-                    {flash.ok ? 'Saved.' : 'Save failed.'}
+                    {flash.ok ? (flash.localOnly ? 'Saved locally — changes will sync when connection is restored.' : 'Saved.') : 'Save failed.'}
                   </p>
                 )}
                 <SaveBtn section="local" saving={saving}
