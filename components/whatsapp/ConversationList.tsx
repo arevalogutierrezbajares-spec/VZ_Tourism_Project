@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import {
   RefreshCw, MessageCircle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type {
   WaConversation, WaConversationStatus,
 } from '@/types/database';
@@ -138,7 +139,13 @@ export default function ConversationList({
             <h1 className="text-base font-semibold">Messages</h1>
             <p className="text-xs text-muted-foreground">WhatsApp · AI concierge</p>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Refresh (demo)">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            title="Refresh (demo)"
+            onClick={() => toast('Conversation list updated')}
+          >
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
         </div>
