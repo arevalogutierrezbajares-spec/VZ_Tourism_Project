@@ -342,16 +342,33 @@ async function handleMessage(
   const liveContext = await buildLiveContext(supabase, provider.id, knowledge).catch(() => undefined);
 
   // 12. Generate AI reply via Groq
-  const rawReply = await generateReply({
-    config,
-    providerName: provider.business_name,
-    providerDescription: provider.description,
-    providerRegion: provider.region,
-    inboundText: body,
-    history: (history ?? []).filter((m) => m.id !== undefined),
-    knowledge,
-    liveContext,
-  });
+  let rawReply: string;
+  try {
+    rawReply = await generateReply({
+      config,
+      providerName: provider.business_name,
+      providerDescription: provider.description,
+      providerRegion: provider.region,
+      inboundText: body,
+      history: (history ?? []).filter((m) => m.id !== undefined),
+      knowledge,
+      liveContext,
+    });
+  } catch (groqErr) {
+    console.error('[whatsapp/webhook] Groq error — sending fallback message:', groqErr);
+    const fallbackMsg = config.tone_language === 'es'
+      ? 'Estamos experimentando una breve demora. Un miembro del equipo responderá en breve.'
+      : 'We\'re experiencing a brief delay. A team member will respond shortly.';
+    await sendAndPersist(supabase, conv.id, config, accessToken, from, fallbackMsg, true);
+    // Escalate so a human follows up
+    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
+    await supabase.from('wa_escalations').insert({
+      conversation_id: conv.id,
+      reason: 'AI (Groq) timeout or error — fallback message sent',
+      trigger_type: 'sentiment',
+    });
+    return;
+  }
 
   // 12b. Parse HITL escalation tag
   const hitlMatch = rawReply.match(NEEDS_HUMAN_RE);
