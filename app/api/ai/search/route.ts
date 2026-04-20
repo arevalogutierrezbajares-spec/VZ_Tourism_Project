@@ -12,7 +12,12 @@ export async function POST(request: NextRequest) {
   const limited = rateLimit(getClientIp(request), 10);
   if (limited) return limited;
 
-  const body = (await request.json()) as AISearchRequest;
+  let body: AISearchRequest;
+  try {
+    body = (await request.json()) as AISearchRequest;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
   const { query, conversationHistory, filters } = body;
 
   if (!query?.trim()) {

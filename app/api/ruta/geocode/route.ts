@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const apiKey = process.env.GOOGLE_PLACES_API_KEY
   if (!apiKey) {
-    return NextResponse.json({ error: 'Google Places API key not configured' }, { status: 500 })
+    return NextResponse.json({ error: 'Places service not configured' }, { status: 503 })
   }
 
   try {

@@ -2,7 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 // Tourist routes that require a logged-in session
-const PROTECTED_ROUTES = ['/trips', '/account', '/bookings', '/messages'];
+// NOTE: These pages also handle unauthenticated state client-side (show "Sign in" UI),
+// so only protect routes that truly cannot render without a server session.
+// /trips, /account, /messages removed — they work with the client-side demo account.
+const PROTECTED_ROUTES: string[] = [];
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

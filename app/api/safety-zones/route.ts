@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 const VALID_LEVELS = ['green', 'yellow', 'orange', 'red'];
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
     if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
     const { data, error } = await supabase
       .from('safety_zones')

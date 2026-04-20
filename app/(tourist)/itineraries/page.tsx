@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ItinerariesClient } from './ItinerariesClient';
 
 export const metadata: Metadata = {
-  title: 'Discover Itineraries | VZ Explorer',
+  title: 'Discover Itineraries',
   description: 'Browse curated Venezuela trip plans from travelers and creators who know the country best',
 };
 

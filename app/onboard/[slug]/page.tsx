@@ -13,13 +13,13 @@ type ListingWithPhotos = ReturnType<typeof getListingBySlug> & { photos?: string
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const listing = getListingBySlug(slug);
-  if (!listing) return { title: 'Set Up Your Listing | VZ Explorer' };
+  if (!listing) return { title: 'Set Up Your Listing' };
   const name = listing.name
     .split(' ')
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
   return {
-    title: `Set Up ${name} | VZ Explorer`,
+    title: `Set Up ${name}`,
     description: 'Complete your listing setup and start receiving bookings on VZ Explorer.',
   };
 }

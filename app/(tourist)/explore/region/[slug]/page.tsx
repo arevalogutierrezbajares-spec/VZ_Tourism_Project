@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!region) return { title: 'Destination Not Found' };
   const content = DESTINATION_CONTENT[slug];
   return {
-    title: `${region.name}, Venezuela | VZ Explorer`,
+    title: `${region.name}, Venezuela`,
     description: content?.tagline ?? region.description,
   };
 }

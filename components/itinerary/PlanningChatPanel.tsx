@@ -229,8 +229,12 @@ export function PlanningChatPanel({
                 // Progressive building — a single day was confirmed
                 onDayPlan?.(payload.data);
               } else if (payload.type === 'itinerary') {
-                setGeneratedItinerary(payload.data);
-                onItinerary?.(payload.data);
+                const raw = payload.data;
+                const days = Array.isArray(raw) ? raw : Array.isArray(raw?.days) ? raw.days : null;
+                if (days) {
+                  setGeneratedItinerary(days);
+                  onItinerary?.(days);
+                }
               } else if (payload.type === 'done') {
                 streamDone = true;
                 const cleanText = cleanStreamText(fullText);
@@ -474,7 +478,7 @@ export function PlanningChatPanel({
           )}
 
           {/* Generated itinerary acceptance card */}
-          {generatedItinerary && (
+          {Array.isArray(generatedItinerary) && generatedItinerary.length > 0 && (
             <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-primary" />

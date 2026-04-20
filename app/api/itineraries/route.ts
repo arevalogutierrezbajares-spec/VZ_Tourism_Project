@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { itinerarySchema } from '@/lib/validators';
 
 export async function GET(request: NextRequest) {
@@ -19,7 +19,14 @@ export async function GET(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  let query = supabase
+  // Use service client for public queries to bypass RLS recursion on the users table join.
+  // Authenticated "mine" queries keep the regular client for auth context.
+  const useServiceClient = !mine || !user;
+  const queryClient = useServiceClient
+    ? (await createServiceClient() ?? supabase)
+    : supabase;
+
+  let query = queryClient
     .from('itineraries')
     .select('*, user:users(full_name, avatar_url, role)', { count: 'exact' })
     .range(offset, offset + limit - 1);

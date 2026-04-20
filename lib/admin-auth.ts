@@ -15,8 +15,8 @@ export function requireAdminAuth(request: NextRequest): NextResponse | null {
     // Auth not configured — deny all access to admin endpoints
     console.error('[admin-auth] ADMIN_PASSWORD environment variable is not set');
     return NextResponse.json(
-      { error: 'Server misconfiguration: admin auth not configured' },
-      { status: 500 }
+      { error: 'Service unavailable' },
+      { status: 503 }
     );
   }
 

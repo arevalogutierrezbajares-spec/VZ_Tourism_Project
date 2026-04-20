@@ -33,6 +33,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('next') || '/';
+  const error = searchParams.get('error');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { setUser, setProfile, setLoading, setInitialized } = useAuthStore();
@@ -94,6 +95,14 @@ function LoginForm() {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-md" role="alert">
+            {error === 'auth_callback_failed'
+              ? 'Sign-in failed. Please try again.'
+              : 'An error occurred during sign-in.'}
+          </div>
+        )}
+
         <Button
           type="button"
           variant="outline"
@@ -150,9 +159,13 @@ function LoginForm() {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="password">Password</Label>
-              <Link href="#" className="text-xs text-primary hover:underline">
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => toast('Password reset coming soon. Contact support for help.', { icon: 'ℹ️' })}
+              >
                 Forgot password?
-              </Link>
+              </button>
             </div>
             <div className="relative">
               <Input

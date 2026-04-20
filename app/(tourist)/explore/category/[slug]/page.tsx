@@ -36,10 +36,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = LISTING_CATEGORIES.find((c) => c.value === slug);
-  if (!cat) return { title: 'Category Not Found' };
+  if (!cat) notFound();
   const content = CATEGORY_CONTENT[slug];
   return {
-    title: `${cat.label} in Venezuela | VZ Explorer`,
+    title: `${cat.label} in Venezuela`,
     description: content?.tagline ?? cat.description,
   };
 }

@@ -20,7 +20,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'AI not configured' }, { status: 503 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
   const { itineraryId } = body;
 
   if (!itineraryId) return NextResponse.json({ error: 'itineraryId is required' }, { status: 400 });

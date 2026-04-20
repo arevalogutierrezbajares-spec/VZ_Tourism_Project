@@ -14,9 +14,9 @@ type ListingWithPhotos = ReturnType<typeof getListingBySlug> & { photos?: string
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const listing = getListingBySlug(slug);
-  if (!listing) return { title: 'Join VZ Explorer' };
+  if (!listing) notFound();
   return {
-    title: `${listing.name} — Claim Your Listing | VZ Explorer`,
+    title: `${listing.name} — Claim Your Listing`,
     description: `${listing.name} is already on VZ Explorer. Claim your listing and start receiving bookings today.`,
   };
 }

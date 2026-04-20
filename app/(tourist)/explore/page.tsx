@@ -6,7 +6,7 @@ import { ExploreClient } from './ExploreClient';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export const metadata: Metadata = {
-  title: 'Browse All | VZ Explorer',
+  title: 'Browse All',
   description: 'Browse all hotels, restaurants, and experiences across Venezuela',
 };
 

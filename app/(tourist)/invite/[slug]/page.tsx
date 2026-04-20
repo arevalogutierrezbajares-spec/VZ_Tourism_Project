@@ -10,7 +10,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const listing = getListingBySlug(slug);
-  if (!listing) return { title: 'Join VZ Tourism' };
+  if (!listing) notFound();
   return {
     title: `${listing.name} — Join VZ Tourism`,
     description: `${listing.name} has been listed on VZ Tourism. Join as a platform partner to receive direct bookings.`,

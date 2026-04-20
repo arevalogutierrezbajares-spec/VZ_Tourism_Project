@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { autocomplete } from '@/lib/google-places';
 
 export async function GET(request: NextRequest) {
+  if (!process.env.GOOGLE_PLACES_API_KEY) {
+    return NextResponse.json({ error: 'Places service not configured' }, { status: 503 });
+  }
+
   const query = request.nextUrl.searchParams.get('q');
   if (!query || query.length < 2) {
     return NextResponse.json({ suggestions: [] });
