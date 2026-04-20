@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { RutaRideWithDetails, RutaRideStatus } from '@/types/ruta'
+import { useEffect, useState, useCallback } from 'react'
+import type { RutaRideWithDetails } from '@/types/ruta'
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   pending_payment: { bg: 'rgba(255,180,0,0.1)', text: '#ffb400', border: 'rgba(255,180,0,0.2)' },
@@ -50,14 +50,17 @@ export default function DispatchPage() {
   const [drivers, setDrivers] = useState<Array<{ id: string; full_name: string; status: string }>>([])
   const [vehicles, setVehicles] = useState<Array<{ id: string; plate_number: string; vehicle_class: string }>>([])
   const [filter, setFilter] = useState<'active' | 'all'>('active')
+  const [inlineToast, setInlineToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [secondsAgo, setSecondsAgo] = useState(0)
 
-  useEffect(() => {
-    loadData()
-  }, [filter])
+  function showToast(msg: string, type: 'error' | 'success' = 'error') {
+    setInlineToast({ msg, type })
+    setTimeout(() => setInlineToast(null), 4000)
+  }
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true)
-
     try {
       const res = await fetch(`/api/ruta/dispatch?filter=${filter}`)
       if (!res.ok) throw new Error('Failed to fetch dispatch data')
@@ -65,12 +68,31 @@ export default function DispatchPage() {
       setRides((data.rides as RutaRideWithDetails[]) || [])
       setDrivers(data.drivers || [])
       setVehicles(data.vehicles || [])
+      setLastUpdated(new Date())
+      setSecondsAgo(0)
     } catch (err) {
       console.error('Dispatch load error:', err)
     }
-
     setLoading(false)
-  }
+  }, [filter])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  // 30-second polling interval (P0-RTA-002)
+  useEffect(() => {
+    const interval = setInterval(loadData, 30000)
+    return () => clearInterval(interval)
+  }, [loadData])
+
+  // "Last updated X seconds ago" ticker
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setSecondsAgo(Math.round((Date.now() - lastUpdated.getTime()) / 1000))
+    }, 1000)
+    return () => clearInterval(ticker)
+  }, [lastUpdated])
 
   async function assignDriver(rideId: string, driverId: string, vehicleId: string) {
     const res = await fetch('/api/ruta/dispatch/assign', {
@@ -80,15 +102,15 @@ export default function DispatchPage() {
     })
     if (!res.ok) {
       const data = await res.json()
-      alert(`Failed to assign: ${data.error}`)
+      showToast(`Failed to assign: ${data.error}`)
       return
     }
+    showToast('Driver assigned successfully', 'success')
     loadData()
     setSelectedRide(null)
   }
 
   async function confirmZelle(rideId: string) {
-    // Use dispatch status API for Zelle confirmation in dev
     const res = await fetch('/api/ruta/dispatch/status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -96,9 +118,10 @@ export default function DispatchPage() {
     })
     if (!res.ok) {
       const data = await res.json()
-      alert(`Failed: ${data.error}`)
+      showToast(`Failed: ${data.error}`)
       return
     }
+    showToast('Payment confirmed', 'success')
     loadData()
   }
 
@@ -106,18 +129,38 @@ export default function DispatchPage() {
 
   return (
     <div className="flex h-[calc(100vh-60px)]">
+      {/* Inline toast (replaces alert/confirm — P0-RTA-001) */}
+      {inlineToast && (
+        <div
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium"
+          role="alert"
+          style={{
+            background: inlineToast.type === 'success' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${inlineToast.type === 'success' ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+            color: inlineToast.type === 'success' ? '#22c55e' : '#f87171',
+          }}
+        >
+          {inlineToast.msg}
+        </div>
+      )}
+
       {/* Left: Ride Queue */}
       <div
         className="w-96 flex-shrink-0 overflow-y-auto"
         style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}
       >
         <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <h2
-            className="text-xs uppercase tracking-widest"
-            style={{ color: '#c9a96e' }}
-          >
-            Rides ({rides.length})
-          </h2>
+          <div>
+            <h2
+              className="text-xs uppercase tracking-widest"
+              style={{ color: '#c9a96e' }}
+            >
+              Rides ({rides.length})
+            </h2>
+            <p className="text-[10px] mt-0.5" style={{ color: '#555' }}>
+              Updated {secondsAgo}s ago
+            </p>
+          </div>
           <div className="flex gap-2" role="tablist" aria-label="Ride filter">
             {(['active', 'all'] as const).map((f) => (
               <button
