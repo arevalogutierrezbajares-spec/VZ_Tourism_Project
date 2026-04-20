@@ -215,17 +215,19 @@ const persistedStore = persist<ItineraryStore>(
     name: 'vz_itinerary',
     skipHydration: true,
     // Only persist data — not ephemeral UI state (isOpen, isSaving)
+    // Cast required: partialize intentionally excludes ephemeral UI state (isSaving, isOpen)
     partialize: (state) => ({
       current: state.current,
       days: state.days,
       totalCost: state.totalCost,
       isDirty: state.isDirty,
-    }),
+    }) as unknown as ItineraryStore,
   }
 );
 
 export const useItineraryStore = create<ItineraryStore>()(
-  process.env.NODE_ENV === 'development'
-    ? devtools(persistedStore, { name: 'itinerary-store' })
-    : persistedStore
+  devtools(persistedStore, {
+    name: 'itinerary-store',
+    enabled: process.env.NODE_ENV === 'development',
+  })
 );

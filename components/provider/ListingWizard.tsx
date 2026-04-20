@@ -95,7 +95,8 @@ export function ListingWizard() {
     watch,
     formState: { errors },
   } = useForm<ListingFormData>({
-    resolver: zodResolver(listingSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(listingSchema) as any,
     defaultValues: {
       tags: [],
       amenities: [],

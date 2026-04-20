@@ -27,7 +27,8 @@ export default function NewListingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ListingForm>({
-    resolver: zodResolver(listingSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(listingSchema) as any,
     defaultValues: {
       is_published: false,
       amenities: [],

@@ -42,7 +42,8 @@ export default function EditListingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<ListingForm>({
-    resolver: zodResolver(listingSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(listingSchema) as any,
   });
 
   const isPublished = watch('is_published');

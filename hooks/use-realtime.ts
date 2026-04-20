@@ -25,7 +25,7 @@ export function useRealtime<T>({
 }: UseRealtimeOptions<T>) {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const reconnectAttempts = useRef(0);
-  const reconnectTimeout = useRef<NodeJS.Timeout>();
+  const reconnectTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   // retryCount is incremented by reconnectWithBackoff to re-trigger the useEffect
   const [retryCount, setRetryCount] = useState(0);
 
@@ -50,7 +50,7 @@ export function useRealtime<T>({
       const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
       reconnectAttempts.current++;
       reconnectTimeout.current = setTimeout(() => {
-        supabase.removeChannel(channel);
+        supabase!.removeChannel(channel);
         setRetryCount((c) => c + 1);
       }, delay);
     }
