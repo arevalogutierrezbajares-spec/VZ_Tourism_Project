@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import type { BookingStatus } from '@/types/database';
 
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'payment_submitted';
+export type { BookingStatus };
 export type PaymentMethod = 'card' | 'zelle' | 'usdt' | 'arrival';
 
 export interface LocalBooking {

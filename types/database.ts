@@ -1,6 +1,6 @@
 export type UserRole = 'tourist' | 'provider' | 'admin' | 'creator';
 
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'refunded';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'refunded' | 'payment_submitted';
 
 export type ListingCategory =
   | 'beaches'
