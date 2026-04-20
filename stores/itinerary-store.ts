@@ -15,6 +15,8 @@ interface ItineraryState {
   isDirty: boolean;
   isSaving: boolean;
   isOpen: boolean;
+  activeTab: 'stops' | 'ai';
+  lastAddedStopId: string | null;
 }
 
 interface ItineraryActions {
@@ -22,6 +24,8 @@ interface ItineraryActions {
   openPanel: () => void;
   closePanel: () => void;
   togglePanel: () => void;
+  setActiveTab: (tab: 'stops' | 'ai') => void;
+  clearPeek: () => void;
   addDay: () => void;
   removeDay: (day: number) => void;
   addStop: (stop: Omit<ItineraryStop, 'id' | 'created_at'>) => void;
@@ -43,6 +47,8 @@ const persistedStore = persist<ItineraryStore>(
     isDirty: false,
     isSaving: false,
     isOpen: false,
+    activeTab: 'stops',
+    lastAddedStopId: null,
 
     setItinerary: (itinerary) => {
       const stops = itinerary.stops || [];
@@ -62,6 +68,8 @@ const persistedStore = persist<ItineraryStore>(
     openPanel: () => set({ isOpen: true }),
     closePanel: () => set({ isOpen: false }),
     togglePanel: () => set((state) => ({ isOpen: !state.isOpen })),
+    setActiveTab: (tab) => set({ activeTab: tab }),
+    clearPeek: () => set({ lastAddedStopId: null }),
 
     addDay: () =>
       set((state) => ({
@@ -105,7 +113,7 @@ const persistedStore = persist<ItineraryStore>(
           }
           return d;
         });
-        return { days, isDirty: true };
+        return { days, isDirty: true, lastAddedStopId: id };
       });
       get().calculateCost();
     },
@@ -209,6 +217,8 @@ const persistedStore = persist<ItineraryStore>(
         totalCost: 0,
         isDirty: false,
         isOpen: false,
+        activeTab: 'stops',
+        lastAddedStopId: null,
       }),
   }),
   {

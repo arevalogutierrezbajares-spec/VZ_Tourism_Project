@@ -2,6 +2,7 @@ import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { MobileTabBar } from '@/components/common/MobileTabBar';
 import { MyTripFab } from '@/components/itinerary/MyTripFab';
+import { TripSidePanel } from '@/components/itinerary/TripSidePanel';
 
 export default function TouristLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function TouristLayout({ children }: { children: React.ReactNode 
       <Footer className="hidden md:block" />
       <MobileTabBar />
       <MyTripFab />
+      <TripSidePanel />
     </>
   );
 }

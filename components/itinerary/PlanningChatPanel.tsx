@@ -118,8 +118,8 @@ interface PlanningChatPanelProps {
   onDayPlan?: (day: AIGeneratedDay) => void;
   /** Called when the full <itinerary-json> arrives */
   onItinerary?: (days: AIGeneratedDay[]) => void;
-  /** Render mode: 'panel' for legacy side panel, 'full' for /plan page */
-  mode?: 'panel' | 'full';
+  /** Render mode: 'panel' for legacy side panel, 'full' for /plan page, 'compact' for TripSidePanel */
+  mode?: 'panel' | 'full' | 'compact';
   /** Called once sendMessage is ready — lets parent wire SmartStarters externally */
   onReady?: (send: (text: string) => void) => void;
   className?: string;
@@ -318,6 +318,7 @@ export function PlanningChatPanel({
   if (mode === 'panel' && !isOpen) return null;
 
   const isFullMode = mode === 'full';
+  const isCompactMode = mode === 'compact';
 
   return (
     <div
@@ -325,47 +326,51 @@ export function PlanningChatPanel({
         'flex flex-col',
         isFullMode
           ? 'h-full w-full bg-background'
+          : isCompactMode
+          ? 'h-full w-full bg-background'
           : 'fixed right-80 top-0 h-full w-96 bg-background shadow-2xl border-l z-30',
         className
       )}
     >
-      {/* Header */}
-      <div className={cn(
-        'flex items-center justify-between border-b',
-        isFullMode ? 'p-5' : 'p-4'
-      )}>
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            'rounded-full bg-primary flex items-center justify-center',
-            isFullMode ? 'w-8 h-8' : 'w-7 h-7'
-          )}>
-            <Bot className={cn(isFullMode ? 'w-4.5 h-4.5' : 'w-4 h-4', 'text-white')} />
+      {/* Header — hidden in compact mode (parent provides header) */}
+      {!isCompactMode && (
+        <div className={cn(
+          'flex items-center justify-between border-b',
+          isFullMode ? 'p-5' : 'p-4'
+        )}>
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              'rounded-full bg-primary flex items-center justify-center',
+              isFullMode ? 'w-8 h-8' : 'w-7 h-7'
+            )}>
+              <Bot className={cn(isFullMode ? 'w-4.5 h-4.5' : 'w-4 h-4', 'text-white')} />
+            </div>
+            <div>
+              <h3 className={cn('font-semibold', isFullMode ? 'text-base' : 'text-sm')}>
+                Trip Planner
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                AI-powered itinerary assistant
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className={cn('font-semibold', isFullMode ? 'text-base' : 'text-sm')}>
-              Trip Planner
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              AI-powered itinerary assistant
-            </p>
-          </div>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="min-w-[40px] min-h-[40px] w-9 h-9"
+              onClick={onClose}
+              aria-label="Close trip planner"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="min-w-[40px] min-h-[40px] w-9 h-9"
-            onClick={onClose}
-            aria-label="Close trip planner"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1">
-        <div role="log" aria-live="polite" aria-label="Trip planner conversation" className={cn('space-y-4', isFullMode ? 'p-5' : 'p-4')}>
+        <div role="log" aria-live="polite" aria-label="Trip planner conversation" className={cn('space-y-4', isFullMode ? 'p-5' : isCompactMode ? 'p-3' : 'p-4')}>
           {/* Welcome */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex gap-3">
@@ -538,7 +543,7 @@ export function PlanningChatPanel({
       </ScrollArea>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} aria-label="Trip planning conversation" className={cn('border-t', isFullMode ? 'p-5' : 'p-4')}>
+      <form onSubmit={handleSubmit} aria-label="Trip planning conversation" className={cn('border-t', isFullMode ? 'p-5' : 'p-3')}>
         <div className="flex gap-2">
           <Input
             ref={inputRef}
