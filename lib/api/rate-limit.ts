@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 
-// Simple in-memory rate limiter using a sliding window
+// TODO: Replace with @upstash/ratelimit for production — current Map resets on cold start
+// (serverless cold starts wipe all module-level state, effectively removing rate limits).
+// Fix: `import { Ratelimit } from '@upstash/ratelimit'; import { Redis } from '@upstash/redis';`
+// then `new Ratelimit({ redis: Redis.fromEnv(), limiter: Ratelimit.slidingWindow(10, '60 s') })`
+
+// Simple in-memory rate limiter using a sliding window.
+// WARNING: This implementation provides no protection in production serverless environments
+// because the Map is lost on every cold start. Use only as a development convenience.
 const requests = new Map<string, number[]>();
 
 const WINDOW_MS = 60_000; // 1 minute
