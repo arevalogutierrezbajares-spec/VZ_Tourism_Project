@@ -11,7 +11,11 @@ jest.mock('@/lib/stripe/server', () => ({
 }));
 
 const mockFrom = jest.fn();
-const mockAuth = { getUser: jest.fn() };
+const mockAuth = {
+  getUser: jest.fn().mockResolvedValue({
+    data: { user: { id: 'user-123', email: 'test@example.com' } },
+  }),
+};
 
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({ auth: mockAuth, from: mockFrom })),
@@ -79,7 +83,7 @@ describe('POST /api/stripe/checkout', () => {
       total_usd: 170,
       status: 'pending',
       listing_name: 'Mérida Trek',
-      guest_email: 'test@example.com',
+      guest_email: 'test@example.com', // must match mockAuth user email
       listing_slug: 'merida-trek',
     });
 
@@ -126,7 +130,7 @@ describe('POST /api/stripe/checkout', () => {
       total_usd: 200,
       status: 'pending',
       listing_name: 'Posada Sol',
-      guest_email: 'g@test.com',
+      guest_email: 'test@example.com',
       listing_slug: 'posada-sol',
     });
     mockFetch.mockResolvedValueOnce({
@@ -169,7 +173,7 @@ describe('POST /api/stripe/checkout', () => {
       total_usd: 200,
       status: 'pending',
       listing_name: 'Posada Sol',
-      guest_email: 'g@test.com',
+      guest_email: 'test@example.com',
       listing_slug: 'posada-sol',
     });
     mockFetch.mockResolvedValueOnce({

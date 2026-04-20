@@ -8,6 +8,7 @@ const mockAuth = { getUser: jest.fn() };
 
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({ auth: mockAuth, from: mockFrom })),
+  createServiceClient: jest.fn(() => ({ auth: mockAuth, from: mockFrom })),
 }));
 
 function buildQuery(response: { data: unknown; error: unknown }) {
