@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search, SlidersHorizontal, Download, Plus, ChevronUp, ChevronDown,
   ChevronLeft, ChevronRight, X, Check, Sparkles, Edit2, Archive,
@@ -1029,6 +1029,7 @@ export default function AdminListingsPage() {
 
 function AdminListingsInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1380,6 +1381,7 @@ function AdminListingsInner() {
             <button
               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
               style={{ background: '#3B82F6' }}
+              onClick={() => router.push('/admin/listings/new')}
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
               Add Listing
