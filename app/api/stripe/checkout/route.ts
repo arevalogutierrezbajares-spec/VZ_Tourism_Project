@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCheckoutSession } from '@/lib/stripe/server';
 import { getBooking, updateBookingStatus } from '@/lib/bookings-store';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -27,6 +28,18 @@ export async function POST(request: NextRequest) {
   }
   if (booking.status !== 'pending') {
     return NextResponse.json({ error: 'Booking is not pending payment' }, { status: 400 });
+  }
+
+  // Ownership check — verify the authenticated user owns this booking
+  const supabase = await createClient();
+  if (supabase) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (booking.guest_email !== user.email) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
   }
 
   // Apply discount code before creating Stripe session
