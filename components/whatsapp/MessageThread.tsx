@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -150,7 +150,7 @@ export default function MessageThread({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selected?.messages?.length]);
 
-  const groupedMessages = useCallback(() => {
+  const groupedMessages = useMemo(() => {
     const msgs = selected?.messages ?? [];
     const groups: { day: string; messages: WaMessage[] }[] = [];
     let currentDay = '';
@@ -203,7 +203,7 @@ export default function MessageThread({
         {(selected.messages ?? []).length === 0 ? (
           <div className="text-center text-sm text-muted-foreground py-16">No messages yet</div>
         ) : (
-          groupedMessages().map(({ day, messages: dayMsgs }) => (
+          groupedMessages.map(({ day, messages: dayMsgs }) => (
             <div key={day}>
               <DayDivider label={day} />
               {dayMsgs.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}

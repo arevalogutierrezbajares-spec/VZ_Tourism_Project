@@ -7,6 +7,7 @@ import {
   RefreshCw, MessageCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import StatsStrip from './StatsStrip';
 import type {
   WaConversation, WaConversationStatus,
 } from '@/types/database';
@@ -151,7 +152,7 @@ export default function ConversationList({
         </div>
       </div>
 
-      <StatsStripInline conversations={conversations} />
+      <StatsStrip conversations={conversations} />
 
       <div className="flex gap-1 px-3 py-2 border-b">
         {(['all', 'ai', 'human', 'escalated', 'closed'] as FilterTab[]).map((s) => (
@@ -185,33 +186,6 @@ export default function ConversationList({
           ))
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── Inline StatsStrip (used only within ConversationList header) ────────────
-// This is re-exported from StatsStrip.tsx as well for standalone use.
-
-function StatsStripInline({ conversations }: { conversations: WaConversation[] }) {
-  const counts = {
-    total:     conversations.length,
-    ai:        conversations.filter((c) => c.status === 'ai').length,
-    human:     conversations.filter((c) => c.status === 'human').length,
-    escalated: conversations.filter((c) => c.status === 'escalated').length,
-  };
-  return (
-    <div className="grid grid-cols-4 divide-x border-b">
-      {[
-        { label: 'Total',     value: counts.total,     color: 'text-foreground' },
-        { label: 'AI',        value: counts.ai,        color: 'text-green-600'  },
-        { label: 'Human',     value: counts.human,     color: 'text-blue-600'   },
-        { label: 'Escalated', value: counts.escalated, color: 'text-red-600'    },
-      ].map(({ label, value, color }) => (
-        <div key={label} className="py-2.5 text-center">
-          <p className={cn('text-base font-bold', color)}>{value}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
-        </div>
-      ))}
     </div>
   );
 }

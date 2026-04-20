@@ -1194,12 +1194,16 @@ export function RutaI18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('ruta_locale') as RutaLocale | null
     if (saved && translations[saved]) {
       setLocaleState(saved)
+      document.documentElement.lang = saved
     }
   }, [])
 
   function setLocale(l: RutaLocale) {
     setLocaleState(l)
     localStorage.setItem('ruta_locale', l)
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = l
+    }
   }
 
   return (

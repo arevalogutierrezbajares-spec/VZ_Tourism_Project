@@ -419,12 +419,18 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
 
       {/* Selected locations indicator */}
       {(pickupLocation || dropoffLocation) && (
-        <div className="mt-3 flex gap-4 text-[10px]" style={{ color: '#777' }}>
+        <div className="mt-3 space-y-1 text-[10px]" style={{ color: '#777' }}>
           {pickupLocation && (
-            <span>From: {pickupLocation.lat.toFixed(4)}, {pickupLocation.lng.toFixed(4)}</span>
+            <div className="truncate">
+              <span style={{ color: '#555' }}>From: </span>
+              {pickupLocation.address || `${pickupLocation.lat.toFixed(4)}, ${pickupLocation.lng.toFixed(4)}`}
+            </div>
           )}
           {dropoffLocation && (
-            <span>To: {dropoffLocation.lat.toFixed(4)}, {dropoffLocation.lng.toFixed(4)}</span>
+            <div className="truncate">
+              <span style={{ color: '#555' }}>To: </span>
+              {dropoffLocation.address || `${dropoffLocation.lat.toFixed(4)}, ${dropoffLocation.lng.toFixed(4)}`}
+            </div>
           )}
         </div>
       )}
