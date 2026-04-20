@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import DemoSidebar from '@/components/whatsapp/DemoSidebar';
 import { cn } from '@/lib/utils';
 import {
   Bot, User, AlertTriangle, Send, RefreshCw,
-  MessageCircle, Settings, Sparkles, Phone,
+  MessageCircle, Sparkles, Phone,
   CheckCheck, Circle, Globe, FlaskConical,
 } from 'lucide-react';
 import type {
@@ -19,10 +17,12 @@ import type {
 } from '@/types/database';
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
+// Use a fixed reference epoch so SSR and CSR produce identical timestamps
+// (avoids hydration mismatch from Date.now() differing between server and client).
 
-const now = new Date();
-const minsAgo = (n: number) => new Date(now.getTime() - n * 60000).toISOString();
-const daysAgo = (n: number) => new Date(now.getTime() - n * 86400000).toISOString();
+const REFERENCE_EPOCH = new Date('2026-04-20T14:00:00Z').getTime();
+const minsAgo = (n: number) => new Date(REFERENCE_EPOCH - n * 60000).toISOString();
+const daysAgo = (n: number) => new Date(REFERENCE_EPOCH - n * 86400000).toISOString();
 
 const MOCK_CONVERSATIONS: WaConversation[] = [
   {
@@ -278,15 +278,25 @@ function getInitials(name: string | null, phone: string): string {
   return phone.slice(-2);
 }
 
-function timeAgo(iso: string | null): string {
+function timeAgo(iso: string | null, now: number): string {
   if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
+  const diff = now - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 1) return 'just now';
   if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h`;
   return `${Math.floor(h / 24)}d`;
+}
+
+function useClientNow() {
+  const [now, setNow] = useState(REFERENCE_EPOCH);
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
 }
 
 function formatTime(iso: string): string {
@@ -306,8 +316,8 @@ function formatDay(iso: string): string {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function ConversationRow({
-  conv, selected, onClick,
-}: { conv: WaConversation; selected: boolean; onClick: () => void }) {
+  conv, selected, onClick, now,
+}: { conv: WaConversation; selected: boolean; onClick: () => void; now: number }) {
   const cfg = STATUS_CONFIG[conv.status];
   const initials = getInitials(conv.guest_name, conv.guest_phone);
 
@@ -336,7 +346,7 @@ function ConversationRow({
             <p className={cn('text-sm font-medium truncate', selected ? 'text-primary' : 'text-foreground')}>
               {conv.guest_name ?? conv.guest_phone}
             </p>
-            <span className="text-xs text-muted-foreground shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
+            <span className="text-xs text-muted-foreground shrink-0 ml-2">{timeAgo(conv.last_message_at, now)}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground truncate">
@@ -503,44 +513,6 @@ function ModeButton({
   );
 }
 
-// ─── Demo sidebar (replaces ProviderSidebar) ──────────────────────────────────
-
-function DemoSidebar() {
-  return (
-    <div className="w-56 shrink-0 border-r bg-card flex flex-col">
-      <div className="p-4 border-b">
-        <p className="text-sm font-bold text-foreground">Posada Demo</p>
-        <p className="text-xs text-muted-foreground">Provider Dashboard</p>
-      </div>
-      <nav className="flex-1 p-2 space-y-0.5 text-sm">
-        {[
-          { label: 'Overview', active: false },
-          { label: 'Listings', active: false },
-          { label: 'Bookings', active: false },
-          { label: 'Messages', active: true },
-          { label: 'Analytics', active: false },
-          { label: 'Settings', active: false },
-        ].map(({ label, active }) => (
-          <div
-            key={label}
-            className={cn(
-              'px-3 py-2 rounded-md text-sm cursor-default',
-              active
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-muted-foreground'
-            )}
-          >
-            {label}
-            {label === 'Messages' && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">3</span>
-            )}
-          </div>
-        ))}
-      </nav>
-    </div>
-  );
-}
-
 // ─── Main demo page ───────────────────────────────────────────────────────────
 
 export default function WhatsAppDemoPage() {
@@ -551,6 +523,7 @@ export default function WhatsAppDemoPage() {
   const [replyText, setReplyText] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const clientNow = useClientNow();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -621,7 +594,13 @@ export default function WhatsAppDemoPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
   };
 
-  const filteredConvs = conversations.filter((c) => filter === 'all' || c.status === filter);
+  const filteredConvs = conversations
+    .filter((c) => filter === 'all' || c.status === filter)
+    .sort((a, b) => {
+      const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+      const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+      return bTime - aTime;
+    });
 
   return (
     <div className="flex h-screen overflow-hidden bg-muted/10">
@@ -685,6 +664,7 @@ export default function WhatsAppDemoPage() {
                     conv={conv}
                     selected={selected?.id === conv.id}
                     onClick={() => selectConv(conv.id)}
+                    now={clientNow}
                   />
                 ))
               )}

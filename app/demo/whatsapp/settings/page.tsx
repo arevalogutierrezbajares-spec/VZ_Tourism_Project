@@ -1,6 +1,7 @@
 'use client';
 
 import AiSettingsPanel, { type AiConfig } from '@/components/whatsapp/AiSettingsPanel';
+import DemoSidebar from '@/components/whatsapp/DemoSidebar';
 
 const DEMO_CONFIG: AiConfig = {
   phone_number_id:       '108765432100001',
@@ -37,13 +38,16 @@ const DEMO_CONFIG: AiConfig = {
 
 export default function WhatsAppSettingsDemoPage() {
   return (
-    <div className="min-h-screen bg-muted/10">
-      <div className="max-w-5xl mx-auto p-6">
-        <AiSettingsPanel
-          initialConfig={DEMO_CONFIG}
-          isDemo
-          siteUrl="https://vztravel.app"
-        />
+    <div className="flex h-screen overflow-hidden bg-muted/10">
+      <DemoSidebar />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto p-6">
+          <AiSettingsPanel
+            initialConfig={DEMO_CONFIG}
+            isDemo
+            siteUrl="https://vztravel.app"
+          />
+        </div>
       </div>
     </div>
   );

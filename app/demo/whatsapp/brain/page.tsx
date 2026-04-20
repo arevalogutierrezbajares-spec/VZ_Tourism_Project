@@ -12,6 +12,7 @@ import {
   Eye, EyeOff, CheckCircle2, AlertCircle, Sparkles, Loader2,
 } from 'lucide-react';
 import { formatKnowledge } from '@/lib/whatsapp-ai';
+import DemoSidebar from '@/components/whatsapp/DemoSidebar';
 import type { PosadaKnowledge, RoomType, FaqPair } from '@/types/database';
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
@@ -230,11 +231,19 @@ export default function DemoBrainPage() {
   const [flash, setFlash] = useState<{ section: string; ok: boolean } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
+  const LS_KEY = 'demo_posada_knowledge';
+
   useEffect(() => {
+    // Try API first, fall back to localStorage
     fetch('/api/demo/whatsapp/knowledge')
       .then((r) => r.json())
       .then(({ data }) => { if (data) setK(data); })
-      .catch(() => {})
+      .catch(() => {
+        try {
+          const cached = localStorage.getItem(LS_KEY);
+          if (cached) setK(JSON.parse(cached));
+        } catch { /* ignore */ }
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -248,14 +257,30 @@ export default function DemoBrainPage() {
       });
       const { data, error } = await res.json();
       if (res.ok && data) {
-        setK((prev) => ({ ...prev, ...data }));
+        setK((prev) => {
+          const merged = { ...prev, ...data };
+          try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
+          return merged;
+        });
         setFlash({ section, ok: true });
       } else {
-        setFlash({ section, ok: false });
-        console.error('Save error:', error);
+        // API failed — save to localStorage as fallback
+        console.warn('API save failed, using localStorage:', error);
+        setK((prev) => {
+          const merged = { ...prev, ...patch };
+          try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
+          return merged;
+        });
+        setFlash({ section, ok: true });
       }
     } catch {
-      setFlash({ section, ok: false });
+      // Network error — save to localStorage
+      setK((prev) => {
+        const merged = { ...prev, ...patch };
+        try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
+        return merged;
+      });
+      setFlash({ section, ok: true });
     } finally {
       setSaving(null);
       setTimeout(() => setFlash(null), 2500);
@@ -277,14 +302,19 @@ export default function DemoBrainPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      <div className="flex h-screen overflow-hidden bg-muted/10">
+        <DemoSidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/10">
+    <div className="flex h-screen overflow-hidden bg-muted/10">
+      <DemoSidebar />
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-3xl mx-auto p-6 space-y-6">
 
         {/* Header */}
@@ -558,6 +588,7 @@ export default function DemoBrainPage() {
           )}
         </div>
 
+      </div>
       </div>
     </div>
   );

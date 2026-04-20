@@ -96,12 +96,18 @@
 - **Publish itineraries** — share with referral tracking
 
 ## 10. WhatsApp AI Concierge (`/demo/whatsapp`)
-- **Chat demo** — simulated WhatsApp conversation with AI bot
-- **Conversation management** — AI, human, escalated, closed filters
-- **Knowledge base editor** (`/demo/whatsapp/brain`) — train the AI
-- **Settings** (`/demo/whatsapp/settings`) — persona, rules, availability
+- **Chat demo** — simulated WhatsApp conversation with AI bot (5 mock conversations, bilingual)
+- **Conversation management** — AI, human, escalated, closed filters with stats strip
+- **Conversation list** — auto-sorts by most recent message; unread badges
+- **Message thread** — day dividers, translation toggles, sentiment flags, AI/human indicators
+- **Mode switching** — AI auto-reply, human takeover, close conversation
+- **Booking stage pipeline** — lead, quoted, confirmed, checked-in, closed
+- **Knowledge base editor** (`/demo/whatsapp/brain`) — train the AI with 7 sections (overview, rooms, amenities, policies, FAQs, booking, local tips); localStorage fallback when no Supabase
+- **Prompt preview** — see exactly what the AI reads from the knowledge base
+- **AI Settings** (`/demo/whatsapp/settings`) — persona, communication style, smart rules, availability hours, custom instructions, WhatsApp connection
+- **Shared sidebar navigation** — navigate between Messages, AI Brain, and AI Settings
 - **Real WhatsApp webhook** (`/api/whatsapp/webhook`) — Meta Cloud API integration
-- **Groq-powered AI** responses
+- **Groq-powered AI** responses with human-in-the-loop escalation
 
 ## 11. Provider Onboarding
 - **Onboard wizard** (`/onboard/[slug]`) — 6-step claim-your-listing flow
