@@ -198,6 +198,47 @@ Found 23 raw findings → 15 unique after dedup → 8 patched, 4 deferred, 3 dis
 
 ---
 
+### 12. WhatsApp Onboarding & Dashboard Restructure — Eng Review Fixes (10 patches)
+
+Ran `/plan-eng-review` on the WhatsApp onboarding + dashboard restructure implementation. 7-section review (Architecture, Code Quality, Tests, Performance, Outside Voice) surfaced 10 issues, all accepted and fixed.
+
+**Route restructure:** `/dashboard/messages/*` → `/dashboard/whatsapp/*` with 301 redirects in `next.config.ts`. Sidebar updated, old routes deleted.
+
+**New endpoints:**
+- `POST /api/whatsapp/test-reply` — wizard step 7 preview (merges partial config with defaults, calls Groq)
+- `POST /api/whatsapp/knowledge/sync-pms` — pulls property + unit types from PMS, maps cents→dollars, merges amenities
+
+**New pages:**
+- `/dashboard/whatsapp/setup` — 8-step wizard (Welcome → Meta → Webhook → Persona → Knowledge → Hours → Test → Go Live)
+- `/dashboard/whatsapp/brain` — knowledge editor with "Sync from PMS" button
+- `/dashboard/whatsapp/settings` — AI config panel wrapper
+
+**Eng review fixes (10 patches):**
+
+| # | Severity | Fix |
+|---|----------|-----|
+| 1 | Med | localStorage persistence for wizard state (save on dispatch, hydrate on mount, "Resume?" banner, clear on activation) |
+| 2 | Med | 10s AbortController timeout on PMS fetches in sync-pms (returns 504 on timeout) |
+| 3 | Med | Added FaqBuilder + payment method ToggleChips to wizard step 5 (Knowledge) |
+| 4 | Low | Converted 3 `<a href>` to Next.js `<Link>` for client-side navigation |
+| 5 | High | 19 new unit tests: 10 for test-reply, 9 for sync-pms (auth, validation, error paths, config merge, data mapping) |
+| 6 | Med | Warning toast when knowledge save fails in wizard step 8 (replaced silent `console.warn`) |
+| 7 | Low | Custom greeting textarea in wizard step 4 when `greeting_style === 'custom'` |
+| 8 | **High** | Realtime subscription `provider_id` filter — was listening to ALL providers' `wa_conversations` changes |
+| 9 | **High** | Removed hardcoded `'vav-bridge-dev-secret-2026'` fallback from sync-pms (returns 503 if `PMS_BRIDGE_SECRET` unset) |
+| 10 | Med | Strip empty arrays from wizard knowledge PUT (prevents clobbering brain page data) |
+
+**Outside voice findings (cross-model tension):**
+- Realtime data leak: `wa_conversations` subscription had no `provider_id` filter — every provider's browser received change events for every other provider. RLS protected the re-fetch path, but the INSERT handler injected `payload.new` directly into state.
+- Hardcoded secret: `PMS_BRIDGE_SECRET || 'vav-bridge-dev-secret-2026'` committed in source, inconsistent with PMS proxy which throws if unset.
+- Wizard data clobber: sending `room_types: []` would overwrite existing brain page rooms. Fixed by only including non-empty arrays.
+
+**Files changed:** 3 modified (`whatsapp/page.tsx`, `setup/page.tsx`, `sync-pms/route.ts`), 2 new test files.
+
+**Verification:** 74/74 whatsapp tests passing (55 existing + 19 new), zero TypeScript errors.
+
+---
+
 ### Next Session: WhatsApp Agent Platform Onboarding
 
 **Goal:** Make it as easy as possible for posadas to start using the WhatsApp AI agent suite.

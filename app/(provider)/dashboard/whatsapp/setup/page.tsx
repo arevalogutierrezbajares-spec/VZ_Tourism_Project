@@ -2,6 +2,7 @@
 
 import { useReducer, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,20 +16,21 @@ import {
   RefreshCw, Sparkles,
 } from 'lucide-react';
 import {
-  OptionCards, CopyField, ToggleChip, RoomBuilder,
+  OptionCards, CopyField, ToggleChip, RoomBuilder, FaqBuilder,
   Field, SharedTextarea as Textarea, SharedInput as Input,
-  AMENITY_OPTIONS, DEFAULT_HOURS,
+  AMENITY_OPTIONS, PAYMENT_OPTIONS, DEFAULT_HOURS,
 } from '@/components/whatsapp/shared';
 import type {
   WaGreetingStyle, WaToneFormality, WaToneLanguage,
   WaResponseLength, WaBookingPressure, WaEmojiStyle,
-  WaWorkingHours, RoomType, PosadaPolicies,
+  WaWorkingHours, RoomType, PosadaPolicies, FaqPair,
 } from '@/types/database';
 import toast from 'react-hot-toast';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const TOTAL_STEPS = 8;
+const WIZARD_STORAGE_KEY = 'wa_setup_wizard_state';
 
 const STEP_META = [
   { icon: MessageCircle, label: 'Welcome',          short: 'Inicio' },
@@ -55,6 +57,7 @@ interface WizardState {
   persona_name: string;
   persona_bio: string;
   greeting_style: WaGreetingStyle;
+  custom_greeting: string;
   tone_formality: WaToneFormality;
   tone_language: WaToneLanguage;
   response_length: WaResponseLength;
@@ -66,6 +69,8 @@ interface WizardState {
   room_types: RoomType[];
   amenities: string[];
   policies: PosadaPolicies;
+  faqs: FaqPair[];
+  payment_methods: string[];
   pms_imported: boolean;
   // Step 6: Working Hours
   working_hours_enabled: boolean;
@@ -109,6 +114,7 @@ const initialState: WizardState = {
   persona_name: 'Sofía',
   persona_bio: '',
   greeting_style: 'friendly',
+  custom_greeting: '',
   tone_formality: 'casual',
   tone_language: 'es',
   response_length: 'standard',
@@ -119,6 +125,8 @@ const initialState: WizardState = {
   room_types: [],
   amenities: [],
   policies: {},
+  faqs: [],
+  payment_methods: [],
   pms_imported: false,
   working_hours_enabled: true,
   working_hours: DEFAULT_HOURS as WaWorkingHours,
@@ -378,6 +386,14 @@ function StepPersona({ state, dispatch }: { state: WizardState; dispatch: React.
             { value: 'custom', label: 'Personalizado', description: 'Define tu propio saludo' },
           ]}
         />
+        {state.greeting_style === 'custom' && (
+          <Textarea
+            value={state.custom_greeting}
+            onChange={(v) => set({ custom_greeting: v })}
+            placeholder="Escribe el saludo exacto que enviará el agente..."
+            rows={2}
+          />
+        )}
       </Field>
 
       <Field label="Idioma">
@@ -540,6 +556,30 @@ function StepKnowledge({ state, dispatch }: { state: WizardState; dispatch: Reac
           rows={2}
         />
       </Field>
+
+      <Field label="Métodos de pago aceptados">
+        <div className="flex flex-wrap gap-2">
+          {PAYMENT_OPTIONS.map((p) => (
+            <ToggleChip
+              key={p}
+              label={p}
+              selected={state.payment_methods.includes(p)}
+              onClick={() => set({
+                payment_methods: state.payment_methods.includes(p)
+                  ? state.payment_methods.filter((x) => x !== p)
+                  : [...state.payment_methods, p],
+              })}
+            />
+          ))}
+        </div>
+      </Field>
+
+      <Field label="Preguntas frecuentes" hint="Pares de pregunta/respuesta que el agente usará para responder">
+        <FaqBuilder
+          faqs={state.faqs}
+          onChange={(faqs) => set({ faqs })}
+        />
+      </Field>
     </div>
   );
 }
@@ -603,6 +643,7 @@ function StepTest({ state, dispatch }: { state: WizardState; dispatch: React.Dis
             persona_name: state.persona_name,
             persona_bio: state.persona_bio,
             greeting_style: state.greeting_style,
+            custom_greeting: state.greeting_style === 'custom' ? state.custom_greeting : null,
             tone_formality: state.tone_formality,
             tone_language: state.tone_language,
             response_length: state.response_length,
@@ -715,16 +756,16 @@ function StepGoLive({ state, dispatch, onSave }: {
         </div>
         <div className="flex flex-col gap-2 max-w-xs mx-auto">
           <Button asChild size="lg">
-            <a href="/dashboard/whatsapp">
+            <Link href="/dashboard/whatsapp">
               <MessageCircle className="w-4 h-4 mr-2" />
               Ir a Conversaciones
-            </a>
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <a href="/dashboard/whatsapp/brain">
+            <Link href="/dashboard/whatsapp/brain">
               <Brain className="w-4 h-4 mr-2" />
               Editar base de conocimiento
-            </a>
+            </Link>
           </Button>
         </div>
       </div>
@@ -794,9 +835,54 @@ function StepGoLive({ state, dispatch, onSave }: {
 
 // ─── Main page ──────────────────────────────────────────────────────────────
 
+function persistingReducer(state: WizardState, action: Action): WizardState {
+  const next = reducer(state, action);
+  // Don't persist transient UI state or completed wizard
+  if (!next.completed && typeof window !== 'undefined') {
+    try {
+      const { test_loading, test_response, saving, error, ...persist } = next;
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(persist));
+    } catch { /* quota exceeded or private browsing */ }
+  }
+  if (next.completed && typeof window !== 'undefined') {
+    localStorage.removeItem(WIZARD_STORAGE_KEY);
+  }
+  return next;
+}
+
 export default function WhatsAppSetupPage() {
   const router = useRouter();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(persistingReducer, initialState);
+  const [showResume, setShowResume] = useState(false);
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.step && parsed.step > 1) {
+          setShowResume(true);
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const resumeWizard = () => {
+    try {
+      const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        dispatch({ type: 'SET', payload: parsed });
+      }
+    } catch { /* ignore */ }
+    setShowResume(false);
+  };
+
+  const startFresh = () => {
+    localStorage.removeItem(WIZARD_STORAGE_KEY);
+    setShowResume(false);
+  };
 
   // Check if already configured
   const [existingConfig, setExistingConfig] = useState(false);
@@ -831,6 +917,7 @@ export default function WhatsAppSetupPage() {
           persona_name: state.persona_name,
           persona_bio: state.persona_bio || null,
           greeting_style: state.greeting_style,
+          custom_greeting: state.greeting_style === 'custom' ? state.custom_greeting : null,
           tone_formality: state.tone_formality,
           tone_language: state.tone_language,
           response_length: state.response_length,
@@ -851,22 +938,25 @@ export default function WhatsAppSetupPage() {
 
       if (!configRes.ok) throw new Error('Failed to save configuration');
 
-      // Save knowledge (if any content was provided)
-      if (state.property_description || state.room_types.length > 0 || state.amenities.length > 0) {
+      // Save knowledge (only include fields the user actually filled in)
+      const knowledgeBody: Record<string, unknown> = {};
+      if (state.property_description) knowledgeBody.property_description = state.property_description;
+      if (state.location_details) knowledgeBody.location_details = state.location_details;
+      if (state.room_types.length > 0) knowledgeBody.room_types = state.room_types;
+      if (state.amenities.length > 0) knowledgeBody.amenities = state.amenities;
+      if (Object.keys(state.policies).length > 0) knowledgeBody.policies = state.policies;
+      if (state.faqs.length > 0) knowledgeBody.faqs = state.faqs;
+      if (state.payment_methods.length > 0) knowledgeBody.payment_methods = state.payment_methods;
+
+      if (Object.keys(knowledgeBody).length > 0) {
         const knowledgeRes = await fetch('/api/whatsapp/knowledge', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            property_description: state.property_description || null,
-            location_details: state.location_details || null,
-            room_types: state.room_types,
-            amenities: state.amenities,
-            policies: Object.keys(state.policies).length > 0 ? state.policies : undefined,
-          }),
+          body: JSON.stringify(knowledgeBody),
         });
 
         if (!knowledgeRes.ok) {
-          console.warn('[setup] Knowledge save failed, config was saved');
+          toast.error('Configuración guardada, pero hubo un error al guardar el conocimiento. Puedes editarlo desde la página de Brain.');
         }
       }
 
@@ -881,6 +971,20 @@ export default function WhatsAppSetupPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Resume banner */}
+      {showResume && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium">Tienes un progreso guardado</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Puedes continuar donde lo dejaste o empezar de nuevo.</p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button size="sm" onClick={resumeWizard}>Continuar</Button>
+            <Button size="sm" variant="ghost" onClick={startFresh}>Empezar de nuevo</Button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

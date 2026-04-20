@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useProviderStore } from '@/stores/provider-store';
 import { Card, CardContent } from '@/components/ui/card';
@@ -231,10 +232,10 @@ function NotConfiguredState() {
           Connect your WhatsApp Business number to start receiving and managing guest messages.
         </p>
         <Button variant="outline" size="sm" className="mt-4" asChild>
-          <a href="/dashboard/whatsapp/setup">
+          <Link href="/dashboard/whatsapp/setup">
             <Settings className="w-3.5 h-3.5 mr-1.5" />
             Set up WhatsApp
-          </a>
+          </Link>
         </Button>
       </CardContent>
     </Card>
@@ -313,7 +314,7 @@ function ModeButton({
 
 export default function MessagesPage() {
   const supabase = createClient();
-  const { setWaUnreadCount } = useProviderStore();
+  const { provider, setWaUnreadCount } = useProviderStore();
 
   const [conversations, setConversations] = useState<WaConversation[]>([]);
   const [selected, setSelected]           = useState<ConvWithMessages | null>(null);
@@ -377,14 +378,20 @@ export default function MessagesPage() {
 
   // ── Supabase Realtime ───────────────────────────────────────────────────────
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase || !provider?.id) return;
     const channel = supabase
       .channel('wa_messages_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversations' }, () => {
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'wa_conversations',
+        filter: `provider_id=eq.${provider.id}`,
+      }, () => {
         loadConversations();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wa_messages' }, (payload) => {
         const msg = payload.new as WaMessage;
+        // Only inject messages belonging to our conversations
+        const isOurs = conversations.some((c) => c.id === msg.conversation_id);
+        if (!isOurs) return;
         setSelected((prev) => {
           if (!prev || prev.id !== msg.conversation_id) return prev;
           const existing = prev.messages ?? [];
@@ -394,7 +401,7 @@ export default function MessagesPage() {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [supabase, loadConversations]);
+  }, [supabase, provider?.id, loadConversations, conversations]);
 
   // ── Auto-scroll ─────────────────────────────────────────────────────────────
   useEffect(() => {

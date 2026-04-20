@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 
-const PMS_API_URL = process.env.PMS_API_URL || 'http://localhost:3001';
-const PMS_BRIDGE_SECRET = process.env.PMS_BRIDGE_SECRET || 'vav-bridge-dev-secret-2026';
+const PMS_FETCH_TIMEOUT = 10_000;
 
 /**
  * POST /api/whatsapp/knowledge/sync-pms
@@ -11,6 +10,9 @@ const PMS_BRIDGE_SECRET = process.env.PMS_BRIDGE_SECRET || 'vav-bridge-dev-secre
  * Only overwrites PMS-sourced fields; preserves human-edited content.
  */
 export async function POST() {
+  const PMS_API_URL = process.env.PMS_API_URL || 'http://localhost:3001';
+  const PMS_BRIDGE_SECRET = process.env.PMS_BRIDGE_SECRET;
+
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
 
@@ -31,6 +33,10 @@ export async function POST() {
   const pmsPropertyId = cookieStore.get('pms_property_id')?.value;
 
   if (!pmsToken) {
+    if (!PMS_BRIDGE_SECRET) {
+      return NextResponse.json({ error: 'PMS bridge not configured' }, { status: 503 });
+    }
+
     const name =
       (user.user_metadata?.full_name as string) ||
       (user.user_metadata?.name as string) ||
@@ -65,10 +71,24 @@ export async function POST() {
   };
   if (pmsPropertyId) headers['X-Property-Id'] = pmsPropertyId;
 
-  const [propRes, typesRes] = await Promise.all([
-    fetch(`${PMS_API_URL}/properties/current`, { headers }),
-    fetch(`${PMS_API_URL}/units/types`, { headers }),
-  ]);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), PMS_FETCH_TIMEOUT);
+
+  let propRes: Response;
+  let typesRes: Response;
+  try {
+    [propRes, typesRes] = await Promise.all([
+      fetch(`${PMS_API_URL}/properties/current`, { headers, signal: controller.signal }),
+      fetch(`${PMS_API_URL}/units/types`, { headers, signal: controller.signal }),
+    ]);
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      return NextResponse.json({ error: 'PMS request timed out', synced_fields: [] }, { status: 504 });
+    }
+    return NextResponse.json({ error: 'PMS not reachable', synced_fields: [] }, { status: 502 });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!propRes.ok) {
     return NextResponse.json({ error: 'Could not fetch PMS property', synced_fields: [] }, { status: 502 });
