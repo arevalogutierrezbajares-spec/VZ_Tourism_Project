@@ -71,10 +71,14 @@ export async function handleWebhookEvent(
   body: string,
   signature: string
 ): Promise<{ type: string; data: Stripe.Event.Data }> {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is not set');
+  }
   const event = stripe.webhooks.constructEvent(
     body,
     signature,
-    process.env.STRIPE_WEBHOOK_SECRET!
+    webhookSecret
   );
 
   return {
