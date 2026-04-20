@@ -15,21 +15,21 @@ export function Footer({ className }: { className?: string }) {
           <div>
             <h4 className="font-semibold text-sm mb-3">Explore</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/library" className="hover:text-foreground transition-colors">All Experiences</Link></li>
-              <li><Link href="/library/category/beaches" className="hover:text-foreground transition-colors">Beaches</Link></li>
-              <li><Link href="/library/category/mountains" className="hover:text-foreground transition-colors">Mountains</Link></li>
-              <li><Link href="/library/category/eco-tours" className="hover:text-foreground transition-colors">Eco-Tours</Link></li>
-              <li><Link href="/explore" className="hover:text-foreground transition-colors">Community</Link></li>
+              <li><Link href="/explore" className="hover:text-foreground transition-colors">All Experiences</Link></li>
+              <li><Link href="/explore/category/beaches" className="hover:text-foreground transition-colors">Beaches</Link></li>
+              <li><Link href="/explore/category/mountains" className="hover:text-foreground transition-colors">Mountains</Link></li>
+              <li><Link href="/explore/category/eco-tours" className="hover:text-foreground transition-colors">Eco-Tours</Link></li>
+              <li><Link href="/discover" className="hover:text-foreground transition-colors">Inspiration</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-3">Destinations</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/library/region/los-roques" className="hover:text-foreground transition-colors">Los Roques</Link></li>
-              <li><Link href="/library/region/merida" className="hover:text-foreground transition-colors">Mérida</Link></li>
-              <li><Link href="/library/region/margarita" className="hover:text-foreground transition-colors">Margarita Island</Link></li>
-              <li><Link href="/library/region/canaima" className="hover:text-foreground transition-colors">Canaima</Link></li>
-              <li><Link href="/library/region/gran-sabana" className="hover:text-foreground transition-colors">Gran Sabana</Link></li>
+              <li><Link href="/explore/region/los-roques" className="hover:text-foreground transition-colors">Los Roques</Link></li>
+              <li><Link href="/explore/region/merida" className="hover:text-foreground transition-colors">Mérida</Link></li>
+              <li><Link href="/explore/region/margarita" className="hover:text-foreground transition-colors">Margarita Island</Link></li>
+              <li><Link href="/explore/region/canaima" className="hover:text-foreground transition-colors">Canaima</Link></li>
+              <li><Link href="/explore/region/gran-sabana" className="hover:text-foreground transition-colors">Gran Sabana</Link></li>
             </ul>
           </div>
           <div>

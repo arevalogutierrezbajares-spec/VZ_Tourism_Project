@@ -94,7 +94,7 @@ export function SpotReviewCard({
         {spot.thumbnail_url ? (
           <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={spot.thumbnail_url} alt="" className="w-full h-full object-cover" />
+            <img src={spot.thumbnail_url} alt={spot.extracted_name || 'Location photo'} className="w-full h-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <Play className="w-4 h-4 text-white fill-white" />
             </div>

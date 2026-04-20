@@ -357,7 +357,7 @@ function ContentEditModal({
                 />
               </div>
               {form.url && (
-                <img src={form.url} alt="" className="mt-2 w-full h-32 object-cover rounded-lg" />
+                <img src={form.url} alt={form.caption || 'Discover content preview'} className="mt-2 w-full h-32 object-cover rounded-lg" />
               )}
             </div>
           )}
@@ -720,13 +720,13 @@ function ListRow({
           {item.type === 'instagram_embed' ? (
             <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
               {item.thumbnail_url ? (
-                <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                <img src={item.thumbnail_url} alt={item.caption || 'Discover content'} className="w-full h-full object-cover" />
               ) : (
                 <Instagram className="w-5 h-5 text-purple-400" />
               )}
             </div>
           ) : (
-            <img src={item.url} alt="" className="w-full h-full object-cover" />
+            <img src={item.url} alt={item.caption || 'Discover content'} className="w-full h-full object-cover" />
           )}
         </div>
       </td>

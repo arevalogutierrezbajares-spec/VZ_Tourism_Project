@@ -162,14 +162,14 @@ export default function LandingPage() {
           >
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-xl text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl"
             >
               <Sparkles className="w-5 h-5" />
               Plan my trip with AI
             </Link>
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-xl text-base hover:bg-white/10 transition-all backdrop-blur-sm"
+              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-lg text-base hover:bg-white/10 transition-all backdrop-blur-sm"
             >
               Explore Venezuela
               <ArrowRight className="w-4 h-4" />
@@ -343,7 +343,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-xl hover:bg-foreground/90 transition-colors"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               Start planning
@@ -443,7 +443,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/plan"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-xl hover:bg-white/90 transition-colors shadow-lg"
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-lg hover:bg-white/90 transition-colors shadow-lg"
           >
             <Sparkles className="w-5 h-5" />
             Plan my trip

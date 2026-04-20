@@ -59,13 +59,13 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               </Badge>
               <SafetyBadge level={listing.safety_level} />
               {listing.is_featured && (
-                <Badge className="bg-amber-500 text-white">Featured</Badge>
+                <Badge className="bg-accent text-accent-foreground">Featured</Badge>
               )}
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">{listing.title}</h1>
             <div className="flex items-center gap-2 text-muted-foreground text-sm flex-wrap">
               <span className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <Star className="w-4 h-4 fill-accent text-accent" />
                 <strong className="text-foreground">{listing.rating.toFixed(1)}</strong>
                 <span>({pluralize(listing.total_reviews, 'review')})</span>
               </span>
@@ -173,7 +173,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                       )}
                     </div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <Star className="w-3.5 h-3.5 fill-accent text-accent" />
                       <span>{listing.provider.rating.toFixed(1)}</span>
                       <span>·</span>
                       <span>{pluralize(listing.provider.total_reviews, 'review')}</span>
@@ -204,7 +204,9 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
         </div>
 
         {/* Sidebar - Booking form */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-4 self-start">
+          <BookingForm listing={listing} />
+
           {/* Add to itinerary */}
           <button
             onClick={() => {
@@ -261,7 +263,6 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               <p className="text-muted-foreground leading-relaxed">{listing.cancellation_policy}</p>
             </div>
           )}
-          <BookingForm listing={listing} />
 
           {/* WhatsApp contact */}
           {listing.provider?.whatsapp_number && (

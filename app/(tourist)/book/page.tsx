@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { Search, MapPin, Calendar, Users, ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BrowseListingCard } from '@/components/listing/BrowseListingCard';
 
 const DESTINATIONS = [
   { id: 'losroques', label: 'Los Roques', emoji: '🏝️' },
@@ -25,63 +25,7 @@ const TYPES = [
 
 const PAGE_SIZE = 24;
 
-interface ApiListing {
-  id: string;
-  title: string;
-  slug: string;
-  type: string;
-  category: string;
-  region: string;
-  rating: number | null;
-  review_count: number;
-  cover_image_url: string | null;
-  platform_status?: string;
-}
-
-function ResultCard({ listing }: { listing: ApiListing }) {
-  const isOnboarded = listing.platform_status === 'verified' || listing.platform_status === 'founding_partner';
-  return (
-    <Link href={`/listing/${listing.slug}`} className="group block">
-      <div className={cn('bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden border', !isOnboarded && 'opacity-90')}>
-        <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
-          <div className="absolute inset-0">
-            {listing.cover_image_url ? (
-              <img src={listing.cover_image_url} alt={listing.title} loading="lazy" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center">
-                <span className="text-4xl">🌎</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-            {listing.title}
-          </h3>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="w-3 h-3" />
-              {listing.region}
-            </div>
-            {!isOnboarded && (
-              <span className="text-muted-foreground bg-muted text-xs px-2 py-0.5 rounded-full">
-                Preview
-              </span>
-            )}
-          </div>
-          <div className="mt-3">
-            <span className={cn(
-              'text-xs font-semibold px-2.5 py-1 rounded-full',
-              isOnboarded ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
-            )}>
-              {isOnboarded ? 'Book Now' : 'View Details'}
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
+import type { BrowseApiListing } from '@/components/listing/BrowseListingCard';
 
 export default function BookPage() {
   const [destination, setDestination] = useState('');
@@ -89,7 +33,7 @@ export default function BookPage() {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [type, setType] = useState('all');
-  const [listings, setListings] = useState<ApiListing[]>([]);
+  const [listings, setListings] = useState<BrowseApiListing[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -123,7 +67,7 @@ export default function BookPage() {
   }, [runSearch]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       {/* Search bar */}
       <div className="bg-white border-b shadow-sm">
         <div className="container px-4 py-5">
@@ -264,20 +208,20 @@ export default function BookPage() {
           </div>
         ) : hasSearched && listings.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-4xl mb-3">🔍</p>
+            <Search className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
             <h3 className="font-semibold text-lg">No results found</h3>
             <p className="text-muted-foreground mt-1">Try a different destination or type.</p>
           </div>
         ) : (
           <>
             {hasSearched && (
-              <p className="text-sm text-muted-foreground mb-5">
+              <p aria-live="polite" className="text-sm text-muted-foreground mb-5">
                 {count.toLocaleString()} places{destination ? ` in ${DESTINATIONS.find(d => d.id === destination)?.label}` : ' across Venezuela'}
               </p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {listings.map((listing) => (
-                <ResultCard key={listing.id} listing={listing} />
+                <BrowseListingCard key={listing.id} listing={listing} variant="compact" />
               ))}
             </div>
           </>

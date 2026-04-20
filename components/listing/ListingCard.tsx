@@ -25,7 +25,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
     return (
       <Link href={`/listing/${listing.slug}`}>
         <div className={cn(
-          'flex gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer',
+          'flex gap-3 p-3 rounded-xl hover:bg-muted transition-colors cursor-pointer',
           className
         )}>
           {listing.cover_image_url && (
@@ -41,7 +41,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
             <div className="flex items-center justify-between mt-1">
               {listing.rating != null && (
                 <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <Star className="w-3 h-3 fill-accent text-accent" />
                   <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
                 </div>
               )}
@@ -59,7 +59,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
 
   return (
     <Link href={`/listing/${listing.slug}`}>
-      <Card className={cn('group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-sm', className)}>
+      <Card className={cn('group overflow-hidden hover:shadow-lg transition-all duration-300 border rounded-2xl shadow-sm', className)}>
         <div className="relative aspect-[4/3] overflow-hidden">
           {listing.cover_image_url ? (
             <Image
@@ -75,11 +75,11 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
             </div>
           )}
           <div className="absolute top-3 left-3 flex gap-1.5">
-            <Badge className="bg-white/90 text-gray-800 text-xs capitalize border-0 shadow-sm">
+            <Badge className="bg-white/90 text-foreground text-xs capitalize border-0 shadow-sm">
               {category?.icon} {listing.category}
             </Badge>
             {listing.is_featured && (
-              <Badge className="bg-amber-500 text-white text-xs border-0">Featured</Badge>
+              <Badge className="bg-accent text-accent-foreground text-xs border-0">Featured</Badge>
             )}
           </div>
           <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
@@ -126,7 +126,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               <div className="flex items-center gap-1">
                 {listing.rating != null ? (
                   <>
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <Star className="w-3.5 h-3.5 fill-accent text-accent" />
                     <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
                     {(listing.total_reviews ?? 0) > 0 && (
                       <span className="text-xs text-muted-foreground">({listing.total_reviews})</span>

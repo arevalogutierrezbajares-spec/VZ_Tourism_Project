@@ -108,10 +108,10 @@ export default async function JoinPage({ params }: Props) {
 
       {/* Main content */}
       <div className="max-w-lg mx-auto px-6 py-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl font-bold text-foreground mb-2">
           Claim your listing and start receiving bookings
         </h2>
-        <p className="text-gray-500 text-sm mb-8">
+        <p className="text-muted-foreground text-sm mb-8">
           Your listing is already 90% ready — we scraped your information from Google.
           Just verify ownership and fill in what&apos;s missing.
         </p>
@@ -124,20 +124,20 @@ export default async function JoinPage({ params }: Props) {
             { icon: '⏱️', text: 'Takes only 10 minutes', sub: 'Simple step-by-step setup' },
             { icon: '💸', text: 'Get paid via Zelle, USDT, or cash', sub: 'No complicated bank setups' },
           ].map((benefit) => (
-            <div key={benefit.text} className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+            <div key={benefit.text} className="flex items-start gap-3 p-4 bg-muted rounded-xl">
               <span className="text-xl mt-0.5">{benefit.icon}</span>
               <div>
-                <div className="font-semibold text-gray-900 text-sm">{benefit.text}</div>
-                <div className="text-gray-500 text-xs mt-0.5">{benefit.sub}</div>
+                <div className="font-semibold text-foreground text-sm">{benefit.text}</div>
+                <div className="text-muted-foreground text-xs mt-0.5">{benefit.sub}</div>
               </div>
-              <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto mt-0.5 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-status-confirmed ml-auto mt-0.5 shrink-0" />
             </div>
           ))}
         </div>
 
         {/* How it works */}
-        <div className="border border-gray-200 rounded-xl p-5 mb-8">
-          <h3 className="font-semibold text-gray-900 text-sm mb-4">What you&apos;ll do in 10 minutes</h3>
+        <div className="border border-border rounded-xl p-5 mb-8">
+          <h3 className="font-semibold text-foreground text-sm mb-4">What you&apos;ll do in 10 minutes</h3>
           <div className="space-y-3">
             {[
               { step: '1', label: 'Verify ownership', detail: 'Confirm via WhatsApp or Instagram' },
@@ -152,8 +152,8 @@ export default async function JoinPage({ params }: Props) {
                   {item.step}
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                  <span className="text-xs text-gray-400 ml-2">{item.detail}</span>
+                  <span className="text-sm font-medium text-foreground">{item.label}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{item.detail}</span>
                 </div>
               </div>
             ))}
@@ -176,10 +176,10 @@ export default async function JoinPage({ params }: Props) {
 
         {/* Payment methods */}
         <div className="flex items-center gap-2 mb-8 flex-wrap justify-center">
-          <CreditCard className="w-4 h-4 text-gray-400" />
-          <span className="text-xs text-gray-400">Accepted payment methods:</span>
+          <CreditCard className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Accepted payment methods:</span>
           {['Zelle', 'USDT', 'Binance Pay', 'Cash'].map((m) => (
-            <span key={m} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{m}</span>
+            <span key={m} className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">{m}</span>
           ))}
         </div>
 
@@ -190,7 +190,7 @@ export default async function JoinPage({ params }: Props) {
         >
           Get Started →
         </Link>
-        <p className="text-center text-xs text-gray-400 mt-3">
+        <p className="text-center text-xs text-muted-foreground mt-3">
           Free to join · No credit card required · Cancel anytime
         </p>
       </div>

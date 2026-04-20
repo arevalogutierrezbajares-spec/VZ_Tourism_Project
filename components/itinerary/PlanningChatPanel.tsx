@@ -358,7 +358,7 @@ export function PlanningChatPanel({
 
       {/* Messages */}
       <ScrollArea className="flex-1">
-        <div className={cn('space-y-4', isFullMode ? 'p-5' : 'p-4')}>
+        <div role="log" aria-live="polite" aria-label="Trip planner conversation" className={cn('space-y-4', isFullMode ? 'p-5' : 'p-4')}>
           {/* Welcome */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex gap-3">
@@ -503,7 +503,7 @@ export function PlanningChatPanel({
       </ScrollArea>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className={cn('border-t', isFullMode ? 'p-5' : 'p-4')}>
+      <form onSubmit={handleSubmit} aria-label="Trip planning conversation" className={cn('border-t', isFullMode ? 'p-5' : 'p-4')}>
         <div className="flex gap-2">
           <Input
             ref={inputRef}

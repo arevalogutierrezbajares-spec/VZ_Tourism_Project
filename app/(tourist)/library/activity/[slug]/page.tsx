@@ -1,59 +1,10 @@
-import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
-import { ListingCard } from '@/components/listing/ListingCard';
-import type { Listing } from '@/types/database';
+import { redirect } from 'next/navigation';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function LibraryActivityRedirect({ params }: Props) {
   const { slug } = await params;
-  return {
-    title: `${slug.replace(/-/g, ' ')} experiences in Venezuela`,
-  };
-}
-
-export default async function ActivityPage({ params }: Props) {
-  const { slug } = await params;
-  let listings = null;
-  try {
-    const supabase = await createClient();
-    if (supabase) {
-      const { data } = await supabase
-        .from('listings')
-        .select('*, provider:providers(business_name, is_verified)')
-        .eq('is_published', true)
-        .contains('tags', [slug])
-        .order('rating', { ascending: false });
-      listings = data;
-    }
-  } catch {
-    // Supabase not configured
-  }
-
-  const title = slug.replace(/-/g, ' ');
-
-  return (
-    <div className="container px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold capitalize">{title} experiences</h1>
-        <p className="text-muted-foreground mt-1">
-          {listings?.length || 0} experiences found
-        </p>
-      </div>
-
-      {listings && listings.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing as Listing} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <h3 className="font-semibold text-lg">No {title} experiences found</h3>
-        </div>
-      )}
-    </div>
-  );
+  redirect(`/explore?type=${slug}`);
 }

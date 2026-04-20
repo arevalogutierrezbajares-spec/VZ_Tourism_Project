@@ -41,8 +41,8 @@ export function Navbar() {
             Map
           </Link>
           <Link
-            href="/library"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/' || pathname.startsWith('/library') ? 'text-primary' : 'text-muted-foreground'}`}
+            href="/explore"
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <BookOpen className="w-4 h-4" />
             Explore
@@ -103,7 +103,7 @@ export function Navbar() {
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-sky-500 text-white text-xs">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {getInitials(profile?.full_name || 'U')}
                     </AvatarFallback>
                   </Avatar>

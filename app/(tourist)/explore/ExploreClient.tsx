@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { MapPin, Search, ChevronDown, Heart, PlusCircle, CheckCircle, LayoutGrid, Map, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, LayoutGrid, Map, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useFavoritesStore } from '@/stores/favorites-store';
-import { useItineraryStore } from '@/stores/itinerary-store';
 import { useMapStore } from '@/stores/map-store';
+import { BrowseListingCard } from '@/components/listing/BrowseListingCard';
 import type { MapPin as MapPinType } from '@/types/map';
 
 const MapContainer = dynamic(
@@ -55,18 +53,6 @@ const REGIONS: { id: string; label: string }[] = [
   { id: 'venezuela', label: 'Other' },
 ];
 
-const REGION_LABELS: Record<string, string> = {
-  caracas: 'Caracas',
-  losroques: 'Los Roques',
-  merida: 'Mérida',
-  margarita: 'Isla Margarita',
-  morrocoy: 'Morrocoy',
-  canaima: 'Canaima',
-  choroni: 'Choroní',
-  falcon: 'Falcón',
-  venezuela: 'Venezuela',
-};
-
 // Fallback coordinates per region (lng, lat) for listings without GPS data
 const REGION_COORDS: Record<string, [number, number]> = {
   caracas:   [-66.9036, 10.4806],
@@ -92,112 +78,6 @@ type SortOption = typeof SORT_OPTIONS[number]['id'];
 
 const PAGE_SIZE = 24;
 
-const CATEGORY_GRADIENTS: Record<string, string> = {
-  hotel: 'from-blue-400 to-blue-600',
-  restaurant: 'from-orange-400 to-orange-600',
-  experience: 'from-emerald-400 to-emerald-600',
-  other: 'from-purple-400 to-purple-600',
-};
-
-const CATEGORY_ICONS: Record<string, string> = {
-  hotel: '🏨',
-  restaurant: '🍽️',
-  experience: '🎒',
-  posada: '🏡',
-  tours: '🎒',
-  other: '📍',
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  hotel: 'Hotel',
-  posada: 'Posada',
-  hostal: 'Hostal',
-  hospedaje: 'Hospedaje',
-  alojamiento: 'Alojamiento',
-  'casa vacacional': 'Casa',
-  restaurante: 'Restaurant',
-  restaurant: 'Restaurant',
-  cafe: 'Café',
-  bar: 'Bar',
-  tours: 'Tour',
-  tour: 'Tour',
-  transfer: 'Transfer',
-  experience: 'Experience',
-  agencia: 'Agency',
-};
-
-interface Tag {
-  label: string;
-  icon: string;
-  color: string;
-}
-
-function generateTags(listing: ApiListing): Tag[] {
-  const tags: Tag[] = [];
-  const region = listing.region?.toLowerCase() ?? '';
-  const type = listing.type?.toLowerCase() ?? '';
-  const category = listing.category?.toLowerCase() ?? '';
-  const rating = listing.rating ?? 0;
-  const reviews = listing.review_count ?? 0;
-  const name = listing.title?.toLowerCase() ?? '';
-
-  // Location tags — wired to real listing attributes
-  if (['losroques', 'morrocoy', 'choroni', 'margarita'].includes(region)) {
-    tags.push({ label: 'Beachfront', icon: '🏖️', color: 'bg-cyan-50 text-cyan-700' });
-  }
-  if (['merida', 'canaima'].includes(region)) {
-    tags.push({ label: 'Mountain', icon: '⛰️', color: 'bg-emerald-50 text-emerald-700' });
-  }
-  if (region === 'losroques' || region === 'margarita') {
-    tags.push({ label: 'Island', icon: '🏝️', color: 'bg-blue-50 text-blue-700' });
-  }
-  if (region === 'caracas') {
-    tags.push({ label: 'City Center', icon: '🏙️', color: 'bg-slate-50 text-slate-700' });
-  }
-
-  // Activity tags — wired to category + region
-  if (region === 'losroques' || (category === 'experience' && region === 'margarita')) {
-    tags.push({ label: 'Diving', icon: '🤿', color: 'bg-teal-50 text-teal-700' });
-  }
-  if (['merida', 'canaima'].includes(region) || category === 'adventure' || name.includes('hik') || name.includes('trek')) {
-    tags.push({ label: 'Hiking', icon: '🥾', color: 'bg-green-50 text-green-700' });
-  }
-  if (region === 'canaima' || name.includes('nature') || name.includes('wildlife')) {
-    tags.push({ label: 'Nature', icon: '🌿', color: 'bg-lime-50 text-lime-700' });
-  }
-
-  // Type-specific tags — wired to real listing.type
-  if (type === 'posada' || type === 'casa vacacional') {
-    tags.push({ label: 'Boutique Stay', icon: '🏡', color: 'bg-orange-50 text-orange-700' });
-  }
-  if (type === 'tours' || type === 'tour' || category === 'experience') {
-    tags.push({ label: 'Guided Tour', icon: '🎒', color: 'bg-violet-50 text-violet-700' });
-  }
-  if (name.includes('spa') || name.includes('wellness') || category === 'wellness') {
-    tags.push({ label: 'Spa & Wellness', icon: '💆', color: 'bg-pink-50 text-pink-700' });
-  }
-  if (name.includes('eco') || name.includes('natural') || name.includes('reserva')) {
-    tags.push({ label: 'Eco-Friendly', icon: '🌱', color: 'bg-green-50 text-green-700' });
-  }
-
-  // Quality tags — wired to real rating + review_count
-  if (rating >= 4.5) {
-    tags.push({ label: 'Top Rated', icon: '🏆', color: 'bg-amber-50 text-amber-700' });
-  }
-  if (reviews >= 500) {
-    tags.push({ label: 'Popular', icon: '🔥', color: 'bg-rose-50 text-rose-700' });
-  }
-  if (reviews >= 50 && reviews < 500 && rating >= 4.0) {
-    tags.push({ label: 'Local Favorite', icon: '❤️', color: 'bg-rose-50 text-rose-700' });
-  }
-  if (rating >= 4.0 && reviews < 50) {
-    tags.push({ label: 'Hidden Gem', icon: '💎', color: 'bg-purple-50 text-purple-700' });
-  }
-
-  return tags.slice(0, 4);
-}
-
-
 function listingToPin(listing: ApiListing): MapPinType {
   const fallback = REGION_COORDS[listing.region?.toLowerCase() ?? ''] ?? REGION_COORDS.venezuela;
   // Small deterministic jitter to spread co-located fallback pins
@@ -219,235 +99,6 @@ function listingToPin(listing: ApiListing): MapPinType {
       listing.platform_status === 'founding_partner',
     listingId: listing.id,
   };
-}
-
-function StarRating({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const half = rating - full >= 0.5;
-  const empty = 5 - full - (half ? 1 : 0);
-
-  return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: full }).map((_, i) => (
-          <span key={`f${i}`} className="text-amber-400 text-sm leading-none">★</span>
-        ))}
-        {half && <span className="text-amber-400 text-sm leading-none">★</span>}
-        {Array.from({ length: empty }).map((_, i) => (
-          <span key={`e${i}`} className="text-gray-200 text-sm leading-none">★</span>
-        ))}
-      </div>
-      <span className="text-sm font-semibold text-gray-800">{rating.toFixed(1)}</span>
-    </div>
-  );
-}
-
-function PriceDisplay({ listing }: { listing: ApiListing }) {
-  const isOnboarded = listing.platform_status === 'verified' || listing.platform_status === 'founding_partner';
-  if (!isOnboarded) {
-    return (
-      <span className="text-muted-foreground bg-muted text-xs px-2 py-0.5 rounded-full">
-        Preview
-      </span>
-    );
-  }
-  // Only show price for verified/founding_partner listings that have real price data
-  return null;
-}
-
-function TierBadge({ status }: { status?: string }) {
-  if (status === 'founding_partner') {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-        🏆 Founding Partner
-      </span>
-    );
-  }
-  if (status === 'verified') {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-        ✅ Verified Partner
-      </span>
-    );
-  }
-  return null;
-}
-
-function ListingCard({ listing }: { listing: ApiListing }) {
-  const { favorites, addFavorite, removeFavorite } = useFavoritesStore();
-  const { current: activeItinerary, days, addStop, openPanel } = useItineraryStore();
-  const [addedToTrip, setAddedToTrip] = useState(false);
-  const isFavorited = favorites.includes(listing.id);
-  const alreadyInTrip = days.some((d) => d.stops.some((s) => s.listing_id === listing.id));
-
-  const handleAddToTrip = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const targetDay = days.length > 0 ? days[days.length - 1].day : 1;
-    const stopCount = days.length > 0 ? days[days.length - 1].stops.length : 0;
-    addStop({
-      itinerary_id: activeItinerary?.id ?? '',
-      day: targetDay,
-      order: stopCount + 1,
-      listing_id: listing.id,
-      title: listing.title,
-      description: null,
-      latitude: null,
-      longitude: null,
-      location_name: listing.region ?? null,
-      start_time: null,
-      end_time: null,
-      duration_hours: null,
-      cost_usd: 0,
-      transport_to_next: null,
-      transport_duration_minutes: null,
-      notes: null,
-    });
-    openPanel();
-    setAddedToTrip(true);
-    setTimeout(() => setAddedToTrip(false), 2500);
-  };
-  const gradient = CATEGORY_GRADIENTS[listing.category] ?? CATEGORY_GRADIENTS.other;
-  const catIcon = CATEGORY_ICONS[listing.type?.toLowerCase()] ?? CATEGORY_ICONS[listing.category] ?? '📍';
-  const typeLabel = TYPE_LABELS[listing.type?.toLowerCase()] ?? listing.type ?? 'Place';
-  const regionLabel = REGION_LABELS[listing.region?.toLowerCase()] ?? listing.region ?? 'Venezuela';
-  const tags = generateTags(listing);
-  const isOnboarded = listing.platform_status === 'verified' || listing.platform_status === 'founding_partner';
-  const borderAccent = listing.platform_status === 'founding_partner'
-    ? 'border-l-4 border-l-amber-400'
-    : listing.platform_status === 'verified'
-    ? 'border-l-4 border-l-emerald-400'
-    : '';
-
-  return (
-    <Link href={`/listing/${listing.slug}`} className="group block">
-      <div className={cn('bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden', borderAccent, !isOnboarded && 'opacity-90')}>
-        {/* Photo area — 16:10 */}
-        <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
-          <div className="absolute inset-0">
-            {listing.cover_image_url ? (
-              <img
-                src={listing.cover_image_url}
-                alt={listing.title}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className={cn('w-full h-full bg-gradient-to-br flex flex-col items-center justify-center', gradient)}>
-                <span className="text-5xl mb-2 drop-shadow">{catIcon}</span>
-                <span className="text-white/70 text-sm font-medium uppercase tracking-wider">{typeLabel}</span>
-              </div>
-            )}
-
-            {/* Category badge — top left */}
-            <div className="absolute top-3 left-3">
-              <span className="bg-black/40 backdrop-blur-sm text-white text-xs font-medium px-2.5 py-1 rounded-full">
-                {typeLabel}
-              </span>
-            </div>
-
-            {/* Heart — top right */}
-            <button
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (isFavorited) removeFavorite(listing.id);
-                else addFavorite(listing.id);
-              }}
-              aria-label={isFavorited ? 'Remove from saved' : 'Save'}
-            >
-              <Heart
-                className={cn(
-                  'w-4 h-4 transition-colors',
-                  isFavorited ? 'fill-rose-500 text-rose-500' : 'text-gray-500 hover:text-rose-500'
-                )}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Content area */}
-        <div className="p-4 space-y-2.5">
-          {/* Tier badge */}
-          <TierBadge status={listing.platform_status} />
-
-          {/* Stars + rating */}
-          {listing.rating !== null && (
-            <StarRating rating={listing.rating} />
-          )}
-
-          {/* Name */}
-          <h3 className="font-bold text-base text-gray-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
-            {listing.title}
-          </h3>
-
-          {/* Location */}
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-            <span>{regionLabel}</span>
-          </div>
-
-          {/* Smart tags */}
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((tag) => (
-                <span
-                  key={tag.label}
-                  className={cn('inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium', tag.color)}
-                >
-                  <span>{tag.icon}</span>
-                  {tag.label}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Bottom row: price + review count + CTA */}
-          <div className="flex items-center justify-between pt-0.5">
-            <div className="flex items-center gap-2">
-              <PriceDisplay listing={listing} />
-              {listing.review_count > 0 && (
-                <>
-                  <span className="text-gray-300 text-xs">·</span>
-                  <span className="text-xs text-gray-400">
-                    {listing.review_count.toLocaleString()} reviews
-                  </span>
-                </>
-              )}
-            </div>
-            <span className={cn(
-              'text-xs font-semibold px-2.5 py-1 rounded-full',
-              isOnboarded
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600'
-            )}>
-              {isOnboarded ? 'Book Now' : 'View Details'}
-            </span>
-          </div>
-
-          {/* Add to active itinerary */}
-          {activeItinerary && (
-            <button
-              onClick={handleAddToTrip}
-              className={cn(
-                'w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium border transition-colors mt-1',
-                alreadyInTrip || addedToTrip
-                  ? 'border-green-300 text-green-700 bg-green-50'
-                  : 'border-primary/30 text-primary hover:bg-primary/5'
-              )}
-            >
-              {alreadyInTrip || addedToTrip ? (
-                <><CheckCircle className="w-3.5 h-3.5" /> Added to {activeItinerary.title}</>
-              ) : (
-                <><PlusCircle className="w-3.5 h-3.5" /> Add to {activeItinerary.title}</>
-              )}
-            </button>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
 }
 
 export function ExploreClient({ total, initialCategory = 'all' }: { total: number; initialCategory?: string }) {
@@ -629,7 +280,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
       {/* Result count */}
       {!loading && (
-        <p className="text-sm text-muted-foreground">
+        <p aria-live="polite" className="text-sm text-muted-foreground">
           {count.toLocaleString()} {count === 1 ? 'place' : 'places'} found
         </p>
       )}
@@ -651,7 +302,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           </div>
         ) : sortedListings.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-2xl mb-2">🔍</p>
+            <Search className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
             <h3 className="font-semibold text-lg">No results found</h3>
             <p className="text-muted-foreground mt-1">Try adjusting your filters or search term.</p>
           </div>
@@ -659,7 +310,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <BrowseListingCard key={listing.id} listing={listing} />
               ))}
             </div>
 

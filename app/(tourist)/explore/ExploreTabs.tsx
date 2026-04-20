@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Flame, Clock, UserCheck } from 'lucide-react';
+import { Flame, Clock, UserCheck, Users, Map } from 'lucide-react';
 import { ItineraryFeedCard } from '@/components/social/ItineraryFeedCard';
 import { cn } from '@/lib/utils';
 import type { Itinerary } from '@/types/database';
@@ -62,7 +62,7 @@ export function ExploreTabs({ trending, newest }: ExploreTabsProps) {
         <div className="text-center py-16">
           {activeTab === 'following' ? (
             <>
-              <p className="text-2xl mb-2">👥</p>
+              <Users className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
               <h3 className="font-semibold text-lg">Follow creators to see their itineraries</h3>
               <p className="text-muted-foreground mt-1">
                 Explore the Trending tab to discover creators to follow.
@@ -70,7 +70,7 @@ export function ExploreTabs({ trending, newest }: ExploreTabsProps) {
             </>
           ) : (
             <>
-              <p className="text-2xl mb-2">🗺️</p>
+              <Map className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
               <h3 className="font-semibold text-lg">No public itineraries yet</h3>
               <p className="text-muted-foreground mt-1">
                 Be the first to share your Venezuela adventure!

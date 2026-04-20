@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const tabs = [
   { href: '/', icon: Home, label: 'Home', match: (p: string) => p === '/' },
-  { href: '/library', icon: Compass, label: 'Explore', match: (p: string) => p.startsWith('/library') || p.startsWith('/explore') || p.startsWith('/discover') || p.startsWith('/listing') },
+  { href: '/explore', icon: Compass, label: 'Explore', match: (p: string) => p.startsWith('/explore') || p.startsWith('/discover') || p.startsWith('/listing') },
   { href: '/plan', icon: Route, label: 'Plan', match: (p: string) => p.startsWith('/plan') || p.startsWith('/itineraries') },
   { href: '/trips', icon: Luggage, label: 'Trips', match: (p: string) => p.startsWith('/trips') },
   { href: '/account', icon: User, label: 'Profile', match: (p: string) => p.startsWith('/account') || p.startsWith('/login') },

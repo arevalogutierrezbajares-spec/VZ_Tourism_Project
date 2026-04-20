@@ -407,7 +407,7 @@ export function ListingWizard() {
                 {photos.map((photo, idx) => (
                   <div key={photo.preview} className="relative aspect-square rounded-lg overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                    <img src={photo.preview} alt={`Listing photo ${idx + 1}`} className="w-full h-full object-cover" />
                     {photo.uploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <Loader2 className="w-5 h-5 text-white animate-spin" />
@@ -775,7 +775,7 @@ export function ListingWizard() {
             <div className="rounded-2xl border overflow-hidden shadow-sm">
               {photos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photos[0].preview} alt="" className="w-full h-48 object-cover" />
+                <img src={photos[0].preview} alt={`Preview of ${watchedValues.title || 'listing'}`} className="w-full h-48 object-cover" />
               ) : (
                 <div className="w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                   <span className="text-4xl">

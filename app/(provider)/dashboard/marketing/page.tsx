@@ -127,7 +127,7 @@ export default async function MarketingPage() {
                   className="block rounded-lg overflow-hidden border hover:shadow-md transition-shadow"
                 >
                   {mention.media_url && (
-                    <img src={mention.media_url} alt="" className="w-full h-32 object-cover" />
+                    <img src={mention.media_url} alt={`Social mention by @${mention.username}`} className="w-full h-32 object-cover" />
                   )}
                   <div className="p-2">
                     <p className="text-xs font-medium">@{mention.username}</p>

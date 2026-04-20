@@ -135,12 +135,12 @@ export function ItinerariesClient({
       <FilterBar regions={regions} filters={filters} onChange={setFilters} />
 
       {/* Sort tabs */}
-      <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit" role="tablist" aria-label="Sort itineraries">
+      <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit" role="radiogroup" aria-label="Sort itineraries">
         {(['popular', 'newest', 'price'] as const).map((s) => (
           <button
             key={s}
-            role="tab"
-            aria-selected={filters.sort === s}
+            role="radio"
+            aria-checked={filters.sort === s}
             onClick={() => setFilters((f) => ({ ...f, sort: s }))}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
               filters.sort === s

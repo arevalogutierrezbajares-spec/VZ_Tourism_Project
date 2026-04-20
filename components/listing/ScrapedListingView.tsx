@@ -46,15 +46,15 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-0.5">
         {Array.from({ length: full }).map((_, i) => (
-          <span key={`f${i}`} className="text-amber-400 text-lg">★</span>
+          <span key={`f${i}`} className="text-accent text-lg">★</span>
         ))}
-        {half && <span className="text-amber-400 text-lg">★</span>}
+        {half && <span className="text-accent text-lg">★</span>}
         {Array.from({ length: empty }).map((_, i) => (
-          <span key={`e${i}`} className="text-gray-200 text-lg">★</span>
+          <span key={`e${i}`} className="text-muted-foreground/30 text-lg">★</span>
         ))}
       </div>
-      <span className="font-bold text-gray-800 text-lg">{rating.toFixed(1)}</span>
-      <span className="text-sm text-gray-500">({count.toLocaleString()} reviews)</span>
+      <span className="font-bold text-foreground text-lg">{rating.toFixed(1)}</span>
+      <span className="text-sm text-muted-foreground">({count.toLocaleString()} reviews)</span>
     </div>
   );
 }
@@ -102,22 +102,22 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground border border-border">
             {typeLabel}
           </span>
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
             Not yet on platform
           </span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{listing.name}</h1>
-        <div className="flex items-center gap-1 text-gray-500 text-sm">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{listing.name}</h1>
+        <div className="flex items-center gap-1 text-muted-foreground text-sm">
           <MapPin className="w-4 h-4 flex-shrink-0" />
           <span>{listing.address || regionLabel}</span>
         </div>
         {listing.avg_rating && listing.review_count > 0 && (
           <div className="mt-3">
             <StarRating rating={listing.avg_rating} count={listing.review_count} />
-            <p className="text-xs text-gray-400 mt-1">Google Reviews</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Google Reviews</p>
           </div>
         )}
       </div>
@@ -139,31 +139,31 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
           {/* Description */}
           {listing.description && (
             <div>
-              <h2 className="font-semibold text-gray-900 mb-2">About</h2>
-              <p className="text-gray-600 leading-relaxed">{listing.description}</p>
+              <h2 className="font-semibold text-foreground mb-2">About</h2>
+              <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
             </div>
           )}
 
           {/* Contact info */}
           <div>
-            <h2 className="font-semibold text-gray-900 mb-3">Contact</h2>
+            <h2 className="font-semibold text-foreground mb-3">Contact</h2>
             <div className="space-y-2">
               {listing.phone && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <a href={`tel:${listing.phone}`} className="hover:text-blue-600 transition-colors">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="w-4 h-4 text-muted-foreground/60" />
+                  <a href={`tel:${listing.phone}`} className="hover:text-primary transition-colors">
                     {listing.phone}
                   </a>
                 </div>
               )}
               {listing.website && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Globe className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Globe className="w-4 h-4 text-muted-foreground/60" />
                   <a
                     href={listing.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-1"
+                    className="hover:text-primary transition-colors flex items-center gap-1"
                   >
                     {listing.website.replace(/^https?:\/\//, '')}
                     <ExternalLink className="w-3 h-3" />
@@ -171,13 +171,13 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                 </div>
               )}
               {listing.instagram_handle && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span className="text-gray-400 text-base leading-none">📷</span>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="text-muted-foreground/60 text-base leading-none">📷</span>
                   <a
                     href={`https://instagram.com/${listing.instagram_handle}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 transition-colors"
+                    className="hover:text-primary transition-colors"
                   >
                     @{listing.instagram_handle}
                   </a>
@@ -190,11 +190,11 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
         {/* Right: action panel */}
         <div className="space-y-4">
           {/* Not yet on platform notice */}
-          <div className="rounded-2xl border-2 border-dashed border-gray-200 p-5 space-y-4">
+          <div className="rounded-2xl border-2 border-dashed border-border p-5 space-y-4">
             <div className="text-center">
               <div className="text-3xl mb-2">🏗️</div>
-              <h3 className="font-semibold text-gray-900">Not on the platform yet</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-semibold text-foreground">Not on the platform yet</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 This business hasn't joined VZ Tourism. Contact them directly or get notified when they do.
               </p>
             </div>
@@ -221,7 +221,7 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                 href={listing.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted transition-colors"
               >
                 <Globe className="w-4 h-4" />
                 Visit Website
@@ -261,17 +261,17 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
           </div>
 
           {/* Invite owner */}
-          <div className="rounded-2xl bg-gray-50 border border-gray-200 p-5">
+          <div className="rounded-2xl bg-muted border border-border p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Share2 className="w-4 h-4 text-gray-600" />
-              <h3 className="font-semibold text-gray-800 text-sm">Know the owner?</h3>
+              <Share2 className="w-4 h-4 text-muted-foreground" />
+              <h3 className="font-semibold text-foreground text-sm">Know the owner?</h3>
             </div>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-muted-foreground mb-3">
               Share this invite link with them to join VZ Tourism as a platform partner.
             </p>
             <button
               onClick={handleCopyInvite}
-              className="w-full py-2 px-4 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-white transition-colors"
+              className="w-full py-2 px-4 rounded-lg text-sm font-semibold border border-border text-foreground hover:bg-background transition-colors"
             >
               {copyDone ? '✓ Link copied!' : 'Copy Invite Link'}
             </button>

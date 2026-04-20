@@ -62,19 +62,20 @@ export default function RootLayout({
           position="top-right"
           toastOptions={{
             duration: 4000,
+            className: 'bg-card text-card-foreground border shadow-lg',
             style: {
-              background: '#363636',
-              color: '#fff',
+              background: 'hsl(var(--card))',
+              color: 'hsl(var(--card-foreground))',
             },
             success: {
               iconTheme: {
-                primary: '#22C55E',
+                primary: 'hsl(var(--secondary))',
                 secondary: '#fff',
               },
             },
             error: {
               iconTheme: {
-                primary: '#EF4444',
+                primary: 'hsl(var(--destructive))',
                 secondary: '#fff',
               },
             },

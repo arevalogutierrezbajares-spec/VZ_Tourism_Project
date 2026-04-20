@@ -35,31 +35,39 @@ export function StarRating({
   };
 
   return (
-    <div className={cn('flex items-center gap-0.5', className)}>
+    <div role="group" aria-label={`Rating: ${rating} out of ${maxRating} stars`} className={cn('flex items-center gap-0.5', className)}>
       {Array.from({ length: maxRating }).map((_, i) => {
         const value = i + 1;
         const isFilled = value <= rating;
         const isHalf = !isFilled && value - 0.5 <= rating;
+
+        const starIcon = (
+          <Star
+            className={cn(sizeClasses[size], {
+              'fill-accent text-accent': isFilled,
+              'fill-accent/50 text-accent': isHalf,
+              'fill-none text-muted-foreground/40': !isFilled && !isHalf,
+            })}
+          />
+        );
+
+        if (!interactive) {
+          return (
+            <span key={i} aria-hidden="true">
+              {starIcon}
+            </span>
+          );
+        }
 
         return (
           <button
             key={i}
             type="button"
             onClick={() => handleClick(value)}
-            disabled={!interactive}
-            className={cn(
-              'focus:outline-none',
-              interactive && 'cursor-pointer hover:scale-110 transition-transform'
-            )}
+            className="cursor-pointer hover:scale-110 transition-transform focus:outline-none"
             aria-label={`${value} star${value !== 1 ? 's' : ''}`}
           >
-            <Star
-              className={cn(sizeClasses[size], {
-                'fill-amber-400 text-amber-400': isFilled,
-                'fill-amber-200 text-amber-400': isHalf,
-                'fill-none text-gray-300': !isFilled && !isHalf,
-              })}
-            />
+            {starIcon}
           </button>
         );
       })}
