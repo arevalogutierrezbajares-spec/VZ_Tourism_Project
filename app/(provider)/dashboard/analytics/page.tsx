@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { TrendingUp, DollarSign, Users, Repeat, Percent, BarChart3 } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Repeat, Percent, BarChart3, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { getAllBookings } from '@/lib/bookings-store';
 import { formatCurrency } from '@/lib/utils';
@@ -74,13 +74,11 @@ export default function AnalyticsPage() {
     };
   });
 
-  // Conversion funnel: views (estimated) → pending → confirmed → completed
+  // Conversion funnel: inquiries → confirmed → completed
   const totalPending = bookings.filter((b) => b.status === 'pending').length;
   const totalConfirmed = bookings.filter((b) => ['confirmed', 'completed'].includes(b.status)).length;
   const totalCompleted = bookings.filter((b) => b.status === 'completed').length;
-  const estimatedViews = Math.round(bookings.length * 4.2); // rough estimate based on industry averages
   const funnelData = [
-    { name: 'Views (est.)', value: estimatedViews },
     { name: 'Inquiries', value: bookings.length },
     { name: 'Confirmed', value: totalConfirmed },
     { name: 'Completed', value: totalCompleted },
