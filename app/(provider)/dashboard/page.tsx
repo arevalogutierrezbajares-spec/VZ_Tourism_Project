@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { DollarSign, Calendar, Star, TrendingUp, Plus, Eye, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { DollarSign, Calendar, Star, TrendingUp, Plus, Pencil, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -193,7 +193,7 @@ export default async function ProviderDashboardPage() {
                       </Badge>
                       <Link href={`/dashboard/listings/${listing.id}/edit`}>
                         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" aria-label={`Edit ${listing.title}`}>
-                          <Eye className="w-3.5 h-3.5" />
+                          <Pencil className="w-3.5 h-3.5" />
                         </Button>
                       </Link>
                     </div>
