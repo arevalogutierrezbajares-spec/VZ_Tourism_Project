@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { buildSystemPrompt } from '@/lib/whatsapp-ai';
 import { getGroqClient, GROQ_MODEL } from '@/lib/groq';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 import type { PosadaWhatsappConfig, PosadaKnowledge } from '@/types/database';
 
 /**
@@ -10,11 +10,8 @@ import type { PosadaWhatsappConfig, PosadaKnowledge } from '@/types/database';
  * Used by the setup wizard to preview agent behaviour before going live.
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
 
   let body: { message?: string; config?: Partial<PosadaWhatsappConfig>; knowledge?: Partial<PosadaKnowledge>; provider_name?: string };
   try {

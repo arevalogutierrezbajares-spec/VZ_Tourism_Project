@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { hashToken } from '@/lib/whatsapp/hash';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 
 /**
  * GET /api/whatsapp/config
@@ -8,24 +9,14 @@ import { hashToken } from '@/lib/whatsapp/hash';
  * access_token is masked for security.
  */
 export async function GET() {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   const { data, error } = await supabase
     .from('posada_whatsapp_config')
     .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, created_at, updated_at')
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .single();
 
   if (error && error.code !== 'PGRST116') {
@@ -44,19 +35,9 @@ export async function GET() {
  * Create or update the WhatsApp config for the authenticated provider.
  */
 export async function PUT(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   let body: Record<string, unknown>;
   try {
@@ -91,7 +72,7 @@ export async function PUT(request: NextRequest) {
     const { count } = await supabase
       .from('posada_whatsapp_config')
       .select('id', { count: 'exact', head: true })
-      .eq('provider_id', provider.id);
+      .eq('provider_id', providerId);
 
     if (!count) {
       return NextResponse.json({ error: 'phone_number_id is required' }, { status: 400 });
@@ -111,7 +92,7 @@ export async function PUT(request: NextRequest) {
         const { data: existing } = await serviceSupabase
           .from('posada_whatsapp_config')
           .select('id')
-          .eq('provider_id', provider.id)
+          .eq('provider_id', providerId)
           .single();
 
         if (existing?.id) {
@@ -137,7 +118,7 @@ export async function PUT(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('posada_whatsapp_config')
-    .upsert({ provider_id: provider.id, ...updates, ...vaultUpdates }, { onConflict: 'provider_id' })
+    .upsert({ provider_id: providerId, ...updates, ...vaultUpdates }, { onConflict: 'provider_id' })
     .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, updated_at')
     .single();
 

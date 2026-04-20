@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { sendWhatsAppText } from '@/lib/whatsapp-api';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import { rateLimit } from '@/lib/api/rate-limit';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 
 /**
  * POST /api/whatsapp/send
@@ -10,22 +10,12 @@ import { rateLimit } from '@/lib/api/rate-limit';
  * Body: { conversation_id: string, body: string }
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
-
-  // Rate limit: 10 messages/minute per provider (practical cap; posadas rarely send >10/min)
-  const rateLimitRes = rateLimit(`ws:${user.id}`, 10);
+  // Rate limit: 10 messages/minute per provider
+  const rateLimitRes = rateLimit(`ws:${providerId}`, 10);
   if (rateLimitRes) return rateLimitRes;
 
   let body: { conversation_id?: string; body?: string };
@@ -45,7 +35,7 @@ export async function POST(request: NextRequest) {
     .from('wa_conversations')
     .select('id, guest_phone, provider_id, status')
     .eq('id', conversation_id)
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .single();
 
   if (!conv) return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
@@ -54,7 +44,7 @@ export async function POST(request: NextRequest) {
   const { data: config } = await supabase
     .from('posada_whatsapp_config')
     .select('phone_number_id, access_token, access_token_vault_id')
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .single();
 
   if (!config) {

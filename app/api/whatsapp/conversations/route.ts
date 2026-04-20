@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 
 /**
  * GET /api/whatsapp/conversations
@@ -7,19 +7,9 @@ import { createClient } from '@/lib/supabase/server';
  * Query params: status, booking_stage, page, limit
  */
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   const { searchParams } = new URL(request.url);
   const status        = searchParams.get('status');
@@ -31,7 +21,7 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('wa_conversations')
     .select('*', { count: 'exact' })
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .order('last_message_at', { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
 

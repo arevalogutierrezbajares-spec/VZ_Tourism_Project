@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -9,25 +9,15 @@ interface Params { params: Promise<{ id: string }> }
  */
 export async function GET(_request: NextRequest, { params }: Params) {
   const { id } = await params;
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   const { data: conversation, error } = await supabase
     .from('wa_conversations')
     .select('*, messages:wa_messages(* ORDER BY created_at ASC), escalations:wa_escalations(* ORDER BY created_at DESC)')
     .eq('id', id)
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .single();
 
   if (error || !conversation) {
@@ -47,19 +37,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
  */
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { id } = await params;
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   let body: { status?: string; booking_stage?: string; notes?: string };
   try {
@@ -81,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     .from('wa_conversations')
     .update(updates)
     .eq('id', id)
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .select()
     .single();
 

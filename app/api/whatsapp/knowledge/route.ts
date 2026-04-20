@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 import type { PosadaKnowledge } from '@/types/database';
 
 /**
@@ -7,24 +7,14 @@ import type { PosadaKnowledge } from '@/types/database';
  * Returns the posada knowledge base for the authenticated provider.
  */
 export async function GET() {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   const { data, error } = await supabase
     .from('posada_knowledge')
     .select('*')
-    .eq('provider_id', provider.id)
+    .eq('provider_id', providerId)
     .single();
 
   if (error && error.code !== 'PGRST116') {
@@ -39,19 +29,9 @@ export async function GET() {
  * Upserts the knowledge base. Accepts partial updates — only supplied fields are overwritten.
  */
 export async function PUT(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: provider } = await supabase
-    .from('providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const auth = await getAuthenticatedProvider();
+  if (!auth.ok) return auth.response;
+  const { supabase, providerId } = auth;
 
   let body: Partial<Omit<PosadaKnowledge, 'id' | 'provider_id' | 'created_at' | 'updated_at'>>;
   try {
@@ -72,7 +52,7 @@ export async function PUT(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('posada_knowledge')
-    .upsert({ provider_id: provider.id, ...updates }, { onConflict: 'provider_id' })
+    .upsert({ provider_id: providerId, ...updates }, { onConflict: 'provider_id' })
     .select('*')
     .single();
 
