@@ -89,9 +89,38 @@ function formatKnowledge(k: PosadaKnowledge, providerName: string): string {
   return lines.join('\n\n');
 }
 
+// ─── Custom instructions sanitizer ───────────────────────────────────────────
+// Strips prompt-injection patterns and enforces a 2,000 character max.
+
+const INJECTION_PATTERNS = [
+  /\[NEEDS_HUMAN:[^\]]*\]/gi,          // our own HITL tag
+  /##\s/g,                             // markdown H2 headers used as role dividers
+  /<\|/g,                              // token boundary markers (e.g. <|im_start|>)
+  /\|>/g,                              // closing token boundary markers
+  /ignore\s+(?:all\s+)?previous\s+instructions?/gi,
+  /you\s+are\s+now\b/gi,
+  /pretend\s+you\s+are\b/gi,
+  /disregard\s+(?:all\s+)?(?:previous\s+)?instructions?/gi,
+  /act\s+as\s+(?:if\s+you\s+are\b)?/gi,
+];
+
+function sanitizeCustomInstructions(raw: string): string {
+  let sanitized = raw;
+  for (const pattern of INJECTION_PATTERNS) {
+    sanitized = sanitized.replace(pattern, '');
+  }
+  // Collapse excess whitespace created by removals
+  sanitized = sanitized.replace(/\s{3,}/g, '\n\n').trim();
+  // Enforce 2,000 character max
+  if (sanitized.length > 2000) {
+    sanitized = sanitized.slice(0, 2000);
+  }
+  return sanitized;
+}
+
 // ─── System prompt builder ────────────────────────────────────────────────────
 
-function buildSystemPrompt(opts: BuildReplyOptions): string {
+export function buildSystemPrompt(opts: BuildReplyOptions): string {
   const { config, providerName, providerDescription, providerRegion, knowledge } = opts;
 
   const formalityGuide =
@@ -125,7 +154,7 @@ function buildSystemPrompt(opts: BuildReplyOptions): string {
     : '';
 
   const customBlock = config.custom_instructions
-    ? `\nSpecial instructions from the posada owner:\n${config.custom_instructions}\n`
+    ? `\nSpecial instructions from the posada owner:\n${sanitizeCustomInstructions(config.custom_instructions)}\n`
     : '';
 
   const availBlock = opts.availabilityNote
