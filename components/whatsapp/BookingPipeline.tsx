@@ -85,7 +85,12 @@ export default function BookingPipeline({
             icon={<Bot className="w-3.5 h-3.5" />}
             label="AI"
             description="Auto-replies"
-            onClick={() => onUpdateStatus('ai')}
+            onClick={() => {
+              if (selected.status === 'human') {
+                if (!window.confirm('Switch back to AI? This will resume automated responses.')) return;
+              }
+              onUpdateStatus('ai');
+            }}
           />
           <ModeButton
             active={selected.status === 'human'}
@@ -99,7 +104,10 @@ export default function BookingPipeline({
             icon={<CheckCheck className="w-3.5 h-3.5" />}
             label="Close"
             description="Done"
-            onClick={() => onUpdateStatus('closed')}
+            onClick={() => {
+              if (!window.confirm('Are you sure? This will close the conversation.')) return;
+              onUpdateStatus('closed');
+            }}
           />
         </div>
       </div>
@@ -155,7 +163,12 @@ export default function BookingPipeline({
             variant="outline"
             size="sm"
             className="w-full text-xs h-7 justify-start"
-            onClick={() => onUpdateStatus('ai')}
+            onClick={() => {
+              if (selected.status === 'human') {
+                if (!window.confirm('Switch back to AI? This will resume automated responses.')) return;
+              }
+              onUpdateStatus('ai');
+            }}
             disabled={selected.status === 'ai'}
           >
             <Bot className="w-3 h-3 mr-1.5" />
@@ -165,7 +178,10 @@ export default function BookingPipeline({
             variant="outline"
             size="sm"
             className="w-full text-xs h-7 justify-start text-destructive hover:text-destructive"
-            onClick={() => onUpdateStage('closed')}
+            onClick={() => {
+              if (!window.confirm('Are you sure? This will close the conversation.')) return;
+              onUpdateStage('closed');
+            }}
           >
             <CheckCheck className="w-3 h-3 mr-1.5" />
             Mark Closed
