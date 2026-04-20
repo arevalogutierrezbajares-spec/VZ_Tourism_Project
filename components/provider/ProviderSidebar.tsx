@@ -21,6 +21,7 @@ import {
   Hotel,
   Menu,
   X,
+  Wand2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
@@ -32,6 +33,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useProviderStore } from '@/stores/provider-store';
+import { useRealtimeBookings } from '@/hooks/use-realtime';
 import { cn } from '@/lib/utils';
 
 type NavItem = {
@@ -53,7 +55,15 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
       { href: '/dashboard/bookings', icon: BookOpen, label: 'Bookings', badge: 'bookings' },
       { href: '/dashboard/calendar', icon: Calendar, label: 'Calendar' },
-      { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages', badge: 'messages' },
+    ],
+  },
+  {
+    title: 'WhatsApp',
+    items: [
+      { href: '/dashboard/whatsapp', icon: MessageCircle, label: 'Conversations', badge: 'messages' },
+      { href: '/dashboard/whatsapp/brain', icon: Brain, label: 'AI Brain' },
+      { href: '/dashboard/whatsapp/settings', icon: Bot, label: 'AI Settings' },
+      { href: '/dashboard/whatsapp/setup', icon: Wand2, label: 'Setup' },
     ],
   },
   {
@@ -76,13 +86,6 @@ const navGroups: NavGroup[] = [
     title: 'Property (PMS)',
     items: [
       { href: '/dashboard/pms', icon: Hotel, label: 'Posada PMS' },
-    ],
-  },
-  {
-    title: 'AI',
-    items: [
-      { href: '/dashboard/messages/brain', icon: Brain, label: 'AI Brain' },
-      { href: '/dashboard/messages/ai', icon: Bot, label: 'AI Settings' },
     ],
   },
   {
@@ -213,10 +216,15 @@ function SidebarNav({
 }
 
 export function ProviderSidebar() {
-  const { unreadCount, waUnreadCount } = useProviderStore();
+  const { unreadCount, waUnreadCount, provider, setUnreadCount } = useProviderStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+
+  // Wire realtime bookings to increment badge (P1-PRV-003)
+  useRealtimeBookings(provider?.id, () => {
+    setUnreadCount(unreadCount + 1);
+  });
 
   // Close mobile drawer on navigation
   useEffect(() => {
@@ -304,11 +312,11 @@ export function ProviderSidebar() {
                     href="/"
                     className="flex items-center justify-center w-full py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     aria-label="Back to app"
-                  />
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Link>
                 }
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </TooltipTrigger>
+              />
               <TooltipContent side="right">Back to app</TooltipContent>
             </Tooltip>
           ) : (
