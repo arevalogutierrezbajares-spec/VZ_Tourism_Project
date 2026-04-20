@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star } from 'lucide-react';
 
 interface TrendingListing {
@@ -31,57 +32,40 @@ export function TrendingSection() {
   if (listings.length === 0) return null;
 
   return (
-    <section style={{ padding: '0 0 64px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: '#111' }}>
+    <section className="pb-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <h2 className="text-2xl font-bold mb-6 text-foreground">
           Trending Now
         </h2>
-        <div
-          style={{
-            display: 'flex',
-            gap: 16,
-            overflowX: 'auto',
-            paddingBottom: 8,
-            scrollbarWidth: 'none',
-          }}
-        >
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
           {listings.map((listing) => (
             <Link
               key={listing.id}
               href={`/listing/${listing.slug}`}
-              style={{
-                flexShrink: 0,
-                width: 200,
-                borderRadius: 12,
-                overflow: 'hidden',
-                background: '#fff',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                textDecoration: 'none',
-                color: 'inherit',
-                display: 'block',
-              }}
+              className="flex-shrink-0 w-[200px] rounded-xl overflow-hidden bg-background shadow-sm border hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
-              <div style={{ position: 'relative', height: 130, background: '#e0e0e0' }}>
+              <div className="relative h-[130px] bg-muted">
                 {listing.cover_image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={`/api/photos?url=${encodeURIComponent(listing.cover_image_url)}`}
                     alt={listing.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    fill
+                    className="object-cover"
+                    sizes="200px"
                   />
                 )}
               </div>
-              <div style={{ padding: '10px 12px' }}>
-                <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              <div className="p-2.5">
+                <p className="text-sm font-semibold leading-snug mb-1 line-clamp-2">
                   {listing.title}
                 </p>
-                <p style={{ fontSize: 11, color: '#888', margin: '0 0 6px' }}>
+                <p className="text-xs text-muted-foreground mb-1.5">
                   {listing.city ?? listing.region}
                 </p>
                 {listing.rating != null && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <Star size={11} fill="#f59e0b" color="#f59e0b" />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{listing.rating.toFixed(1)}</span>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3 h-3 text-accent fill-accent" />
+                    <span className="text-xs font-semibold">{listing.rating.toFixed(1)}</span>
                   </div>
                 )}
               </div>

@@ -80,7 +80,7 @@ export default function VehiclesPage() {
         <h1 className="text-xl font-semibold">Vehicles ({vehicles.length})</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-xs font-semibold uppercase tracking-wider px-4 py-2"
+          className="text-xs font-semibold uppercase tracking-wider px-4 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
           style={{ background: '#c9a96e', color: '#0a0a0a' }}
         >
           {showForm ? 'Cancel' : 'Add Vehicle'}
@@ -96,73 +96,105 @@ export default function VehiclesPage() {
           }}
         >
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            <input
-              placeholder="Make (e.g., Toyota) *"
-              value={form.make}
-              onChange={(e) => setForm({ ...form, make: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
-            <input
-              placeholder="Model (e.g., Land Cruiser) *"
-              value={form.model}
-              onChange={(e) => setForm({ ...form, model: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
-            <input
-              placeholder="Year"
-              type="number"
-              value={form.year}
-              onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
-            <input
-              placeholder="Color *"
-              value={form.color}
-              onChange={(e) => setForm({ ...form, color: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
-            <input
-              placeholder="Plate Number *"
-              value={form.plate_number}
-              onChange={(e) => setForm({ ...form, plate_number: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
-            <select
-              value={form.vehicle_class}
-              onChange={(e) => setForm({ ...form, vehicle_class: e.target.value as RutaVehicleClass })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            >
-              <option value="sedan">Sedan</option>
-              <option value="suv">SUV</option>
-              <option value="van">Van</option>
-            </select>
-            <select
-              value={form.armor_rating}
-              onChange={(e) => setForm({ ...form, armor_rating: e.target.value as RutaArmorRating })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            >
-              <option value="b5">B5</option>
-              <option value="b4">B4</option>
-              <option value="none">None</option>
-            </select>
-            <input
-              placeholder="Tracker Device ID"
-              value={form.tracker_device_id}
-              onChange={(e) => setForm({ ...form, tracker_device_id: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
-            />
+            <div>
+              <label htmlFor="vehicle-make" className="sr-only">Make</label>
+              <input
+                id="vehicle-make"
+                placeholder="Make (e.g., Toyota) *"
+                value={form.make}
+                onChange={(e) => setForm({ ...form, make: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vehicle-model" className="sr-only">Model</label>
+              <input
+                id="vehicle-model"
+                placeholder="Model (e.g., Land Cruiser) *"
+                value={form.model}
+                onChange={(e) => setForm({ ...form, model: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vehicle-year" className="sr-only">Year</label>
+              <input
+                id="vehicle-year"
+                placeholder="Year"
+                type="number"
+                value={form.year}
+                onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vehicle-color" className="sr-only">Color</label>
+              <input
+                id="vehicle-color"
+                placeholder="Color *"
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vehicle-plate" className="sr-only">Plate Number</label>
+              <input
+                id="vehicle-plate"
+                placeholder="Plate Number *"
+                value={form.plate_number}
+                onChange={(e) => setForm({ ...form, plate_number: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vehicle-class" className="sr-only">Vehicle Class</label>
+              <select
+                id="vehicle-class"
+                value={form.vehicle_class}
+                onChange={(e) => setForm({ ...form, vehicle_class: e.target.value as RutaVehicleClass })}
+                className="w-full py-3 px-4 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              >
+                <option value="sedan">Sedan</option>
+                <option value="suv">SUV</option>
+                <option value="van">Van</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="vehicle-armor" className="sr-only">Armor Rating</label>
+              <select
+                id="vehicle-armor"
+                value={form.armor_rating}
+                onChange={(e) => setForm({ ...form, armor_rating: e.target.value as RutaArmorRating })}
+                className="w-full py-3 px-4 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              >
+                <option value="b5">B5</option>
+                <option value="b4">B4</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="vehicle-tracker" className="sr-only">Tracker Device ID</label>
+              <input
+                id="vehicle-tracker"
+                placeholder="Tracker Device ID"
+                value={form.tracker_device_id}
+                onChange={(e) => setForm({ ...form, tracker_device_id: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e8e8e8' }}
+              />
+            </div>
           </div>
           <button
             onClick={createVehicle}
-            className="text-xs font-semibold uppercase tracking-wider px-6 py-2"
+            className="text-xs font-semibold uppercase tracking-wider px-6 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{ background: '#c9a96e', color: '#0a0a0a' }}
           >
             Save Vehicle

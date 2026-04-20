@@ -130,11 +130,13 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Photo details: ${item.caption}`}
     >
       <div
-        className="bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row"
+        className="bg-background rounded-2xl overflow-hidden shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row"
         style={{ animation: 'modalIn 0.2s ease-out' }}
       >
         {/* Left: photo */}
@@ -177,7 +179,8 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
           {/* Close button (mobile) */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+            className="absolute top-4 right-4 md:hidden w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+            aria-label="Close photo details"
           >
             <X className="w-4 h-4" />
           </button>
@@ -188,14 +191,14 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
           {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <h2 className="text-lg font-bold text-gray-900 leading-tight">{item.caption}</h2>
+              <h2 className="text-lg font-bold text-foreground leading-tight">{item.caption}</h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <MapPin className="w-3.5 h-3.5 text-primary" />
                   <span>{item.region_name}</span>
                 </div>
                 {item.location_category && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                     {LOCATION_CATEGORY_LABELS[item.location_category] ?? item.location_category}
                   </span>
                 )}
@@ -203,19 +206,20 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="hidden md:flex w-8 h-8 items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700 flex-shrink-0"
+              className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+              aria-label="Close photo details"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Description */}
-          <p className="text-sm text-gray-600 leading-relaxed mb-3">{item.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-3">{item.description}</p>
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5 mb-4">
             {item.tags.map((tag) => (
-              <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-medium">
+              <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
                 {tag}
               </span>
             ))}
@@ -224,26 +228,25 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
           {/* Geo location map */}
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <MapPin className="w-3.5 h-3.5 text-blue-500" />
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Where it was taken</span>
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Where it was taken</span>
             </div>
             <SmallMap lat={item.lat} lng={item.lng} label={item.geo_label} />
-            <p className="text-xs text-gray-400 mt-1.5">{item.geo_label} — {item.lat.toFixed(4)}°N, {Math.abs(item.lng).toFixed(4)}°W</p>
+            <p className="text-xs text-muted-foreground mt-1.5">{item.geo_label} — {item.lat.toFixed(4)}°N, {Math.abs(item.lng).toFixed(4)}°W</p>
           </div>
 
           {/* CTA buttons */}
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => onAddToTrip(item)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #1d4ed8, #2563eb)' }}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground transition-all hover:opacity-90 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <Plus className="w-4 h-4" />
               Add to Itinerary
             </button>
             <a
               href={`/?q=${encodeURIComponent(tripQuery)}`}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               Plan trip
               <ChevronRight className="w-3.5 h-3.5" />
@@ -251,24 +254,24 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-100 mb-4" />
+          <div className="border-t border-border mb-4" />
 
           {/* Photos from this location + Instagram link */}
           <div>
             <div className="flex items-center gap-2 mb-2.5">
               <InstagramIcon className="w-4 h-4 text-pink-500" />
-              <h3 className="text-sm font-semibold text-gray-800">Photos from {item.region_name}</h3>
+              <h3 className="text-sm font-semibold text-foreground">Photos from {item.region_name}</h3>
             </div>
             {loadingInsta ? (
               <div className="grid grid-cols-3 gap-1.5">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="aspect-square rounded-lg bg-gray-100 animate-pulse" />
+                  <div key={i} className="aspect-square rounded-lg bg-muted animate-pulse" />
                 ))}
               </div>
             ) : instaPosts.length === 0 ? (
-              <div className="text-center py-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl">
-                <InstagramIcon className="w-8 h-8 text-pink-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 mb-3">No photos from this spot yet</p>
+              <div className="text-center py-6 bg-muted/50 rounded-xl">
+                <InstagramIcon className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground mb-3">No photos from this spot yet</p>
                 <a
                   href={`https://www.instagram.com/explore/tags/${encodeURIComponent(item.region_name.toLowerCase().replace(/\s+/g, ''))}/`}
                   target="_blank"
@@ -292,7 +295,7 @@ export function PhotoModal({ item, onClose, onAddToTrip }: PhotoModalProps) {
                       <Wrapper
                         key={post.id}
                         {...linkProps}
-                        className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100"
+                        className="group relative aspect-square rounded-lg overflow-hidden bg-muted"
                       >
                         <img
                           src={post.url}

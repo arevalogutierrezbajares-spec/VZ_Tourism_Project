@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { Share2, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate } from '@/lib/utils';
+import { CopyLinkButton } from '@/components/provider/CopyLinkButton';
 
 export const metadata: Metadata = { title: 'Marketing' };
 
@@ -58,14 +58,9 @@ export default async function MarketingPage() {
                   <Badge variant={listing.is_published ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                     {listing.is_published ? 'Live' : 'Draft'}
                   </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs flex-shrink-0"
-                    onClick={() => {}}
-                  >
-                    Copy
-                  </Button>
+                  <CopyLinkButton
+                    url={`${process.env.NEXT_PUBLIC_APP_URL || 'https://vztravel.app'}/listing/${listing.slug}`}
+                  />
                 </div>
               ))}
             </div>

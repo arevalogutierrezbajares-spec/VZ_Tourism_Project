@@ -69,89 +69,100 @@ export default function BookPage() {
   return (
     <div className="min-h-screen bg-muted">
       {/* Search bar */}
-      <div className="bg-white border-b shadow-sm">
+      <div className="bg-background border-b shadow-sm">
         <div className="container px-4 py-5">
           <h1 className="text-2xl font-bold mb-4">Where to in Venezuela?</h1>
 
-          <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl border shadow-lg p-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 bg-background rounded-2xl border shadow-lg p-1.5">
             {/* Destination */}
             <div className="relative flex-1 min-w-0">
+              <label htmlFor="search-destination" className="sr-only">Destination</label>
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <MapPin className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
               </div>
               <select
+                id="search-destination"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full pl-9 pr-8 py-3 text-sm bg-transparent appearance-none focus:outline-none cursor-pointer font-medium"
+                className="w-full pl-9 pr-8 py-3 text-sm bg-transparent appearance-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-lg cursor-pointer font-medium"
               >
                 <option value="">Anywhere</option>
                 {DESTINATIONS.map((d) => (
                   <option key={d.id} value={d.id}>{d.emoji} {d.label}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
             </div>
 
-            <div className="hidden sm:block w-px bg-border self-stretch my-1" />
+            <div className="hidden sm:block w-px bg-border self-stretch my-1" aria-hidden="true" />
 
             {/* Check-in */}
             <div className="relative flex-1 min-w-0">
+              <label htmlFor="search-checkin" className="sr-only">Check-in date</label>
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <Calendar className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
               </div>
               <input
+                id="search-checkin"
                 type="date"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 text-sm bg-transparent focus:outline-none"
-                placeholder="Check-in"
+                className="w-full pl-9 pr-3 py-3 text-sm bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-lg"
+                aria-label="Check-in date"
               />
             </div>
 
-            <div className="hidden sm:block w-px bg-border self-stretch my-1" />
+            <div className="hidden sm:block w-px bg-border self-stretch my-1" aria-hidden="true" />
 
             {/* Check-out */}
             <div className="relative flex-1 min-w-0">
+              <label htmlFor="search-checkout" className="sr-only">Check-out date</label>
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <Calendar className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
               </div>
               <input
+                id="search-checkout"
                 type="date"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 text-sm bg-transparent focus:outline-none"
-                placeholder="Check-out"
+                className="w-full pl-9 pr-3 py-3 text-sm bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-lg"
+                aria-label="Check-out date"
               />
             </div>
 
-            <div className="hidden sm:block w-px bg-border self-stretch my-1" />
+            <div className="hidden sm:block w-px bg-border self-stretch my-1" aria-hidden="true" />
 
             {/* Guests */}
-            <div className="relative flex items-center gap-2 px-3 py-2 min-w-[120px]">
-              <Users className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <fieldset className="relative flex items-center gap-2 px-3 py-2 min-w-[120px]">
+              <legend className="sr-only">Number of guests</legend>
+              <Users className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setGuests(Math.max(1, guests - 1))}
-                  className="w-6 h-6 rounded-full border flex items-center justify-center text-sm hover:bg-muted transition-colors"
+                  disabled={guests <= 1}
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-sm hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="Decrease guests"
                 >−</button>
-                <span className="text-sm font-medium w-4 text-center">{guests}</span>
+                <span className="text-sm font-medium w-4 text-center" aria-live="polite" aria-atomic="true">{guests}</span>
                 <button
                   type="button"
                   onClick={() => setGuests(guests + 1)}
-                  className="w-6 h-6 rounded-full border flex items-center justify-center text-sm hover:bg-muted transition-colors"
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-sm hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label="Increase guests"
                 >+</button>
               </div>
-            </div>
+            </fieldset>
 
             {/* Search button */}
             <button
               onClick={runSearch}
               disabled={loading}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:block">Search</span>
+              <span className="sm:hidden sr-only">Search</span>
             </button>
           </div>
 
@@ -182,17 +193,25 @@ export default function BookPage() {
           <div className="flex items-center gap-2 mb-6 flex-wrap">
             <span className="text-sm text-muted-foreground">Filters:</span>
             {destination && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border rounded-full text-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-background border rounded-full text-sm">
                 {DESTINATIONS.find(d => d.id === destination)?.emoji} {DESTINATIONS.find(d => d.id === destination)?.label}
-                <button onClick={() => setDestination('')} className="ml-1 hover:text-destructive">
+                <button
+                  onClick={() => setDestination('')}
+                  className="ml-1 hover:text-destructive p-0.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label={`Remove ${DESTINATIONS.find(d => d.id === destination)?.label} filter`}
+                >
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {type !== 'all' && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border rounded-full text-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-background border rounded-full text-sm">
                 {TYPES.find(t => t.id === type)?.label}
-                <button onClick={() => setType('all')} className="ml-1 hover:text-destructive">
+                <button
+                  onClick={() => setType('all')}
+                  className="ml-1 hover:text-destructive p-0.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label={`Remove ${TYPES.find(t => t.id === type)?.label} filter`}
+                >
                   <X className="w-3 h-3" />
                 </button>
               </span>

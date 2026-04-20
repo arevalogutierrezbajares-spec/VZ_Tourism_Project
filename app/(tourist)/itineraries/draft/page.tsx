@@ -24,6 +24,17 @@ export default function DraftItineraryPage() {
     }
   }, [current, router]);
 
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
   if (!current) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -120,8 +131,8 @@ export default function DraftItineraryPage() {
               {days.length > 1 && (
                 <button
                   onClick={() => removeDay(day.day)}
-                  className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                  title="Remove day"
+                  className="text-muted-foreground hover:text-destructive transition-colors p-1 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                  aria-label={`Remove Day ${day.day}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -165,7 +176,8 @@ export default function DraftItineraryPage() {
                     </div>
                     <button
                       onClick={() => removeStop(stop.id)}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1 flex-shrink-0"
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1 flex-shrink-0 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                      aria-label={`Remove ${stop.title}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

@@ -44,10 +44,10 @@ export function CalendarView({ bookings, onDateClick }: CalendarViewProps) {
       <div className="flex items-center justify-between px-6 py-4 border-b">
         <h2 className="font-semibold text-base">{monthName}</h2>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={prev}>
+          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={prev} aria-label="Previous month">
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={next}>
+          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={next} aria-label="Next month">
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

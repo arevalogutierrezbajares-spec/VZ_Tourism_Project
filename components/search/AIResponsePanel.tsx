@@ -29,7 +29,7 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
   return (
     <div
       className={cn(
-        'flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800',
+        'flex flex-col bg-background rounded-2xl shadow-2xl border border-border',
         'max-h-[calc(100vh-200px)]',
         className
       )}
@@ -46,7 +46,7 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
           )}
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" className="w-6 h-6" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={onClose} aria-label="Close AI panel">
             <X className="w-4 h-4" />
           </Button>
         )}
@@ -64,8 +64,8 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
                 className={cn(
                   'w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5',
                   msg.role === 'user'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 dark:bg-gray-800'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
                 )}
               >
                 {msg.role === 'user' ? (
@@ -78,8 +78,8 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
                 className={cn(
                   'rounded-2xl px-4 py-2.5 text-sm max-w-[85%] leading-relaxed',
                   msg.role === 'user'
-                    ? 'bg-primary text-white rounded-tr-sm'
-                    : 'bg-gray-50 dark:bg-gray-800 text-foreground rounded-tl-sm'
+                    ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                    : 'bg-muted text-foreground rounded-tl-sm'
                 )}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -90,10 +90,10 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
           {/* Streaming response */}
           {isStreaming && streamingText && (
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Bot className="w-3.5 h-3.5" />
               </div>
-              <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 max-w-[85%]">
+              <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted max-w-[85%]">
                 <p className="whitespace-pre-wrap">{streamingText}</p>
                 <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
               </div>

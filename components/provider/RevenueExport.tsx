@@ -2,6 +2,7 @@
 
 import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 import type { LocalBooking } from '@/lib/bookings-store';
 
 interface RevenueExportProps {
@@ -45,6 +46,7 @@ export function RevenueExport({ bookings, month }: RevenueExportProps) {
     a.download = `revenue-export-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('CSV exported successfully');
   }
 
   function exportPDF() {
@@ -131,6 +133,7 @@ export function RevenueExport({ bookings, month }: RevenueExportProps) {
     printWindow.document.close();
     printWindow.focus();
     setTimeout(() => printWindow.print(), 500);
+    toast.success('PDF report opened for printing');
   }
 
   return (

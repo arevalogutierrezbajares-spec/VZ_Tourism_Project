@@ -13,6 +13,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { listingSchema } from '@/lib/validators';
 import { LISTING_CATEGORIES, VENEZUELA_REGIONS } from '@/lib/constants';
 
@@ -67,7 +78,6 @@ export default function EditListingPage() {
   }
 
   async function handleDelete() {
-    if (!confirm('Are you sure you want to delete this listing?')) return;
     setIsLoading(true);
     try {
       const res = await fetch(`/api/listings/${id}`, { method: 'DELETE' });
@@ -96,9 +106,27 @@ export default function EditListingPage() {
           <h1 className="text-2xl font-bold">Edit Listing</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Update your experience details</p>
         </div>
-        <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isLoading}>
-          Delete
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={<Button variant="destructive" size="sm" disabled={isLoading} />}
+          >
+            Delete
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this listing?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your listing and remove all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -117,9 +145,9 @@ export default function EditListingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Category *</Label>
+                <Label htmlFor="edit-category">Category *</Label>
                 <Select onValueChange={(v) => setValue('category', v as ListingForm['category'])}>
-                  <SelectTrigger>
+                  <SelectTrigger id="edit-category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -130,9 +158,9 @@ export default function EditListingPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Region</Label>
+                <Label htmlFor="edit-region">Region</Label>
                 <Select onValueChange={(v) => setValue('region', v as string)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="edit-region">
                     <SelectValue placeholder="Select region" />
                   </SelectTrigger>
                   <SelectContent>
@@ -202,8 +230,10 @@ export default function EditListingPage() {
                 <p className="text-xs text-muted-foreground">Visible to tourists</p>
               </div>
               <Switch
+                id="is_published"
                 checked={isPublished || false}
                 onCheckedChange={(v) => setValue('is_published', v)}
+                aria-label="Published"
               />
             </div>
           </CardContent>

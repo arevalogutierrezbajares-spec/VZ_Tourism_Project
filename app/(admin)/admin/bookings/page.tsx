@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Fragment, useState, useEffect, useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -331,7 +331,7 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Revenue chart */}
-      <div className="bg-white rounded-xl p-5 border border-gray-100">
+      <div className="bg-white rounded-xl p-5 border border-gray-100" role="img" aria-label="Bar chart showing daily bookings over the last 30 days">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">Daily Bookings — Last 30 Days</h2>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -401,11 +401,13 @@ export default function AdminBookingsPage() {
                 const statusStyle = STATUS_STYLES[b.status] ?? STATUS_STYLES.pending!;
                 const isExpanded = expandedRow === b.id;
                 return (
-                  <>
+                  <Fragment key={b.id}>
                     <tr
-                      key={b.id}
                       className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
                       onClick={() => setExpandedRow(isExpanded ? null : b.id)}
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedRow(isExpanded ? null : b.id); } }}
+                      aria-expanded={isExpanded}
                     >
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                         {fmtDate(b.created_at)}
@@ -447,7 +449,7 @@ export default function AdminBookingsPage() {
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr key={`${b.id}-exp`} style={{ background: '#FAFAFA' }}>
+                      <tr style={{ background: '#FAFAFA' }}>
                         <td colSpan={10} className="px-6 py-4">
                           <div className="grid grid-cols-3 gap-6 text-sm">
                             <div>
@@ -500,7 +502,7 @@ export default function AdminBookingsPage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

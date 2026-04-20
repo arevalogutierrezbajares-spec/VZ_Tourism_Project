@@ -2,8 +2,17 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { MoreHorizontal } from 'lucide-react';
 
 interface Props {
@@ -13,6 +22,7 @@ interface Props {
 
 export function BookingActions({ bookingId, status }: Props) {
   const [isLoading, setIsLoading] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   async function updateStatus(newStatus: string) {
     setIsLoading(true);
@@ -33,31 +43,61 @@ export function BookingActions({ bookingId, status }: Props) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center justify-center h-8 w-8 p-0 rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50" disabled={isLoading}>
-        <MoreHorizontal className="w-4 h-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {status === 'pending' && (
-          <>
-            <DropdownMenuItem onClick={() => updateStatus('confirmed')}>Confirm</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => updateStatus('cancelled')} className="text-destructive">
-              Decline
-            </DropdownMenuItem>
-          </>
-        )}
-        {status === 'confirmed' && (
-          <>
-            <DropdownMenuItem onClick={() => updateStatus('completed')}>Mark Completed</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => updateStatus('cancelled')} className="text-destructive">
-              Cancel
-            </DropdownMenuItem>
-          </>
-        )}
-        {(status === 'completed' || status === 'cancelled') && (
-          <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="inline-flex items-center justify-center h-8 w-8 p-0 rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          disabled={isLoading}
+          aria-label="Booking actions"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {status === 'pending' && (
+            <>
+              <DropdownMenuItem onClick={() => updateStatus('confirmed')}>Confirm</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCancelDialogOpen(true)} className="text-destructive">
+                Decline
+              </DropdownMenuItem>
+            </>
+          )}
+          {status === 'confirmed' && (
+            <>
+              <DropdownMenuItem onClick={() => updateStatus('completed')}>Mark Completed</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCancelDialogOpen(true)} className="text-destructive">
+                Cancel
+              </DropdownMenuItem>
+            </>
+          )}
+          {(status === 'completed' || status === 'cancelled') && (
+            <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {status === 'pending' ? 'Decline this booking?' : 'Cancel this booking?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {status === 'pending'
+                ? 'The guest will be notified that their booking request was declined.'
+                : 'The guest will be notified that their confirmed booking has been cancelled. This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep booking</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => updateStatus('cancelled')}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {status === 'pending' ? 'Decline' : 'Cancel booking'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

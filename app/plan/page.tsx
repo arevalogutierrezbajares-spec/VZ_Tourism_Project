@@ -156,6 +156,17 @@ function PlanPage() {
     toast.success('Link copied to clipboard!');
   };
 
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
   const totalStops = days.reduce((sum, d) => sum + d.stops.length, 0);
 
   // Trip preview content (shared between desktop sidebar and mobile sheet)
@@ -187,6 +198,7 @@ function PlanPage() {
         <Link
           href="/map"
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Back to Explore"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Back to Explore</span>

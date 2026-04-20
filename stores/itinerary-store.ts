@@ -196,6 +196,8 @@ export const useItineraryStore = create<ItineraryStore>()(
 
           if (response.ok) {
             set({ isDirty: false });
+          } else {
+            throw new Error(`Save failed (${response.status})`);
           }
         } finally {
           set({ isSaving: false });

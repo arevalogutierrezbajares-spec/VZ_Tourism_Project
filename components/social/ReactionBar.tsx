@@ -44,21 +44,27 @@ export function ReactionBar({
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({ url: window.location.href });
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
+    try {
+      if (navigator.share) {
+        await navigator.share({ url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+      onShare?.();
+    } catch {
+      // User cancelled share or clipboard unavailable
     }
-    onShare?.();
   };
 
   return (
-    <div className={cn('flex items-center gap-1', className)}>
+    <div className={cn('flex items-center gap-1', className)} role="group" aria-label="Reactions">
       <Button
         variant="ghost"
         size="sm"
-        className={cn('gap-1.5 h-8', liked && 'text-red-500')}
+        className={cn('gap-1.5 min-h-[44px] min-w-[44px]', liked && 'text-red-500')}
         onClick={handleLike}
+        aria-label={liked ? `Unlike (${likeCount} likes)` : `Like (${likeCount} likes)`}
+        aria-pressed={liked}
       >
         <Heart className={cn('w-4 h-4', liked && 'fill-red-500')} />
         <span className="text-xs">{likeCount}</span>
@@ -67,14 +73,22 @@ export function ReactionBar({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('gap-1.5 h-8', saved && 'text-primary')}
+        className={cn('gap-1.5 min-h-[44px] min-w-[44px]', saved && 'text-primary')}
         onClick={handleSave}
+        aria-label={saved ? `Unsave (${saveCount} saves)` : `Save (${saveCount} saves)`}
+        aria-pressed={saved}
       >
         <Bookmark className={cn('w-4 h-4', saved && 'fill-primary')} />
         <span className="text-xs">{saveCount}</span>
       </Button>
 
-      <Button variant="ghost" size="sm" className="h-8" onClick={handleShare}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="min-h-[44px] min-w-[44px]"
+        onClick={handleShare}
+        aria-label="Share"
+      >
         <Share2 className="w-4 h-4" />
       </Button>
     </div>

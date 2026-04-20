@@ -35,8 +35,8 @@ export function ShareButton({ title, url }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-      aria-label="Share itinerary"
+      className="inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+      aria-label={copied ? 'Link copied to clipboard' : `Share ${title}`}
     >
       {copied ? (
         <>

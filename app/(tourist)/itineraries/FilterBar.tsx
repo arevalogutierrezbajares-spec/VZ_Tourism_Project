@@ -41,8 +41,11 @@ function Chip({
   return (
     <button
       onClick={onClick}
+      role="checkbox"
+      aria-checked={active}
+      aria-label={`Filter: ${label}`}
       className={cn(
-        'px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all whitespace-nowrap focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
+        'px-3.5 py-2 min-h-[44px] rounded-full text-sm font-medium border transition-all whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
         active
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:border-primary/50'
@@ -77,7 +80,7 @@ export function FilterBar({ regions, filters, onChange }: FilterBarProps) {
   };
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-wrap" role="group" aria-label="Filter itineraries by region, duration, and budget">
       {regions.map((r) => (
         <Chip
           key={r}
@@ -87,7 +90,7 @@ export function FilterBar({ regions, filters, onChange }: FilterBarProps) {
         />
       ))}
 
-      <div className="w-px h-6 bg-border self-center mx-1" />
+      <div className="w-px h-6 bg-border self-center mx-1" role="separator" aria-orientation="vertical" />
 
       {DURATION_OPTIONS.map((opt) => (
         <Chip
@@ -98,7 +101,7 @@ export function FilterBar({ regions, filters, onChange }: FilterBarProps) {
         />
       ))}
 
-      <div className="w-px h-6 bg-border self-center mx-1" />
+      <div className="w-px h-6 bg-border self-center mx-1" role="separator" aria-orientation="vertical" />
 
       {BUDGET_OPTIONS.map((opt) => (
         <Chip

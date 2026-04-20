@@ -53,7 +53,7 @@ export default async function InvitePage({ params }: Props) {
           {listing.cover_image_url && (
             <img
               src={listing.cover_image_url}
-              alt={listing.name}
+              alt={`Photo of ${listing.name}`}
               className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
             />
           )}
@@ -101,8 +101,7 @@ export default async function InvitePage({ params }: Props) {
         <div className="text-center space-y-3">
           <a
             href={`mailto:partners@vztourism.com?subject=I want to join VZ Tourism&body=Hi, I'm the owner of ${listing.name} and I'd like to join the platform.`}
-            className="block w-full py-4 px-6 rounded-2xl text-white font-bold text-lg transition-all hover:shadow-lg hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)' }}
+            className="block w-full py-4 px-6 rounded-2xl text-white font-bold text-lg transition-all hover:shadow-lg hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none bg-primary hover:bg-primary/90"
           >
             Join as a Founding Partner →
           </a>

@@ -78,7 +78,7 @@ export default function DriversPage() {
         <h1 className="text-xl font-semibold">Drivers ({drivers.length})</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-xs font-semibold uppercase tracking-wider px-4 py-2"
+          className="text-xs font-semibold uppercase tracking-wider px-4 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
           style={{ background: '#c9a96e', color: '#0a0a0a' }}
         >
           {showForm ? 'Cancel' : 'Add Driver'}
@@ -95,56 +95,73 @@ export default function DriversPage() {
           }}
         >
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <input
-              placeholder="Full Name *"
-              value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#e8e8e8',
-              }}
-            />
-            <input
-              placeholder="Phone *"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#e8e8e8',
-              }}
-            />
-            <input
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="py-3 px-4 text-sm"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#e8e8e8',
-              }}
-            />
-            <input
-              placeholder="License Number *"
-              value={form.license_number}
-              onChange={(e) =>
-                setForm({ ...form, license_number: e.target.value })
-              }
-              className="py-3 px-4 text-sm"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#e8e8e8',
-              }}
-            />
+            <div>
+              <label htmlFor="driver-name" className="sr-only">Full Name</label>
+              <input
+                id="driver-name"
+                placeholder="Full Name *"
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="driver-phone" className="sr-only">Phone</label>
+              <input
+                id="driver-phone"
+                placeholder="Phone *"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="driver-email" className="sr-only">Email</label>
+              <input
+                id="driver-email"
+                placeholder="Email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="driver-license" className="sr-only">License Number</label>
+              <input
+                id="driver-license"
+                placeholder="License Number *"
+                value={form.license_number}
+                onChange={(e) =>
+                  setForm({ ...form, license_number: e.target.value })
+                }
+                className="w-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8e8e8',
+                }}
+              />
+            </div>
           </div>
           <button
             onClick={createDriver}
-            className="text-xs font-semibold uppercase tracking-wider px-6 py-2"
+            className="text-xs font-semibold uppercase tracking-wider px-6 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{ background: '#c9a96e', color: '#0a0a0a' }}
           >
             Save Driver
@@ -193,11 +210,12 @@ export default function DriversPage() {
                 </span>
                 <button
                   onClick={() => toggleStatus(driver)}
-                  className="text-xs px-3 py-1"
+                  className="text-xs px-3 py-1 min-h-[32px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
                   style={{
                     border: '1px solid rgba(255,255,255,0.1)',
                     color: '#888',
                   }}
+                  aria-label={`Set ${driver.full_name} ${driver.status === 'available' ? 'offline' : 'available'}`}
                 >
                   {driver.status === 'available' ? 'Set Offline' : 'Set Available'}
                 </button>

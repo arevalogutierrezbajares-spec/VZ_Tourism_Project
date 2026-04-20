@@ -40,6 +40,7 @@
     "node_modules",
     "jest.setup.ts",
     "__tests__",
-    "e2e"
+    "e2e",
+    "ui-ux-pro-max-skill"
   ]
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,8 @@ import toast from 'react-hot-toast';
 export default function ProviderRegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
@@ -93,26 +96,26 @@ export default function ProviderRegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Full name *</Label>
-              <Input placeholder="Ana Morales" {...register('full_name')} />
-              {errors.full_name && <p className="text-xs text-destructive">{errors.full_name.message}</p>}
+              <Label htmlFor="prov-full_name">Full name *</Label>
+              <Input id="prov-full_name" placeholder="Ana Morales" autoComplete="name" aria-required="true" aria-invalid={!!errors.full_name} {...register('full_name')} />
+              {errors.full_name && <p className="text-xs text-destructive" role="alert">{errors.full_name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
-              <Input placeholder="+58 412..." {...register('phone')} />
+              <Label htmlFor="prov-phone">Phone</Label>
+              <Input id="prov-phone" type="tel" inputMode="tel" placeholder="+58 412..." autoComplete="tel" {...register('phone')} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Business name *</Label>
-            <Input placeholder="Andes EcoLodge Mérida" {...register('business_name')} />
-            {errors.business_name && <p className="text-xs text-destructive">{errors.business_name.message}</p>}
+            <Label htmlFor="prov-business_name">Business name *</Label>
+            <Input id="prov-business_name" placeholder="Andes EcoLodge Mérida" autoComplete="organization" aria-required="true" aria-invalid={!!errors.business_name} {...register('business_name')} />
+            {errors.business_name && <p className="text-xs text-destructive" role="alert">{errors.business_name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label>Region *</Label>
+            <Label htmlFor="prov-region">Region *</Label>
             <Select onValueChange={(v) => setValue('region', v as string)}>
-              <SelectTrigger>
+              <SelectTrigger id="prov-region" aria-required="true">
                 <SelectValue placeholder="Select your region" />
               </SelectTrigger>
               <SelectContent>
@@ -121,51 +124,76 @@ export default function ProviderRegisterPage() {
                 ))}
               </SelectContent>
             </Select>
+            {errors.region && <p className="text-xs text-destructive" role="alert">{errors.region.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label>Description *</Label>
+            <Label htmlFor="prov-description">Description *</Label>
             <Textarea
+              id="prov-description"
               placeholder="Tell travelers about your business and what makes it special..."
               rows={3}
+              aria-required="true"
+              aria-invalid={!!errors.description}
               {...register('description')}
               className="resize-none"
             />
-            {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
+            {errors.description && <p className="text-xs text-destructive" role="alert">{errors.description.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input type="email" placeholder="you@business.com" {...register('email')} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              <Label htmlFor="prov-email">Email *</Label>
+              <Input id="prov-email" type="email" inputMode="email" placeholder="you@business.com" autoComplete="email" aria-required="true" aria-invalid={!!errors.email} {...register('email')} />
+              {errors.email && <p className="text-xs text-destructive" role="alert">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>RIF</Label>
-              <Input placeholder="J-12345678-9" {...register('rif')} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Password *</Label>
-              <Input type="password" placeholder="••••••••" {...register('password')} />
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Confirm *</Label>
-              <Input type="password" placeholder="••••••••" {...register('confirmPassword')} />
+              <Label htmlFor="prov-rif">RIF</Label>
+              <Input id="prov-rif" placeholder="J-12345678-9" {...register('rif')} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Instagram</Label>
-              <Input placeholder="@yourhandle" {...register('instagram_handle')} />
+              <Label htmlFor="prov-password">Password *</Label>
+              <div className="relative">
+                <Input id="prov-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" className="pr-10" aria-required="true" aria-invalid={!!errors.password} {...register('password')} />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-xs text-destructive" role="alert">{errors.password.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Website</Label>
-              <Input placeholder="https://..." {...register('website_url')} />
+              <Label htmlFor="prov-confirmPassword">Confirm *</Label>
+              <div className="relative">
+                <Input id="prov-confirmPassword" type={showConfirm ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" className="pr-10" aria-invalid={!!errors.confirmPassword} {...register('confirmPassword')} />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={showConfirm ? 'Hide password confirmation' : 'Show password confirmation'}
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-xs text-destructive" role="alert">{errors.confirmPassword.message}</p>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="prov-instagram">Instagram</Label>
+              <Input id="prov-instagram" placeholder="@yourhandle" {...register('instagram_handle')} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prov-website">Website</Label>
+              <Input id="prov-website" type="url" placeholder="https://..." autoComplete="url" {...register('website_url')} />
             </div>
           </div>
 
@@ -183,7 +211,7 @@ export default function ProviderRegisterPage() {
             </label>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
             {isLoading ? 'Creating account...' : 'Apply as provider'}
           </Button>
         </form>

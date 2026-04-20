@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
+// Tourist routes that require a logged-in session
+const PROTECTED_ROUTES = ['/trips', '/account', '/bookings', '/messages'];
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -11,14 +14,19 @@ export async function proxy(request: NextRequest) {
 
   const { supabaseResponse, user } = await updateSession(request);
 
-  // Protect dashboard routes - require provider or admin role
-  if (pathname.startsWith('/dashboard')) {
-    if (!user) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirectTo', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    // Role check happens in layout via server component
+  // Tourist protected routes
+  const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
+  if (isProtected && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Provider dashboard — redirect unauthenticated users
+  if (pathname.startsWith('/dashboard') && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Admin routes use client-side password auth in the layout — skip Supabase redirect

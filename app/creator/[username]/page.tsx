@@ -77,8 +77,8 @@ export default async function CreatorPage({ params }: Props) {
     <div className="container px-4 py-8 max-w-4xl mx-auto">
       {/* Creator Header */}
       <div className="flex flex-col sm:flex-row items-start gap-6 mb-8">
-        <Avatar className="w-24 h-24 shadow-lg">
-          <AvatarImage src={creator.user?.avatar_url || undefined} />
+        <Avatar className="w-24 h-24 shadow-lg ring-2 ring-primary ring-offset-2">
+          <AvatarImage src={creator.user?.avatar_url || undefined} alt={`${creator.display_name || creator.username}'s avatar`} />
           <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
             {getInitials(creator.display_name || creator.user?.full_name || 'C')}
           </AvatarFallback>
@@ -87,7 +87,7 @@ export default async function CreatorPage({ params }: Props) {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold">{creator.display_name || creator.user?.full_name}</h1>
-            <Badge variant="secondary" className="text-xs">Creator</Badge>
+            <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-0.5">@{creator.username}</p>
 
@@ -107,7 +107,8 @@ export default async function CreatorPage({ params }: Props) {
                 href={`https://instagram.com/${creator.instagram_handle.replace('@', '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground transition-colors"
+                className="flex items-center gap-1 hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
+                aria-label={`${creator.display_name || creator.username} on Instagram`}
               >
                 <Share2 className="w-3.5 h-3.5" />
                 {creator.instagram_handle}
@@ -118,7 +119,8 @@ export default async function CreatorPage({ params }: Props) {
                 href={creator.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground transition-colors"
+                className="flex items-center gap-1 hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
+                aria-label={`${creator.display_name || creator.username}'s website`}
               >
                 <Globe className="w-3.5 h-3.5" />
                 Website
@@ -162,7 +164,7 @@ export default async function CreatorPage({ params }: Props) {
               <a
                 key={itinerary.id}
                 href={`/itinerary/${itinerary.id}`}
-                className="block rounded-xl border bg-card hover:shadow-md transition-shadow p-4"
+                className="block rounded-2xl border bg-card hover:shadow-md transition-shadow p-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <h3 className="font-semibold text-sm line-clamp-2">{itinerary.title}</h3>
                 {itinerary.description && (

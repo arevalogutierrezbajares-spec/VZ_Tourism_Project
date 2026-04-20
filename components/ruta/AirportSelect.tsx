@@ -54,7 +54,7 @@ export function AirportSelect({ value, onChange, label }: AirportSelectProps) {
             })
           }
         }}
-        className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer"
+        className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
         style={{
           background: 'rgba(255,255,255,0.04)',
           border: `1px solid ${value ? 'rgba(201,169,110,0.4)' : 'rgba(255,255,255,0.1)'}`,

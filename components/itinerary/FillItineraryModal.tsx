@@ -150,7 +150,7 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
                   key={r.value}
                   type="button"
                   onClick={() => toggleRegion(r.value)}
-                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
                     selectedRegions.includes(r.value)
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border hover:border-primary/50 hover:bg-muted/50'
@@ -195,7 +195,7 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
                   key={v.value}
                   type="button"
                   onClick={() => setVibe(v.value)}
-                  className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors text-left ${
+                  className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
                     vibe === v.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border hover:border-primary/50 hover:bg-muted/50'
@@ -208,6 +208,10 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
             </div>
           </div>
         </div>
+
+        <p className="text-[10px] text-muted-foreground/60 text-center">
+          AI-generated suggestions — verify details before booking
+        </p>
 
         <DialogFooter>
           <Button

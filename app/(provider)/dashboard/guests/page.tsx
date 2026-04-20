@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, getInitials } from '@/lib/utils';
 
@@ -76,7 +77,11 @@ export default async function GuestsPage() {
       ) : (
         <Card>
           <CardContent className="py-16 text-center">
-            <p className="text-muted-foreground">No guests yet</p>
+            <Users className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="font-medium text-muted-foreground">No guests yet</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Guest profiles will appear here once tourists book your experiences.
+            </p>
           </CardContent>
         </Card>
       )}

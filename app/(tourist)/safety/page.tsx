@@ -68,7 +68,7 @@ export default async function SafetyPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground">
+          <ul className="space-y-2 text-sm text-muted-foreground" role="list">
             {[
               'Always use app-based transportation (Uber, InDriver) instead of hailing taxis on the street',
               'Keep a low profile and avoid displaying expensive jewelry, cameras, or phones in public',
@@ -81,7 +81,7 @@ export default async function SafetyPage() {
               'Learn basic Spanish phrases for emergencies',
             ].map((tip, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
+                <span className="text-primary font-bold mt-0.5 flex-shrink-0" aria-hidden="true">•</span>
                 {tip}
               </li>
             ))}

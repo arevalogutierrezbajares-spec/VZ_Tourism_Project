@@ -28,20 +28,21 @@ interface InfluencerCardProps {
 
 export function InfluencerCard({ creator, itinerary, className }: InfluencerCardProps) {
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow ${className || ''}`}>
+    <Card className={`overflow-hidden hover:shadow-md transition-shadow rounded-2xl ${className || ''}`}>
       <CardContent className="p-5 space-y-4">
         {/* Creator header */}
         <div className="flex items-center gap-3">
           <Avatar className="w-12 h-12 ring-2 ring-primary ring-offset-2">
-            <AvatarImage src={creator.avatar_url || undefined} />
+            <AvatarImage src={creator.avatar_url || undefined} alt={`${creator.username}'s avatar`} />
             <AvatarFallback>{getInitials(creator.username)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-sm truncate">@{creator.username}</span>
               {creator.is_verified && (
-                <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" aria-label="Verified creator" />
               )}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
             </div>
             {creator.instagram_handle && (
               <p className="text-xs text-muted-foreground truncate">
@@ -62,10 +63,12 @@ export function InfluencerCard({ creator, itinerary, className }: InfluencerCard
             {itinerary.estimated_cost_usd > 0 && (
               <> · {formatCurrency(itinerary.estimated_cost_usd)}/person</>
             )}
-            {itinerary.saves > 0 && (
-              <> · {itinerary.saves.toLocaleString()} saves</>
-            )}
           </p>
+          {(itinerary.saves + itinerary.likes) > 0 && (
+            <p className="text-xs text-primary font-semibold">
+              {(itinerary.saves + itinerary.likes).toLocaleString()} recommend
+            </p>
+          )}
           {itinerary.tags.length > 0 && (
             <div className="flex gap-1 flex-wrap">
               {itinerary.tags.slice(0, 3).map((tag) => (

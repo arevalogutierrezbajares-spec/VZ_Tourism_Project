@@ -41,7 +41,7 @@ function Overlay({ onClose }: { onClose: () => void }) {
   const displaySuggestions = suggestions.length > 0 ? suggestions : AI_SEARCH_SUGGESTIONS.slice(0, 6);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col">
+    <div className="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Search">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -61,7 +61,7 @@ function Overlay({ onClose }: { onClose: () => void }) {
           />
           <button
             onClick={handleClose}
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Close search"
           >
             <X className="w-5 h-5" />

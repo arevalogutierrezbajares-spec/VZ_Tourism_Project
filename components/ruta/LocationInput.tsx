@@ -131,9 +131,18 @@ export function LocationInput({
           onFocus={() => {
             if (results.length > 0) setOpen(true)
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setOpen(false)
+            }
+          }}
           placeholder={placeholder}
           autoComplete="off"
-          className="w-full py-3.5 px-4 text-sm outline-none transition-colors"
+          role="combobox"
+          aria-expanded={open}
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          className="w-full py-3.5 px-4 text-sm outline-none transition-colors focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
           style={{
             background: 'rgba(255,255,255,0.04)',
             border: `1px solid ${value ? 'rgba(201,169,110,0.4)' : 'rgba(255,255,255,0.1)'}`,
@@ -164,6 +173,7 @@ export function LocationInput({
       {/* Dropdown */}
       {open && (
         <div
+          role="listbox"
           className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto"
           style={{
             background: '#1a1a1a',
@@ -172,15 +182,17 @@ export function LocationInput({
           }}
         >
           {noResults && (
-            <div className="px-4 py-3 text-sm" style={{ color: '#888' }}>
+            <div className="px-4 py-3 text-sm" role="status" style={{ color: '#888' }}>
               {t.booking.noLocations}
             </div>
           )}
           {results.map((result) => (
             <button
               key={result.id}
+              role="option"
+              aria-selected={false}
               onClick={() => handleSelect(result)}
-              className="w-full text-left px-4 py-3 transition-colors hover:bg-white/5"
+              className="w-full text-left px-4 py-3 transition-colors hover:bg-white/5 cursor-pointer focus:outline-none focus:bg-white/5"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
             >
               <div className="text-sm" style={{ color: '#e8e8e8' }}>

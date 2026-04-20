@@ -30,32 +30,32 @@ const STATUS_CONFIG: Record<
   confirmed: {
     label: 'Confirmed',
     icon: CheckCircle,
-    color: 'text-green-600',
-    bg: 'bg-green-50 border-green-200',
+    color: 'text-status-confirmed',
+    bg: 'bg-status-confirmed/10 border-status-confirmed/30',
   },
   pending: {
     label: 'Pending Payment',
     icon: Clock,
-    color: 'text-yellow-600',
-    bg: 'bg-yellow-50 border-yellow-200',
+    color: 'text-status-pending',
+    bg: 'bg-status-pending/10 border-status-pending/30',
   },
   payment_submitted: {
     label: 'Payment Submitted',
     icon: Clock,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50 border-blue-200',
+    color: 'text-status-info',
+    bg: 'bg-status-info/10 border-status-info/30',
   },
   cancelled: {
     label: 'Cancelled',
     icon: Clock,
-    color: 'text-red-600',
-    bg: 'bg-red-50 border-red-200',
+    color: 'text-status-cancelled',
+    bg: 'bg-status-cancelled/10 border-status-cancelled/30',
   },
   completed: {
     label: 'Completed',
     icon: CheckCircle,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50 border-blue-200',
+    color: 'text-status-info',
+    bg: 'bg-status-info/10 border-status-info/30',
   },
 };
 
@@ -69,7 +69,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 function QrDisplay({ value }: { value: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="p-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm">
+      <div className="p-3 bg-background border-2 border-border rounded-xl shadow-sm">
         <QRCodeSVG
           value={value}
           size={160}
@@ -296,13 +296,13 @@ export function ConfirmationClient({ booking }: Props) {
         {/* Manual payment pending notice */}
         {(booking.payment_method === 'zelle' || booking.payment_method === 'usdt') &&
           booking.status === 'pending' && (
-            <Card className="border-yellow-200 bg-yellow-50">
+            <Card className="border-status-pending/30 bg-status-pending/10">
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-start gap-2">
-                  <Banknote className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+                  <Banknote className="w-5 h-5 text-status-pending flex-shrink-0 mt-0.5" aria-hidden="true" />
                   <div className="text-sm space-y-1">
-                    <p className="font-semibold text-yellow-800">Payment pending</p>
-                    <p className="text-yellow-700">
+                    <p className="font-semibold text-foreground">Payment pending</p>
+                    <p className="text-muted-foreground">
                       Once you complete your{' '}
                       {booking.payment_method === 'zelle' ? 'Zelle' : 'USDT'} transfer, contact us
                       on WhatsApp with your booking code{' '}

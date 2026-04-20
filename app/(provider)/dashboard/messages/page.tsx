@@ -537,7 +537,7 @@ export default function MessagesPage() {
               size="sm"
               className="h-7 w-7 p-0"
               onClick={loadConversations}
-              title="Refresh"
+              aria-label="Refresh conversations"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </Button>
@@ -664,12 +664,14 @@ export default function MessagesPage() {
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    aria-label="Reply to guest"
                   />
                   <Button
                     size="sm"
                     className="h-10 w-10 p-0 shrink-0"
                     onClick={sendReply}
                     disabled={sending || !replyText.trim()}
+                    aria-label="Send message"
                   >
                     <Send className="w-4 h-4" />
                   </Button>

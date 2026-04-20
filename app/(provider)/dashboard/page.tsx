@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { DollarSign, Calendar, Star, TrendingUp, Plus, Eye, Users } from 'lucide-react';
+import { DollarSign, Calendar, Star, TrendingUp, Plus, Eye, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -89,7 +89,7 @@ export default async function ProviderDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Bookings</p>
-                <p className="text-2xl font-bold mt-1">{pendingBookings}</p>
+                <p className="text-2xl font-bold mt-1">{pendingBookings.toLocaleString()}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-yellow-600" />
@@ -102,7 +102,7 @@ export default async function ProviderDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Active Bookings</p>
-                <p className="text-2xl font-bold mt-1">{confirmedBookings}</p>
+                <p className="text-2xl font-bold mt-1">{confirmedBookings.toLocaleString()}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                 <Users className="w-5 h-5 text-blue-600" />
@@ -146,11 +146,15 @@ export default async function ProviderDashboardPage() {
                       <Badge
                         variant="secondary"
                         className={
-                          booking.status === 'confirmed' ? 'bg-green-100 text-green-800 text-xs' :
-                          booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800 text-xs' :
+                          booking.status === 'confirmed' ? 'bg-status-confirmed/10 text-status-confirmed text-xs' :
+                          booking.status === 'pending' ? 'bg-status-pending/10 text-status-pending text-xs' :
+                          booking.status === 'cancelled' ? 'bg-status-cancelled/10 text-status-cancelled text-xs' :
                           'text-xs'
                         }
                       >
+                        {booking.status === 'confirmed' && <CheckCircle className="w-3 h-3 mr-1 inline" />}
+                        {booking.status === 'pending' && <Clock className="w-3 h-3 mr-1 inline" />}
+                        {booking.status === 'cancelled' && <XCircle className="w-3 h-3 mr-1 inline" />}
                         {booking.status}
                       </Badge>
                     </div>
@@ -188,7 +192,7 @@ export default async function ProviderDashboardPage() {
                         {listing.is_published ? 'Live' : 'Draft'}
                       </Badge>
                       <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" aria-label={`Edit ${listing.title}`}>
                           <Eye className="w-3.5 h-3.5" />
                         </Button>
                       </Link>

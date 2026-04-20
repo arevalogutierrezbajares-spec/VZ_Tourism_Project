@@ -122,25 +122,26 @@ export function ItineraryDaySection({
           <Button
             variant="ghost"
             size="icon"
-            className="w-6 h-6 text-muted-foreground hover:text-primary"
+            className="w-8 h-8 min-w-[32px] min-h-[32px] text-muted-foreground hover:text-primary"
             onClick={handleSuggestStops}
             disabled={isSuggesting}
-            title="AI suggest stops"
+            aria-label={`Get AI suggestions for Day ${day}`}
           >
             {isSuggesting ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5" />
             )}
           </Button>
           {onRemoveDay && (
             <Button
               variant="ghost"
               size="icon"
-              className="w-6 h-6 text-muted-foreground hover:text-destructive"
+              className="w-8 h-8 min-w-[32px] min-h-[32px] text-muted-foreground hover:text-destructive"
               onClick={() => onRemoveDay(day)}
+              aria-label={`Remove Day ${day}`}
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-3.5 h-3.5" />
             </Button>
           )}
         </div>
@@ -204,7 +205,8 @@ export function ItineraryDaySection({
                 key={idx}
                 type="button"
                 onClick={() => handleAcceptSuggestion(suggestion)}
-                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group"
+                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group cursor-pointer"
+                aria-label={`Add ${suggestion.title} to Day ${day}`}
               >
                 <div className="flex items-start gap-2">
                   <Plus className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />

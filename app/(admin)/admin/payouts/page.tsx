@@ -33,7 +33,7 @@ export default async function AdminPayoutsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Payouts</h1>
         <p className="text-muted-foreground text-sm">Manage provider payouts and Stripe transfers</p>

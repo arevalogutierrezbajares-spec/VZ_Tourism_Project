@@ -38,6 +38,17 @@ export default function RutaLayout({
           '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
       }}
     >
+      {/* prefers-reduced-motion: disable CSS animations globally for RUTA pages */}
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+      `}</style>
       {children}
       <Toaster
         position="top-right"

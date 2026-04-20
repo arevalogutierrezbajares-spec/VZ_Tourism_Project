@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTotalCount } from '@/lib/local-listings';
 import { ExploreClient } from './ExploreClient';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
@@ -63,16 +64,18 @@ export default async function ExplorePage({ searchParams }: Props) {
           <Link
             key={cat.id}
             href={`/explore?category=${cat.id}`}
-            className="group relative h-[160px] rounded-2xl overflow-hidden"
+            className="group relative h-[160px] rounded-2xl overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
-            <img
+            <Image
               src={cat.image}
-              alt={cat.label}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              alt={`Browse ${cat.label} in Venezuela`}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 100vw, 33vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 p-5">
-              <div className="text-2xl mb-1">{cat.emoji}</div>
+              <div className="text-2xl mb-1" aria-hidden="true">{cat.emoji}</div>
               <h3 className="text-white font-bold text-lg leading-tight">{cat.label}</h3>
               <p className="text-white/70 text-sm mt-0.5">{cat.description}</p>
             </div>

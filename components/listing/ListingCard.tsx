@@ -59,7 +59,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
 
   return (
     <Link href={`/listing/${listing.slug}`}>
-      <Card className={cn('group overflow-hidden hover:shadow-lg transition-all duration-300 border rounded-2xl shadow-sm', className)}>
+      <Card className={cn('group overflow-hidden hover:shadow-lg motion-safe:transition-all duration-300 border rounded-2xl shadow-sm cursor-pointer', className)}>
         <div className="relative aspect-[4/3] overflow-hidden">
           {listing.cover_image_url ? (
             <Image
@@ -67,10 +67,10 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               alt={listing.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover motion-safe:group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-sky-100 to-blue-200 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
               <span className="text-4xl">{category?.icon || '📍'}</span>
             </div>
           )}

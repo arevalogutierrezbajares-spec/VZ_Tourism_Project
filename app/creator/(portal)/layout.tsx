@@ -86,14 +86,15 @@ export default function CreatorPortalLayout({ children }: { children: React.Reac
         </nav>
 
         <div className="p-3 border-t space-y-0.5">
-          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors min-h-[44px]">
             ← Back to app
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors min-h-[44px]"
+            aria-label="Sign out of Creator Studio"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
             Sign out
           </button>
         </div>

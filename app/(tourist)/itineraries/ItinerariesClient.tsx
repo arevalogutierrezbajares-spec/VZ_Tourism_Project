@@ -115,7 +115,7 @@ export function ItinerariesClient({
       {/* Hero */}
       <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl p-8 md:p-12 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Discover Venezuela Itineraries</h1>
-        <p className="text-white/85 text-base md:text-lg max-w-xl mx-auto mb-5">
+        <p className="text-white/90 text-base md:text-lg max-w-xl mx-auto mb-5">
           Curated trip plans from travelers and creators who know Venezuela best
         </p>
         <Button
@@ -142,7 +142,7 @@ export function ItinerariesClient({
             role="radio"
             aria-checked={filters.sort === s}
             onClick={() => setFilters((f) => ({ ...f, sort: s }))}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
               filters.sort === s
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -182,20 +182,20 @@ export function ItinerariesClient({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="rounded-2xl border overflow-hidden">
-                    <div className="aspect-video bg-muted animate-pulse" />
+                    <div className="aspect-video bg-muted motion-safe:animate-pulse" />
                     <div className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-muted animate-pulse" />
-                        <div className="h-3.5 w-24 bg-muted rounded animate-pulse" />
+                        <div className="w-7 h-7 rounded-full bg-muted motion-safe:animate-pulse" />
+                        <div className="h-3.5 w-24 bg-muted rounded motion-safe:animate-pulse" />
                       </div>
-                      <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-                      <div className="h-3 w-full bg-muted rounded animate-pulse" />
-                      <div className="h-3 w-2/3 bg-muted rounded animate-pulse" />
+                      <div className="h-4 w-3/4 bg-muted rounded motion-safe:animate-pulse" />
+                      <div className="h-3 w-full bg-muted rounded motion-safe:animate-pulse" />
+                      <div className="h-3 w-2/3 bg-muted rounded motion-safe:animate-pulse" />
                       <div className="flex justify-between items-center pt-2">
-                        <div className="h-5 w-16 bg-muted rounded animate-pulse" />
+                        <div className="h-5 w-16 bg-muted rounded motion-safe:animate-pulse" />
                         <div className="flex gap-2">
-                          <div className="h-8 w-20 bg-muted rounded-lg animate-pulse" />
-                          <div className="h-8 w-28 bg-muted rounded-lg animate-pulse" />
+                          <div className="h-8 w-20 bg-muted rounded-lg motion-safe:animate-pulse" />
+                          <div className="h-8 w-28 bg-muted rounded-lg motion-safe:animate-pulse" />
                         </div>
                       </div>
                     </div>
@@ -205,7 +205,15 @@ export function ItinerariesClient({
             ) : itineraries.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {itineraries.map((it) => (
-                  <div key={it.id} onClick={() => setSelectedItinerary(it)} className="cursor-pointer">
+                  <div
+                    key={it.id}
+                    onClick={() => setSelectedItinerary(it)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedItinerary(it); } }}
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:rounded-2xl focus-visible:outline-none"
+                    aria-label={`View details for ${it.title}`}
+                  >
                     <ItineraryFeedCard itinerary={it} showActions />
                   </div>
                 ))}
@@ -240,7 +248,7 @@ export function ItinerariesClient({
       <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-8 text-center text-white">
         <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-80" />
         <h2 className="text-xl font-bold mb-2">Can't find the perfect itinerary?</h2>
-        <p className="text-white/80 text-sm mb-4 max-w-md mx-auto">
+        <p className="text-white/90 text-sm mb-4 max-w-md mx-auto">
           Tell our AI what kind of trip you want and we'll build one for you in seconds
         </p>
         <Button variant="secondary" size="lg" asChild>

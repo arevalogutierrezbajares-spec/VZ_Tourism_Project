@@ -60,7 +60,7 @@ export function IGMentionCard({ mention, onApprove }: IGMentionCardProps) {
             {mention.is_approved && (
               <Badge variant="secondary" className="text-xs h-6">Approved</Badge>
             )}
-            <a href={mention.instagram_post_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted">
+            <a href={mention.instagram_post_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted" aria-label={`View @${mention.author_username}'s post on Instagram`}>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>

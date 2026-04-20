@@ -322,7 +322,11 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           {step > 1 && (
-            <button onClick={goBack} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <button
+              onClick={goBack}
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Go back to previous step"
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
           )}
@@ -340,13 +344,14 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
               />
             </div>
             {/* Step dots */}
-            <div className="flex items-center gap-1.5 mt-2">
+            <div className="flex items-center gap-1.5 mt-2" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={TOTAL_STEPS} aria-label={`Step ${step} of ${TOTAL_STEPS}`}>
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <div
                   key={s}
                   className={`h-1.5 flex-1 rounded-full transition-colors ${
                     s < step ? 'bg-blue-600' : s === step ? 'bg-blue-400' : 'bg-gray-200'
                   }`}
+                  aria-hidden="true"
                 />
               ))}
             </div>
@@ -357,8 +362,8 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
       {/* Step content */}
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-sm text-red-700">
-            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-sm text-red-700" role="alert">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
             {error}
           </div>
         )}
@@ -570,12 +575,15 @@ function Step1Verify({
 
       {/* Name */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your name *</label>
+        <label htmlFor="onboard-owner-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Your name *</label>
         <input
+          id="onboard-owner-name"
           type="text"
-          placeholder="María González"
+          placeholder="Maria Gonzalez"
           value={data.owner_name}
           onChange={(e) => update('owner_name', e.target.value)}
+          autoComplete="name"
+          aria-required="true"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
@@ -607,17 +615,20 @@ function Step1Verify({
 
         {data.verification_method === 'phone' && (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">
+            <label htmlFor="onboard-phone" className="block text-xs text-gray-500 mb-1.5">
               Enter your WhatsApp number
               {listing.phone && (
-                <span className="ml-2 text-gray-400">(We&apos;ll check if it matches {listing.phone.slice(0, 6)}…)</span>
+                <span className="ml-2 text-gray-400">(We&apos;ll check if it matches {listing.phone.slice(0, 6)}...)</span>
               )}
             </label>
             <input
+              id="onboard-phone"
               type="tel"
+              inputMode="tel"
               placeholder="+58 412 555 1234"
               value={data.owner_phone}
               onChange={(e) => update('owner_phone', e.target.value)}
+              autoComplete="tel"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -625,8 +636,9 @@ function Step1Verify({
 
         {data.verification_method === 'instagram' && (
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Enter your Instagram handle</label>
+            <label htmlFor="onboard-instagram" className="block text-xs text-gray-500 mb-1.5">Enter your Instagram handle</label>
             <input
+              id="onboard-instagram"
               type="text"
               placeholder="@yourhandle"
               value={data.owner_instagram}
@@ -652,7 +664,7 @@ function Step1Verify({
           data.verification_method === 'phone' ? !data.owner_phone.trim() :
           data.verification_method === 'instagram' ? !data.owner_instagram.trim() : false
         )}
-        className="w-full bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors hover:bg-gray-800"
+        className="w-full bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 min-h-[44px] rounded-xl flex items-center justify-center gap-2 transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       >
         {verifyLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -754,19 +766,22 @@ function Step2Review({
 
       {/* Name */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Business Name</label>
+        <label htmlFor="onboard-biz-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Business Name</label>
         <input
+          id="onboard-biz-name"
           type="text"
           value={data.listing_name}
           onChange={(e) => update('listing_name', e.target.value)}
+          autoComplete="organization"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </section>
 
       {/* Category */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
+        <label htmlFor="onboard-category" className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
         <select
+          id="onboard-category"
           value={data.listing_category}
           onChange={(e) => update('listing_category', e.target.value)}
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -783,7 +798,7 @@ function Step2Review({
       {/* Description */}
       <section>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-sm font-semibold text-gray-700">Description</label>
+          <label htmlFor="onboard-description" className="text-sm font-semibold text-gray-700">Description</label>
           <button
             onClick={onGenerateDescription}
             disabled={aiLoading}
@@ -798,10 +813,11 @@ function Step2Review({
           </button>
         </div>
         <textarea
+          id="onboard-description"
           value={data.listing_description}
           onChange={(e) => update('listing_description', e.target.value)}
           rows={5}
-          placeholder="Describe your property…"
+          placeholder="Describe your property..."
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
         />
       </section>
@@ -932,18 +948,22 @@ function Step3Rooms({
               {data.rooms.length > 1 && (
                 <button
                   onClick={() => removeRoom(room.id)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label={`Remove room ${idx + 1}`}
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
             <div className="space-y-3">
+              <label htmlFor={`room-name-${room.id}`} className="sr-only">Room name</label>
               <input
+                id={`room-name-${room.id}`}
                 type="text"
                 placeholder="Room name (e.g. Double Room, Suite)"
                 value={room.name}
                 onChange={(e) => updateRoom(room.id, 'name', e.target.value)}
+                aria-label={`Name for room ${idx + 1}`}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="grid grid-cols-2 gap-3">

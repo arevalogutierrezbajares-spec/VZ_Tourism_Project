@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, tourismTools, SYSTEM_PROMPT } from '@/lib/claude/client';
 import { handleToolCall } from '@/lib/claude/tool-handlers';
 import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
+import { z } from 'zod';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const SONNET_MODEL = 'claude-sonnet-4-5-20241022';
+const SONNET_MODEL = 'claude-sonnet-4-5';
 
 /**
  * POST /api/ai/fill-itinerary
@@ -23,12 +24,23 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { regions, total_days, vibe, budget } = body as {
-    regions: string[];
-    total_days: number;
-    vibe?: string;
-    budget?: 'budget' | 'moderate' | 'luxury';
-  };
+
+  const fillSchema = z.object({
+    regions: z.array(z.string()).min(1, 'Select at least one region').max(10),
+    total_days: z.number().int().min(1).max(14),
+    vibe: z.string().optional(),
+    budget: z.enum(['budget', 'moderate', 'luxury']).optional(),
+  });
+
+  const parsed = fillSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+      { status: 400 }
+    );
+  }
+
+  const { regions, total_days, vibe, budget } = parsed.data;
 
   const regionStr = regions.length > 0 ? regions.join(', ') : 'Venezuela';
   const budgetStr = budget ? `Budget level: ${budget}.` : '';

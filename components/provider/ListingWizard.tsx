@@ -285,8 +285,8 @@ export function ListingWizard() {
           <div className="space-y-5">
             <h2 className="text-xl font-bold">Tell us about your experience</h2>
             <div className="space-y-2">
-              <Label>Title *</Label>
-              <Input placeholder="e.g., Mérida Mountain Trek with Local Guide" {...register('title')} />
+              <Label htmlFor="wizard-title">Title *</Label>
+              <Input id="wizard-title" placeholder="e.g., Mérida Mountain Trek with Local Guide" {...register('title')} />
               {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
             </div>
             <div className="space-y-2">
@@ -318,12 +318,12 @@ export function ListingWizard() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Short description *</Label>
-              <Input placeholder="One-line summary of your experience" {...register('short_description')} />
+              <Label htmlFor="wizard-short-desc">Short description *</Label>
+              <Input id="wizard-short-desc" placeholder="One-line summary of your experience" {...register('short_description')} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Full description *</Label>
+                <Label htmlFor="wizard-description">Full description *</Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -341,6 +341,7 @@ export function ListingWizard() {
                 </Button>
               </div>
               <Textarea
+                id="wizard-description"
                 placeholder="Describe what guests will experience..."
                 rows={5}
                 {...register('description')}
@@ -421,9 +422,10 @@ export function ListingWizard() {
                     <button
                       type="button"
                       onClick={() => removePhoto(photo.preview)}
-                      className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-0 right-0 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+                      aria-label={`Remove photo ${idx + 1}`}
                     >
-                      <X className="w-3 h-3 text-white" />
+                      <X className="w-4 h-4 text-white" />
                     </button>
                   </div>
                 ))}
@@ -452,21 +454,21 @@ export function ListingWizard() {
             <h2 className="text-xl font-bold">Experience details</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Latitude *</Label>
-                <Input type="number" step="any" placeholder="8.6" {...register('latitude', { valueAsNumber: true })} />
+                <Label htmlFor="wizard-lat">Latitude *</Label>
+                <Input id="wizard-lat" type="number" step="any" placeholder="8.6" {...register('latitude', { valueAsNumber: true })} />
               </div>
               <div className="space-y-2">
-                <Label>Longitude *</Label>
-                <Input type="number" step="any" placeholder="-71.15" {...register('longitude', { valueAsNumber: true })} />
+                <Label htmlFor="wizard-lng">Longitude *</Label>
+                <Input id="wizard-lng" type="number" step="any" placeholder="-71.15" {...register('longitude', { valueAsNumber: true })} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Location name *</Label>
-              <Input placeholder="e.g., Sierra Nevada de Mérida" {...register('location_name')} />
+              <Label htmlFor="wizard-location">Location name *</Label>
+              <Input id="wizard-location" placeholder="e.g., Sierra Nevada de Mérida" {...register('location_name')} />
             </div>
             <div className="space-y-2">
-              <Label>Meeting point</Label>
-              <Input placeholder="Where guests should meet you" {...register('meeting_point')} />
+              <Label htmlFor="wizard-meeting">Meeting point</Label>
+              <Input id="wizard-meeting" placeholder="Where guests should meet you" {...register('meeting_point')} />
             </div>
             <div className="space-y-2">
               <Label>Safety level *</Label>
@@ -488,17 +490,17 @@ export function ListingWizard() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Min guests</Label>
-                <Input type="number" min="1" {...register('min_guests', { valueAsNumber: true })} />
+                <Label htmlFor="wizard-min-guests">Min guests</Label>
+                <Input id="wizard-min-guests" type="number" min="1" {...register('min_guests', { valueAsNumber: true })} />
               </div>
               <div className="space-y-2">
-                <Label>Max guests</Label>
-                <Input type="number" min="1" {...register('max_guests', { valueAsNumber: true })} />
+                <Label htmlFor="wizard-max-guests">Max guests</Label>
+                <Input id="wizard-max-guests" type="number" min="1" {...register('max_guests', { valueAsNumber: true })} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Duration (hours)</Label>
-              <Input type="number" step="0.5" placeholder="4" {...register('duration_hours', { valueAsNumber: true })} />
+              <Label htmlFor="wizard-duration">Duration (hours)</Label>
+              <Input id="wizard-duration" type="number" step="0.5" placeholder="4" {...register('duration_hours', { valueAsNumber: true })} />
             </div>
             <div className="space-y-2">
               <Label>Languages</Label>
@@ -545,10 +547,10 @@ export function ListingWizard() {
           <div className="space-y-5">
             <h2 className="text-xl font-bold">Set your price</h2>
             <div className="space-y-2">
-              <Label>Base price per person (USD) *</Label>
+              <Label htmlFor="wizard-price">Base price per person (USD) *</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input type="number" className="pl-7" placeholder="65" {...register('price_usd', { valueAsNumber: true })} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true">$</span>
+                <Input id="wizard-price" type="number" className="pl-7" placeholder="65" {...register('price_usd', { valueAsNumber: true })} />
               </div>
               {errors.price_usd && <p className="text-xs text-destructive">{errors.price_usd.message}</p>}
             </div>
@@ -574,21 +576,21 @@ export function ListingWizard() {
                   <p className="text-sm font-medium">Early bird discount</p>
                   <p className="text-xs text-muted-foreground">10% off for bookings 30+ days ahead</p>
                 </div>
-                <Switch />
+                <Switch aria-label="Early bird discount" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Last-minute discount</p>
                   <p className="text-xs text-muted-foreground">15% off for bookings within 48 hours</p>
                 </div>
-                <Switch />
+                <Switch aria-label="Last-minute discount" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Group discount</p>
                   <p className="text-xs text-muted-foreground">10% off for 6+ guests</p>
                 </div>
-                <Switch />
+                <Switch aria-label="Group discount" />
               </div>
             </div>
           </div>
@@ -696,12 +698,12 @@ export function ListingWizard() {
             <div className="space-y-3">
               <Label>Deposit required</Label>
               <div className="flex items-center gap-3">
-                <Switch />
+                <Switch aria-label="Require deposit to secure booking" />
                 <span className="text-sm text-muted-foreground">Require deposit to secure booking</span>
               </div>
               <div className="flex items-center gap-3 ml-4">
                 <span className="text-sm text-muted-foreground w-20">Deposit %</span>
-                <Slider min={10} max={100} step={5} defaultValue={[30]} className="flex-1" />
+                <Slider min={10} max={100} step={5} defaultValue={[30]} className="flex-1" aria-label="Deposit percentage" />
                 <span className="text-sm font-medium w-10">30%</span>
               </div>
             </div>
@@ -835,7 +837,7 @@ export function ListingWizard() {
                 ) : (
                   <EyeOff className="w-4 h-4 text-muted-foreground" />
                 )}
-                <Switch checked={isPublished} onCheckedChange={setIsPublished} />
+                <Switch checked={isPublished} onCheckedChange={setIsPublished} aria-label="Publish listing immediately" />
               </div>
             </div>
           </div>

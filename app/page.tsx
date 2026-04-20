@@ -92,6 +92,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Navbar />
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg">
+        Skip to main content
+      </a>
       <main id="main">
 
       {/* === HERO === */}
@@ -106,10 +109,11 @@ export default function LandingPage() {
               transform: activeImage === i ? 'scale(1.05)' : 'scale(1)',
               transition: 'opacity 2000ms ease-in-out, transform 12000ms ease-out',
             }}
+            aria-hidden={activeImage !== i}
           >
             <Image
               src={src}
-              alt="Venezuela landscape"
+              alt={i === 0 ? 'Caracas city skyline at sunset' : 'Sunrise over El Avila mountain'}
               fill
               className="object-cover"
               priority={i === 0}
@@ -124,7 +128,7 @@ export default function LandingPage() {
         {/* Hero content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center">
           <div
-            className="transition-all duration-1000 ease-out"
+            className="transition-all duration-1000 ease-out motion-reduce:transition-none"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
@@ -162,14 +166,14 @@ export default function LandingPage() {
           >
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
             >
               <Sparkles className="w-5 h-5" />
               Plan my trip with AI
             </Link>
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-lg text-base hover:bg-white/10 transition-all backdrop-blur-sm"
+              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-lg text-base hover:bg-white/10 transition-all backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
             >
               Explore Venezuela
               <ArrowRight className="w-4 h-4" />
@@ -178,7 +182,7 @@ export default function LandingPage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce motion-reduce:animate-none" aria-hidden="true">
           <ChevronDown className="w-6 h-6 text-white/50" />
         </div>
       </section>
@@ -237,7 +241,7 @@ export default function LandingPage() {
             {/* Large feature card */}
             <Link
               href={EDITORIAL_PICKS[0].href}
-              className="group relative rounded-2xl overflow-hidden aspect-[4/5] lg:row-span-2"
+              className="group relative rounded-2xl overflow-hidden aspect-[4/5] lg:row-span-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <Image
                 src={EDITORIAL_PICKS[0].image}
@@ -265,7 +269,7 @@ export default function LandingPage() {
               <Link
                 key={pick.title}
                 href={pick.href}
-                className="group relative rounded-2xl overflow-hidden aspect-[16/9]"
+                className="group relative rounded-2xl overflow-hidden aspect-[16/9] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 <Image
                   src={pick.image}
@@ -300,7 +304,7 @@ export default function LandingPage() {
               <Link
                 key={cat.label}
                 href={cat.href}
-                className="flex flex-col items-center gap-2 min-w-[72px] text-center group"
+                className="flex flex-col items-center gap-2 min-w-[72px] text-center group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-1"
               >
                 <span className="text-2xl group-hover:scale-110 transition-transform">
                   {cat.icon}
@@ -312,7 +316,7 @@ export default function LandingPage() {
             ))}
             <Link
               href="/explore"
-              className="flex flex-col items-center gap-2 min-w-[72px] text-center group"
+              className="flex flex-col items-center gap-2 min-w-[72px] text-center group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-1"
             >
               <span className="w-8 h-8 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center group-hover:border-foreground transition-colors">
                 <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -343,7 +347,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               Start planning
@@ -427,7 +431,7 @@ export default function LandingPage() {
       <section className="relative py-20 px-6 overflow-hidden">
         <Image
           src="/destinations/morrocoy.jpg"
-          alt="Morrocoy National Park"
+          alt="Turquoise waters and islands of Morrocoy National Park"
           fill
           className="object-cover"
           sizes="100vw"
@@ -443,7 +447,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/plan"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-lg hover:bg-white/90 transition-colors shadow-lg"
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-lg hover:bg-white/90 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
           >
             <Sparkles className="w-5 h-5" />
             Plan my trip

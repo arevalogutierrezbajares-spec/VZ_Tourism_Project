@@ -10,6 +10,8 @@ import {
   Sparkles,
   Check,
   MapPin,
+  AlertCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,6 +146,7 @@ export function PlanningChatPanel({
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [generatedItinerary, setGeneratedItinerary] = useState<
     AIGeneratedDay[] | null
   >(null);
@@ -180,6 +183,7 @@ export function PlanningChatPanel({
       setIsStreaming(true);
       setStreamingText('');
       setGeneratedItinerary(null);
+      setLastFailedMessage(null);
 
       try {
         abortRef.current?.abort();
@@ -256,11 +260,9 @@ export function PlanningChatPanel({
         if ((error as Error).name === 'AbortError') return;
         console.error('Chat error:', error);
         const errorMsg = (error as Error).message || 'Failed to send message';
-        toast.error(errorMsg);
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: `Something went wrong: ${errorMsg}. Please try sending your message again.` },
-        ]);
+        setLastFailedMessage(text);
+        // Remove the user message that failed so retry doesn't duplicate
+        setMessages((prev) => prev.slice(0, -1));
         setStreamingText('');
       } finally {
         setIsStreaming(false);
@@ -350,6 +352,7 @@ export function PlanningChatPanel({
             size="icon"
             className="w-7 h-7"
             onClick={onClose}
+            aria-label="Close trip planner"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -430,15 +433,43 @@ export function PlanningChatPanel({
             </div>
           )}
 
-          {/* Streaming indicator */}
+          {/* Streaming indicator — typing dots instead of spinner */}
           {isStreaming && !streamingText && (
             <div className="flex gap-3">
               <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <Bot className="w-3.5 h-3.5" />
               </div>
-              <div className="rounded-2xl rounded-tl-sm px-4 py-3 bg-muted/50">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <div className="rounded-2xl rounded-tl-sm px-4 py-3 bg-muted/50 flex items-center gap-1" aria-label="AI is thinking">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
+            </div>
+          )}
+
+          {/* Error state with retry */}
+          {lastFailedMessage && !isStreaming && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span className="text-sm font-medium">Failed to get a response</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Something went wrong. Your message was not sent.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const msg = lastFailedMessage;
+                  setLastFailedMessage(null);
+                  sendMessage(msg);
+                }}
+                className="gap-1.5"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Retry
+              </Button>
             </div>
           )}
 
@@ -518,6 +549,7 @@ export function PlanningChatPanel({
             size="icon"
             disabled={!input.trim() || isStreaming}
             className={cn(isFullMode && 'h-11 w-11')}
+            aria-label={isStreaming ? 'Sending message' : 'Send message'}
           >
             {isStreaming ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -526,6 +558,9 @@ export function PlanningChatPanel({
             )}
           </Button>
         </div>
+        <p className="text-[10px] text-muted-foreground/60 mt-1.5 text-center">
+          AI-generated suggestions — verify details before booking
+        </p>
       </form>
     </div>
   );

@@ -37,16 +37,16 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Filters">
+      <div className="bg-background rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 flex items-center justify-between p-5 border-b z-10">
+        <div className="sticky top-0 bg-background flex items-center justify-between p-5 border-b z-10">
           <h2 className="font-bold text-lg">Filters</h2>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={resetFilters}>
               Clear all
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close filters">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -62,10 +62,10 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                   key={cat.value}
                   onClick={() => handleCategoryToggle(cat.value)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
                     filters.category === cat.value
                       ? 'border-primary bg-primary/10 text-primary font-medium'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-foreground/30'
                   )}
                 >
                   <span>{cat.icon}</span>
@@ -122,10 +122,10 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                   key={level.value}
                   onClick={() => handleSafetyToggle(level.value)}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-sm border transition-all',
+                    'px-3 py-1.5 rounded-full text-sm border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
                     filters.safetyLevel === level.value
                       ? 'border-current font-medium shadow-sm'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-foreground/30'
                   )}
                   style={
                     filters.safetyLevel === level.value
@@ -140,7 +140,7 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-white dark:bg-gray-900 p-5 border-t">
+        <div className="sticky bottom-0 bg-background p-5 border-t">
           <Button className="w-full" onClick={onClose}>
             Apply Filters
           </Button>

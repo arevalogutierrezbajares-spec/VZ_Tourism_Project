@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, CLAUDE_MODEL, tourismTools, SYSTEM_PROMPT } from '@/lib/claude/client';
 import { handleToolCall } from '@/lib/claude/tool-handlers';
 import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
+import { z } from 'zod';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-const SONNET_MODEL = 'claude-sonnet-4-5-20241022';
+const SONNET_MODEL = 'claude-sonnet-4-5';
 
 /**
  * POST /api/ai/suggest-stops
@@ -23,21 +24,29 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const {
-    day,
-    total_days,
-    regions,
-    existing_stops,
-    vibe,
-    mode,
-  } = body as {
-    day: number;
-    total_days: number;
-    regions: string[];
-    existing_stops: { day: number; title: string; location_name?: string }[];
-    vibe?: string;
-    mode?: 'suggest' | 'alternatives';
-  };
+
+  const suggestSchema = z.object({
+    day: z.number().int().min(1).max(30),
+    total_days: z.number().int().min(1).max(30),
+    regions: z.array(z.string()).default([]),
+    existing_stops: z.array(z.object({
+      day: z.number(),
+      title: z.string(),
+      location_name: z.string().optional(),
+    })).default([]),
+    vibe: z.string().optional(),
+    mode: z.enum(['suggest', 'alternatives']).default('suggest'),
+  });
+
+  const parsed = suggestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+      { status: 400 }
+    );
+  }
+
+  const { day, total_days, regions, existing_stops, vibe, mode } = parsed.data;
 
   const regionStr = regions.length > 0 ? regions.join(', ') : 'Venezuela';
   const existingStr = existing_stops.length > 0

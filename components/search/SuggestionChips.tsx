@@ -17,10 +17,10 @@ export function SuggestionChips({ suggestions, onSelect, className }: Suggestion
           onClick={() => onSelect(suggestion)}
           className={cn(
             'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
-            'bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700',
-            'hover:bg-primary hover:text-white hover:border-primary hover:shadow-md',
+            'bg-background/80 border border-border',
+            'hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-md',
             'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
-            'backdrop-blur-sm'
+            'backdrop-blur-sm cursor-pointer'
           )}
         >
           {suggestion}

@@ -255,8 +255,17 @@ export function ExtractFromTextModal({ isOpen, onClose }: ExtractFromTextModalPr
         {step === 'input' && (
           <DialogFooter>
             <Button onClick={handleExtract} disabled={!text.trim() || isExtracting} className="w-full sm:w-auto">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              Extract Places
+              {isExtracting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Extracting...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  Extract Places
+                </>
+              )}
             </Button>
           </DialogFooter>
         )}

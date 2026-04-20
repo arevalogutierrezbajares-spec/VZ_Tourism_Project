@@ -101,11 +101,11 @@ function BlockModal({
 }) {
   const [reason, setReason] = useState('personal');
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="block-dates-title">
       <div className="bg-background rounded-xl border p-6 w-full max-w-sm space-y-4 shadow-xl">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Block Dates</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <h3 id="block-dates-title" className="font-semibold">Block Dates</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close dialog">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -115,8 +115,9 @@ function BlockModal({
             : `Block ${selectedDates.length} dates (${selectedDates[0]} – ${selectedDates[selectedDates.length - 1]})`}
         </p>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Reason</label>
+          <label htmlFor="block-reason" className="text-sm font-medium">Reason</label>
           <select
+            id="block-reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="w-full rounded-md border px-3 py-2 text-sm bg-background"
@@ -147,11 +148,11 @@ function PriceModal({
 }) {
   const [price, setPrice] = useState('');
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="price-override-title">
       <div className="bg-background rounded-xl border p-6 w-full max-w-sm space-y-4 shadow-xl">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Set Price Override</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <h3 id="price-override-title" className="font-semibold">Set Price Override</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close dialog">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -161,8 +162,9 @@ function PriceModal({
             : `Set price for ${selectedDates.length} dates`}
         </p>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Price per night (USD)</label>
+          <label htmlFor="price-override" className="text-sm font-medium">Price per night (USD)</label>
           <input
+            id="price-override"
             type="number"
             min={1}
             value={price}
@@ -194,11 +196,11 @@ function BookingDetailModal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="booking-detail-title">
       <div className="bg-background rounded-xl border p-6 w-full max-w-sm space-y-4 shadow-xl">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Booking Details</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <h3 id="booking-detail-title" className="font-semibold">Booking Details</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close dialog">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -480,6 +482,7 @@ export default function CalendarPage() {
           value={selectedListing}
           onChange={(e) => setSelectedListing(e.target.value)}
           className="rounded-md border px-3 py-2 text-sm bg-background w-72"
+          aria-label="Select listing"
         >
           {listings.map((l) => (
             <option key={l.id} value={l.id}>
@@ -496,7 +499,7 @@ export default function CalendarPage() {
         <div className="flex-1 min-w-0">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" onClick={prevMonth}>
+            <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <h2 className="font-semibold text-base">
@@ -507,7 +510,7 @@ export default function CalendarPage() {
                 </span>
               )}
             </h2>
-            <Button variant="ghost" size="icon" onClick={nextMonth}>
+            <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Next month">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -641,7 +644,7 @@ export default function CalendarPage() {
         {/* ------------------------------------------------------------------ */}
         {/* Sidebar                                                             */}
         {/* ------------------------------------------------------------------ */}
-        <div className="w-64 shrink-0 space-y-4">
+        <div className="hidden lg:block w-64 shrink-0 space-y-4">
           {/* Occupancy */}
           <Card>
             <CardHeader className="pb-2">

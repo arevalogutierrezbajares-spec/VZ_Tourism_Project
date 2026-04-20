@@ -32,9 +32,15 @@ export function CostEstimator({ totalCost, breakdown, className }: CostEstimator
 
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">Total</span>
-        <span className="text-lg font-bold text-primary">{formatCurrency(totalCost)}</span>
+        <span className="text-lg font-bold text-primary">
+          {totalCost > 0 ? formatCurrency(totalCost) : 'Free / TBD'}
+        </span>
       </div>
-      <p className="text-xs text-muted-foreground">Approximate per person</p>
+      <p className="text-xs text-muted-foreground">
+        {totalCost > 0
+          ? 'Approximate per person'
+          : 'Add experiences with prices to see cost estimates'}
+      </p>
     </div>
   );
 }

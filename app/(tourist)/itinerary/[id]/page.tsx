@@ -90,11 +90,14 @@ export default async function ItineraryPage({ params }: Props) {
         {it.user && (
           <div className="flex items-center gap-2">
             <Avatar className="w-7 h-7">
-              <AvatarImage src={it.user.avatar_url || undefined} />
+              <AvatarImage src={it.user.avatar_url || undefined} alt={`${it.user.full_name}'s avatar`} />
               <AvatarFallback className="text-xs">{getInitials(it.user.full_name)}</AvatarFallback>
             </Avatar>
             <span className="text-sm text-muted-foreground">by</span>
             <span className="text-sm font-medium">{it.user.full_name}</span>
+            {it.user.role === 'creator' && (
+              <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
+            )}
           </div>
         )}
 

@@ -39,7 +39,7 @@ export default async function AdminAnalyticsPage() {
   const topMonths = Object.entries(monthlyData).slice(-6);
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Platform Analytics</h1>
         <p className="text-muted-foreground text-sm">Global metrics across all providers</p>
@@ -91,7 +91,7 @@ export default async function AdminAnalyticsPage() {
                   return (
                     <div key={month} className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground w-14 flex-shrink-0">{month}</span>
-                      <div className="flex-1 bg-muted rounded-full h-2">
+                      <div className="flex-1 bg-muted rounded-full h-2" role="progressbar" aria-valuenow={data.bookings} aria-valuemin={0} aria-valuemax={maxBookings} aria-label={`${month}: ${data.bookings} bookings`}>
                         <div className="bg-primary h-2 rounded-full" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-xs font-medium w-12 text-right">{data.bookings}</span>

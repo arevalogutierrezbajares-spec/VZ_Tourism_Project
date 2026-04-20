@@ -3,7 +3,7 @@ import { Logo } from './Logo';
 
 export function Footer({ className }: { className?: string }) {
   return (
-    <footer className={`border-t bg-muted/30 ${className ?? ''}`}>
+    <footer className={`border-t bg-muted/30 ${className ?? ''}`} role="contentinfo">
       <div className="container px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="col-span-2 md:col-span-1">
@@ -46,9 +46,9 @@ export function Footer({ className }: { className?: string }) {
             &copy; {new Date().getFullYear()} VZ Explorer. Discover Venezuela.
           </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Contact</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Terms</Link>
+            <Link href="/contact" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Contact</Link>
           </div>
         </div>
       </div>

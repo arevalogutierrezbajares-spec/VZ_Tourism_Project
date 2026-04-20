@@ -129,8 +129,9 @@ function KanbanCard({
             <button
               onClick={() => onSimulate(record.id)}
               disabled={isSim}
-              className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg text-purple-600 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors disabled:opacity-50"
               title="Simular respuesta"
+              aria-label={`Simulate response for ${record.business_name}`}
             >
               {isSim ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bot className="w-3 h-3" />}
               Simular
@@ -221,7 +222,9 @@ function InboxItem({
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-inset transition-colors text-left"
+        aria-expanded={expanded}
+        aria-label={`${record.business_name} outreach details`}
       >
         <div className="flex-shrink-0">{channelIcon(record.channel, 'w-4 h-4')}</div>
         <div className="flex-1 min-w-0">

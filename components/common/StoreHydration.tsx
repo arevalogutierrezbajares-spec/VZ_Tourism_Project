@@ -8,10 +8,29 @@ import { useRecentlyViewedStore } from '@/stores/recently-viewed-store';
 
 export function StoreHydration() {
   useEffect(() => {
-    useItineraryStore.persist.rehydrate();
-    useAuthStore.persist.rehydrate();
-    useFavoritesStore.persist.rehydrate();
-    useRecentlyViewedStore.persist.rehydrate();
+    try {
+      useItineraryStore.persist.rehydrate();
+    } catch {
+      // If itinerary store data is corrupt, reset silently
+    }
+    try {
+      useAuthStore.persist.rehydrate();
+    } catch {
+      // If auth store data is corrupt (e.g. expired session schema change), clear it
+      useAuthStore.getState().setUser(null);
+      useAuthStore.getState().setProfile(null);
+      useAuthStore.getState().setLoading(false);
+    }
+    try {
+      useFavoritesStore.persist.rehydrate();
+    } catch {
+      // If favorites store data is corrupt, reset silently
+    }
+    try {
+      useRecentlyViewedStore.persist.rehydrate();
+    } catch {
+      // If recently viewed store data is corrupt, reset silently
+    }
   }, []);
   return null;
 }

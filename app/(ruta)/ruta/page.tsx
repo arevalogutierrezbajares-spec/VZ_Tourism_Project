@@ -75,7 +75,7 @@ function RutaLandingContent() {
                   >
                     {badge.label}
                   </div>
-                  <div className="text-xs mt-0.5" style={{ color: '#666' }}>
+                  <div className="text-xs mt-0.5" style={{ color: '#888' }}>
                     {badge.desc}
                   </div>
                 </div>
@@ -85,7 +85,7 @@ function RutaLandingContent() {
             {/* "Talk to a human" fallback */}
             <div
               className="flex items-center gap-3 text-sm"
-              style={{ color: '#666' }}
+              style={{ color: '#888' }}
             >
               <span>{t.hero.speakWithSomeone}</span>
               <a
@@ -113,7 +113,7 @@ function RutaLandingContent() {
         <div className="max-w-7xl mx-auto text-center">
           <p
             className="text-xs uppercase tracking-widest mb-8"
-            style={{ color: '#666' }}
+            style={{ color: '#888' }}
           >
             {t.trustedBy.heading}
           </p>
@@ -122,7 +122,7 @@ function RutaLandingContent() {
               <span
                 key={client}
                 className="text-sm font-medium"
-                style={{ color: '#555' }}
+                style={{ color: '#777' }}
               >
                 {client}
               </span>
@@ -148,7 +148,8 @@ function RutaLandingContent() {
               <div key={i}>
                 <div
                   className="text-3xl font-bold mb-4"
-                  style={{ color: '#c9a96e', opacity: 0.3 }}
+                  style={{ color: '#c9a96e', opacity: 0.5 }}
+                  aria-hidden="true"
                 >
                   {String(i + 1).padStart(2, '0')}
                 </div>
@@ -194,8 +195,8 @@ function RutaLandingContent() {
                 <a
                   key={item.href}
                   href={item.href}
-                  className="text-xs uppercase tracking-wider transition-colors hover:text-white"
-                  style={{ color: 'rgba(255,255,255,0.35)' }}
+                  className="text-xs uppercase tracking-wider transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a96e] rounded-sm"
+                  style={{ color: 'rgba(255,255,255,0.5)' }}
                 >
                   {item.label}
                 </a>
@@ -220,10 +221,10 @@ function RutaLandingContent() {
               >
                 ops@rutasecurity.com
               </a>
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 {t.footer.location}
               </span>
-              <span className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.15)' }}>
+              <span className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 &copy; {new Date().getFullYear()} RUTA Security Services LLC. {t.footer.allTimes}
               </span>
             </div>

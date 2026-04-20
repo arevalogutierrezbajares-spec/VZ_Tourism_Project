@@ -80,7 +80,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               size="icon"
               className="w-7 h-7"
               onClick={() => setShowPlanningChat(!showPlanningChat)}
-              title="Chat with AI planner"
+              aria-label="Chat with AI planner"
             >
               <MessageSquare className={cn('w-3.5 h-3.5', showPlanningChat && 'text-primary')} />
             </Button>
@@ -89,7 +89,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               size="icon"
               className="w-7 h-7"
               onClick={() => setShowExtractTextModal(true)}
-              title="Import from notes"
+              aria-label="Import from notes"
             >
               <FileText className="w-3.5 h-3.5" />
             </Button>
@@ -98,7 +98,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               size="icon"
               className="w-7 h-7"
               onClick={() => setShowImportModal(true)}
-              title="Import from social media"
+              aria-label="Import from social media"
             >
               <Link2 className="w-3.5 h-3.5" />
             </Button>
@@ -108,7 +108,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               className="w-7 h-7"
               onClick={() => optimizeItinerary()}
               disabled={isOptimizing || isEmpty}
-              title="Optimize route with AI"
+              aria-label="Optimize route with AI"
             >
               {isOptimizing ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -123,7 +123,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
                 className="w-7 h-7"
                 onClick={() => save()}
                 disabled={isSaving}
-                title="Save"
+                aria-label="Save itinerary"
               >
                 {isSaving ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -137,7 +137,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               size="icon"
               className="w-7 h-7"
               onClick={shareItinerary}
-              title="Share"
+              aria-label="Share itinerary"
             >
               <Share2 className="w-3.5 h-3.5" />
             </Button>
@@ -146,6 +146,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
               size="icon"
               className="w-7 h-7"
               onClick={closePanel}
+              aria-label="Close itinerary panel"
             >
               <X className="w-4 h-4" />
             </Button>

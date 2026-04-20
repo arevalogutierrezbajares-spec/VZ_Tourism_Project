@@ -213,7 +213,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             role="tab"
             aria-selected={activeService === tab.type}
             onClick={() => handleServiceChange(tab.type)}
-            className="py-3 px-2 text-center text-xs uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black"
+            className="py-3 px-2 text-center text-xs uppercase tracking-wider transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{
               background:
                 activeService === tab.type
@@ -286,7 +286,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           {!date && (
             <div
               className="absolute left-0 right-0 py-3.5 px-4 text-sm pointer-events-none"
-              style={{ color: '#666', top: '28px' }}
+              style={{ color: '#888', top: '28px' }}
             >
               {t.booking.selectDate}
             </div>
@@ -296,7 +296,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full py-3.5 px-4 text-sm outline-none"
+            className="w-full py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${date ? 'rgba(201,169,110,0.4)' : 'rgba(255,255,255,0.1)'}`,
@@ -317,7 +317,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           {!time && (
             <div
               className="absolute left-0 right-0 py-3.5 px-4 text-sm pointer-events-none"
-              style={{ color: '#666', top: '28px' }}
+              style={{ color: '#888', top: '28px' }}
             >
               {t.booking.selectTime}
             </div>
@@ -327,7 +327,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="w-full py-3.5 px-4 text-sm outline-none"
+            className="w-full py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${time ? 'rgba(201,169,110,0.4)' : 'rgba(255,255,255,0.1)'}`,
@@ -352,7 +352,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             id="passengers"
             value={passengers}
             onChange={(e) => setPassengers(e.target.value)}
-            className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer"
+            className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.1)',
@@ -381,7 +381,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               setVehicleClass(e.target.value as RutaVehicleClass)
               setQuote(null)
             }}
-            className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer"
+            className="w-full py-3.5 px-4 text-sm outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.1)',
@@ -401,7 +401,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       <button
         onClick={handleGetQuote}
         disabled={quoteLoading || !pickupLocation || !dropoffLocation}
-        className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
         style={{
           background: '#c9a96e',
           color: '#0a0a0a',
@@ -409,7 +409,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       >
         {quoteLoading ? (
           <span className="flex items-center justify-center gap-2">
-            <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
             {t.booking.calculating}
           </span>
         ) : (
@@ -419,7 +419,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
 
       {/* Selected locations indicator */}
       {(pickupLocation || dropoffLocation) && (
-        <div className="mt-3 flex gap-4 text-[10px]" style={{ color: '#555' }}>
+        <div className="mt-3 flex gap-4 text-[10px]" style={{ color: '#777' }}>
           {pickupLocation && (
             <span>From: {pickupLocation.lat.toFixed(4)}, {pickupLocation.lng.toFixed(4)}</span>
           )}
@@ -448,7 +448,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
             </span>
           </div>
           <div className="text-4xl font-bold mb-4" style={{ color: '#c9a96e' }}>
-            ${quote.price_usd.toFixed(2)} <span className="text-sm font-normal" style={{ color: '#888' }}>USD</span>
+            ${quote.price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-normal" style={{ color: '#888' }}>USD</span>
           </div>
           {/* Breakdown */}
           <div className="space-y-1 text-xs mb-6" style={{ color: '#888' }}>
@@ -480,47 +480,26 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
           {!showCheckout ? (
             <button
               onClick={() => setShowCheckout(true)}
-              className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
+              className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
               style={{ background: '#c9a96e', color: '#0a0a0a' }}
             >
-              {t.booking.bookNowPrice} - ${quote.price_usd.toFixed(2)}
+              {t.booking.bookNowPrice} - ${quote.price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </button>
           ) : (
             <div className="space-y-4 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="text-xs uppercase tracking-wider" style={{ color: '#999' }}>
                 {t.booking.passengerDetails}
               </p>
-              <input
-                type="text"
-                placeholder={t.booking.fullName}
-                value={passengerName}
-                onChange={(e) => setPassengerName(e.target.value)}
-                className="w-full py-3 px-4 text-sm outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#e8e8e8',
-                }}
-              />
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="ruta-passenger-name" className="sr-only">{t.booking.fullName}</label>
                 <input
-                  type="email"
-                  placeholder={t.booking.email}
-                  value={passengerEmail}
-                  onChange={(e) => setPassengerEmail(e.target.value)}
-                  className="w-full py-3 px-4 text-sm outline-none"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#e8e8e8',
-                  }}
-                />
-                <input
-                  type="tel"
-                  placeholder={t.booking.phone}
-                  value={passengerPhone}
-                  onChange={(e) => setPassengerPhone(e.target.value)}
-                  className="w-full py-3 px-4 text-sm outline-none"
+                  id="ruta-passenger-name"
+                  type="text"
+                  placeholder={t.booking.fullName}
+                  value={passengerName}
+                  onChange={(e) => setPassengerName(e.target.value)}
+                  autoComplete="name"
+                  className="w-full py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.1)',
@@ -528,16 +507,54 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
                   }}
                 />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="ruta-passenger-email" className="sr-only">{t.booking.email}</label>
+                  <input
+                    id="ruta-passenger-email"
+                    type="email"
+                    placeholder={t.booking.email}
+                    value={passengerEmail}
+                    onChange={(e) => setPassengerEmail(e.target.value)}
+                    autoComplete="email"
+                    className="w-full py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#e8e8e8',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ruta-passenger-phone" className="sr-only">{t.booking.phone}</label>
+                  <input
+                    id="ruta-passenger-phone"
+                    type="tel"
+                    placeholder={t.booking.phone}
+                    value={passengerPhone}
+                    onChange={(e) => setPassengerPhone(e.target.value)}
+                    autoComplete="tel"
+                    className="w-full py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#e8e8e8',
+                    }}
+                  />
+                </div>
+              </div>
 
               <p className="text-xs uppercase tracking-wider mt-2" style={{ color: '#999' }}>
                 {t.booking.paymentMethod}
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label={t.booking.paymentMethod}>
                 {(['stripe', 'zelle'] as const).map((method) => (
                   <button
                     key={method}
+                    role="radio"
+                    aria-checked={paymentMethod === method}
                     onClick={() => setPaymentMethod(method)}
-                    className="py-3 px-4 text-xs uppercase tracking-wider text-center transition-all"
+                    className="py-3 px-4 text-xs uppercase tracking-wider text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-1 focus:ring-offset-[#0a0a0a]"
                     style={{
                       background: paymentMethod === method ? 'rgba(201,169,110,0.05)' : 'rgba(255,255,255,0.02)',
                       border: `1px solid ${paymentMethod === method ? '#c9a96e' : 'rgba(255,255,255,0.08)'}`,
@@ -562,16 +579,16 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
               <button
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
-                className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40"
+                className="w-full py-4 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
                 style={{ background: '#c9a96e', color: '#0a0a0a' }}
               >
                 {checkoutLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
                     {t.booking.processing}
                   </span>
                 ) : (
-                  `${t.booking.confirmPay} $${quote.price_usd.toFixed(2)}`
+                  `${t.booking.confirmPay} $${quote.price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                 )}
               </button>
             </div>
@@ -606,7 +623,7 @@ export function BookingForm({ activeService, onServiceChange }: BookingFormProps
       )}
 
       {/* Lead time notice */}
-      <p className="mt-4 text-xs text-center" style={{ color: '#555' }}>
+      <p className="mt-4 text-xs text-center" style={{ color: '#888' }}>
         {activeService === 'airport' && t.booking.leadTimeAirport}
         {activeService === 'inter_city' && t.booking.leadTimeInterCity}
         {activeService === 'intra_city' && t.booking.leadTimeIntraCity}

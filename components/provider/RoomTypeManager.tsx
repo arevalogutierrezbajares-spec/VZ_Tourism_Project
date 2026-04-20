@@ -5,7 +5,19 @@ import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -116,12 +128,13 @@ function RoomForm({
     <div className="space-y-4 p-4 border rounded-xl bg-muted/30">
       {/* Name */}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Room name</label>
+        <label htmlFor="room-name" className="text-sm font-medium">Room name</label>
         <input
+          id="room-name"
           type="text"
           value={form.name}
           onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-          placeholder="e.g. Habitación Doble, Suite, Familiar"
+          placeholder="e.g. Habitacion Doble, Suite, Familiar"
           className="w-full rounded-md border px-3 py-2 text-sm bg-background"
         />
       </div>
@@ -129,8 +142,9 @@ function RoomForm({
       <div className="grid grid-cols-3 gap-3">
         {/* Base price */}
         <div className="space-y-1">
-          <label className="text-sm font-medium">Base price (USD/night)</label>
+          <label htmlFor="room-price" className="text-sm font-medium">Base price (USD/night)</label>
           <input
+            id="room-price"
             type="number"
             min={1}
             value={form.base_price}
@@ -140,8 +154,9 @@ function RoomForm({
         </div>
         {/* Max guests */}
         <div className="space-y-1">
-          <label className="text-sm font-medium">Max guests</label>
+          <label htmlFor="room-max-guests" className="text-sm font-medium">Max guests</label>
           <input
+            id="room-max-guests"
             type="number"
             min={1}
             value={form.max_guests}
@@ -151,8 +166,9 @@ function RoomForm({
         </div>
         {/* Count */}
         <div className="space-y-1">
-          <label className="text-sm font-medium">Number of rooms</label>
+          <label htmlFor="room-count" className="text-sm font-medium">Number of rooms</label>
           <input
+            id="room-count"
             type="number"
             min={1}
             value={form.count}
@@ -258,11 +274,15 @@ export function RoomTypeManager({ listingId, className }: RoomTypeManagerProps) 
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this room type?')) return;
-    await fetch(`/api/listings/${listingId}/room-types/${id}`, {
-      method: 'DELETE',
-    });
-    await fetchRooms();
+    try {
+      await fetch(`/api/listings/${listingId}/room-types/${id}`, {
+        method: 'DELETE',
+      });
+      toast.success('Room type deleted');
+      await fetchRooms();
+    } catch {
+      toast.error('Failed to delete room type');
+    }
   };
 
   return (
@@ -319,17 +339,41 @@ export function RoomTypeManager({ listingId, className }: RoomTypeManagerProps) 
                         size="icon"
                         className="w-7 h-7"
                         onClick={() => setEditingId(room.id)}
+                        aria-label={`Edit ${room.name}`}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-7 h-7 text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(room.id)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7 text-destructive hover:text-destructive"
+                              aria-label={`Delete ${room.name}`}
+                            />
+                          }
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete &ldquo;{room.name}&rdquo;?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently remove this room type. Existing bookings will not be affected.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(room.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardHeader>

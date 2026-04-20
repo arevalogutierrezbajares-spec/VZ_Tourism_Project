@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
-import { MapPin, Heart, Plus, Compass, Waves, Mountain, Building2, Utensils, Zap, Bird } from 'lucide-react';
+import { MapPin, Heart, Plus, Compass, Waves, Mountain, Building2, Utensils, Zap, Bird, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useItineraryStore } from '@/stores/itinerary-store';
 
@@ -103,7 +103,7 @@ function PhotoCard({
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden cursor-pointer group"
+      className="relative rounded-2xl overflow-hidden cursor-pointer group focus-within:ring-2 focus-within:ring-primary"
       style={{
         breakInside: 'avoid',
         marginBottom: '16px',
@@ -116,6 +116,10 @@ function PhotoCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(item)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(item); } }}
+      tabIndex={0}
+      role="button"
+      aria-label={`View details: ${item.caption} in ${item.region_name}`}
     >
       {/* Photo or Instagram embed */}
       {item.instagram_embed_url || item.instagram_post_url ? (
@@ -142,7 +146,7 @@ function PhotoCard({
 
       {/* Save button top-right — appears on hover */}
       <button
-        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200"
+        className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
         style={{
           background: saved ? '#ef4444' : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(6px)',
@@ -154,7 +158,7 @@ function PhotoCard({
           e.stopPropagation();
           setSaved((s) => !s);
         }}
-        aria-label={saved ? 'Remove from saved' : 'Save'}
+        aria-label={saved ? 'Remove from saved' : 'Save to favorites'}
       >
         <Heart
           className="w-4 h-4"
@@ -183,9 +187,9 @@ function PhotoCard({
             <MapPin className="w-3 h-3 flex-shrink-0" />
             <span>{item.region_name}</span>
           </div>
-          {/* "Add to trip" button — appears on hover */}
+          {/* "Add to trip" button — appears on hover/focus */}
           <button
-            className="flex items-center gap-1 text-white text-xs font-semibold px-2.5 py-1 rounded-full transition-all duration-200"
+            className="flex items-center gap-1 text-white text-xs font-semibold px-2.5 py-1.5 min-h-[32px] rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
             style={{
               background: 'rgba(29, 78, 216, 0.88)',
               backdropFilter: 'blur(4px)',
@@ -193,6 +197,7 @@ function PhotoCard({
               transform: hovered ? 'translateY(0)' : 'translateY(4px)',
               transition: 'opacity 200ms ease-out, transform 200ms ease-out',
             }}
+            aria-label={`Add ${item.caption} to trip`}
             onClick={(e) => {
               e.stopPropagation();
               if (!current) {
@@ -233,10 +238,9 @@ function PhotoCard({
       {item.featured && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2">
           <span
-            className="text-xs font-semibold px-2.5 py-1 rounded-full text-white"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', whiteSpace: 'nowrap' }}
+            className="text-xs font-semibold px-2.5 py-1 rounded-full text-white bg-accent whitespace-nowrap"
           >
-            ✦ Featured
+            <span aria-hidden="true">✦ </span>Featured
           </span>
         </div>
       )}
@@ -289,7 +293,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
   }, [current, days, addStop, openPanel]);
 
   return (
-    <div className="min-h-screen" style={{ background: '#f8f9fa' }}>
+    <div className="min-h-screen bg-muted/30">
       {/* Hero section */}
       <div
         className="relative overflow-hidden"
@@ -319,7 +323,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
         <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
           <div className="inline-flex items-center gap-2 text-blue-300 text-sm font-medium mb-4 px-4 py-1.5 rounded-full"
             style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>
-            <span>✦</span>
+            <span aria-hidden="true">✦</span>
             <span>Visual Discovery</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
@@ -335,27 +339,20 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
       </div>
 
       {/* Category filter pills */}
-      <div className="sticky top-16 z-30 border-b" style={{ background: 'rgba(248,249,250,0.95)', backdropFilter: 'blur(12px)', borderColor: '#e5e7eb' }}>
+      <div className="sticky top-16 z-30 border-b bg-background/95 backdrop-blur-sm border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-2 overflow-x-auto py-3 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-2 overflow-x-auto py-3 scrollbar-hide" role="tablist" aria-label="Filter by category" style={{ scrollbarWidth: 'none' }}>
             {CATEGORIES.map(({ id, label, icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveCategory(id)}
-                className="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0"
-                style={
+                role="tab"
+                aria-selected={activeCategory === id}
+                className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${
                   activeCategory === id
-                    ? {
-                        background: 'linear-gradient(135deg, #1d4ed8, #2563eb)',
-                        color: 'white',
-                        boxShadow: '0 2px 8px rgba(37,99,235,0.35)',
-                      }
-                    : {
-                        background: 'white',
-                        color: '#6b7280',
-                        border: '1px solid #e5e7eb',
-                      }
-                }
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'bg-background text-muted-foreground border border-border hover:text-foreground hover:border-foreground/30'
+                }`}
               >
                 {icon}
                 {label}
@@ -367,7 +364,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
 
       {/* Results count */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground" aria-live="polite">
           {filtered.length} photo{filtered.length !== 1 ? 's' : ''}
           {activeCategory !== 'all' && ` in ${CATEGORIES.find((c) => c.id === activeCategory)?.label}`}
         </p>
@@ -392,9 +389,9 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
 
         {filtered.length === 0 && (
           <div className="text-center py-24">
-            <p className="text-4xl mb-4">📷</p>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No photos found</h3>
-            <p className="text-gray-500">Try a different category.</p>
+            <Compass className="w-10 h-10 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No photos found</h3>
+            <p className="text-muted-foreground">Try a different category.</p>
           </div>
         )}
       </div>
@@ -402,25 +399,26 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
       {/* Trip tray (if items saved) */}
       {savedTrip.length > 0 && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3"
-          style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 bg-foreground text-background border border-border/20"
+          role="status"
+          aria-live="polite"
         >
-          <span className="text-lg">🗺️</span>
+          <MapPin className="w-5 h-5 flex-shrink-0" />
           <span className="text-sm font-semibold">
             {savedTrip.length} location{savedTrip.length !== 1 ? 's' : ''} saved to trip
           </span>
           <a
             href={`/?q=${encodeURIComponent('Plan my Venezuela trip')}`}
-            className="text-xs font-medium px-3 py-1.5 rounded-full transition-colors hover:opacity-90"
-            style={{ background: 'rgba(59,130,246,0.8)' }}
+            className="text-xs font-medium px-3 py-1.5 rounded-full transition-colors hover:opacity-90 bg-primary text-primary-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            Plan now →
+            Plan now
           </a>
           <button
             onClick={() => setSavedTrip([])}
-            className="text-white/50 hover:text-white text-xs ml-1 transition-colors"
+            className="opacity-50 hover:opacity-100 ml-1 transition-colors p-1 min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-background rounded-full"
+            aria-label="Clear saved locations"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}

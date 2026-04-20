@@ -29,7 +29,7 @@ export function PriceDisplay({
 }: PriceDisplayProps) {
   return (
     <div className={cn('flex flex-col', className)}>
-      <span className={cn('text-gray-900 dark:text-white font-medium', sizeClasses[size])}>
+      <span className={cn('text-foreground font-medium', sizeClasses[size])}>
         {formatCurrency(priceUsd, 'USD')}
         {suffix && <span className="text-muted-foreground font-normal text-sm ml-1">{suffix}</span>}
       </span>

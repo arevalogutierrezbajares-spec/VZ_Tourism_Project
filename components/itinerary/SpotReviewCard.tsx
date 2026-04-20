@@ -142,7 +142,10 @@ export function SpotReviewCard({
         <button
           type="button"
           onClick={onToggle}
-          className={`w-${compact ? '5' : '6'} h-${compact ? '5' : '6'} rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+          role="checkbox"
+          aria-checked={spot.included}
+          aria-label={`${spot.included ? 'Exclude' : 'Include'} ${spot.extracted_name}`}
+          className={`min-w-[44px] min-h-[44px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
             spot.included
               ? 'bg-primary border-primary text-white'
               : 'border-muted-foreground/30 text-transparent hover:border-muted-foreground/50'
@@ -175,7 +178,9 @@ export function SpotReviewCard({
           ) : (
             <div className="space-y-1.5 bg-muted/30 rounded-md p-2">
               <div className="flex gap-1.5">
+                <label htmlFor={`google-search-${spot.extracted_name}`} className="sr-only">Search Google Places for {spot.extracted_name}</label>
                 <Input
+                  id={`google-search-${spot.extracted_name}`}
                   className="h-7 text-xs"
                   value={googleQuery}
                   onChange={(e) => setGoogleQuery(e.target.value)}
@@ -186,6 +191,7 @@ export function SpotReviewCard({
                   size="xs"
                   onClick={handleSearch}
                   disabled={isSearching}
+                  aria-label="Search Google Places"
                 >
                   {isSearching ? (
                     <Loader2 className="w-3 h-3 animate-spin" />

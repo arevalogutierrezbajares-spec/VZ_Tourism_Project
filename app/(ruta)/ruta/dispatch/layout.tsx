@@ -87,7 +87,7 @@ export default function DispatchLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-xs uppercase tracking-wider hover:text-white transition-colors"
+                className="text-xs uppercase tracking-wider hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#c9a96e] rounded-sm"
                 style={{ color: '#888' }}
               >
                 {item.label}
@@ -95,7 +95,7 @@ export default function DispatchLayout({
             ))}
           </div>
         </div>
-        <div className="text-xs" style={{ color: '#555' }}>
+        <div className="text-xs" style={{ color: '#888' }}>
           Dispatch Console
         </div>
       </nav>

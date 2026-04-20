@@ -242,9 +242,18 @@ export function ImportLinksModal({ isOpen, onClose }: ImportLinksModalProps) {
 
         {step === 'input' && (
           <DialogFooter>
-            <Button onClick={handleExtract} disabled={!urlText.trim()} className="w-full sm:w-auto">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              Extract Places
+            <Button onClick={handleExtract} disabled={!urlText.trim() || isExtracting} className="w-full sm:w-auto">
+              {isExtracting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Extracting...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  Extract Places
+                </>
+              )}
             </Button>
           </DialogFooter>
         )}

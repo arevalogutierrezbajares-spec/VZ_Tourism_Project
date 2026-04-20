@@ -14,6 +14,11 @@ export function AdminProviderActions({ providerId, isVerified }: Props) {
   const [verified, setVerified] = useState(isVerified);
 
   async function toggleVerify() {
+    // Require confirmation before revoking verification
+    if (verified && !confirm('Revoke verification for this provider? They will lose their verified status.')) {
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`/api/providers/${providerId}`, {
@@ -37,8 +42,9 @@ export function AdminProviderActions({ providerId, isVerified }: Props) {
       variant={verified ? 'outline' : 'default'}
       disabled={loading}
       onClick={toggleVerify}
+      aria-label={verified ? 'Revoke provider verification' : 'Verify provider'}
     >
-      {loading ? '...' : verified ? 'Revoke' : 'Verify'}
+      {loading ? 'Updating...' : verified ? 'Revoke' : 'Verify'}
     </Button>
   );
 }

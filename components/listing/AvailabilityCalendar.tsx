@@ -165,7 +165,7 @@ function MonthGrid({
                 onMouseEnter={() => onDayHover(dateStr)}
                 onMouseLeave={() => onDayHover(null)}
                 className={cn(
-                  'w-9 h-9 rounded-full text-sm flex flex-col items-center justify-center gap-0',
+                  'w-10 h-10 rounded-full text-sm flex flex-col items-center justify-center gap-0',
                   'transition-colors duration-150',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
                   unavailable && 'opacity-30 cursor-not-allowed line-through text-muted-foreground',

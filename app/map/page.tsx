@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SlidersHorizontal, MapPin, Route, LogIn, User, Luggage, Heart } from 'lucide-react';
@@ -35,6 +35,14 @@ const MapContainer = dynamic(
 const CATEGORY_FILTER_ALL = 'all';
 
 export default function HomePage() {
+  return (
+    <Suspense>
+      <MapPageContent />
+    </Suspense>
+  );
+}
+
+function MapPageContent() {
   const { search, isStreaming, suggestions, isFilterOpen, toggleFilterPanel, hasSearched } =
     useSearch();
   const { isOpen: itineraryOpen, createNew } = useItinerary();
@@ -129,7 +137,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative h-dvh w-full overflow-hidden">
       {/* Full-screen map */}
       <div className="absolute inset-0">
         <MapContainer className="w-full h-full" />
@@ -196,8 +204,10 @@ export default function HomePage() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-12 w-12 rounded-2xl bg-white dark:bg-gray-900 shadow-lg border border-gray-200"
+                className="h-12 w-12 rounded-2xl bg-white dark:bg-gray-900 shadow-lg border border-gray-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={toggleFilterPanel}
+                aria-label="Open filters"
+                aria-expanded={isFilterOpen}
               >
                 <SlidersHorizontal className="w-4 h-4" />
               </Button>
@@ -205,10 +215,12 @@ export default function HomePage() {
 
             {/* Category filter chips */}
             {totalCount > 0 && !hasSearched && (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="radiogroup" aria-label="Filter by category">
                 <button
                   onClick={() => handleCategoryFilter(CATEGORY_FILTER_ALL)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm border transition-colors ${
+                  role="radio"
+                  aria-checked={activeCategory === CATEGORY_FILTER_ALL}
+                  className={`flex-shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     activeCategory === CATEGORY_FILTER_ALL
                       ? 'bg-gray-900 text-white border-gray-900'
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
@@ -220,7 +232,9 @@ export default function HomePage() {
                   <button
                     key={key}
                     onClick={() => handleCategoryFilter(key)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm border transition-colors ${
+                    role="radio"
+                    aria-checked={activeCategory === key}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       activeCategory === key
                         ? 'text-white border-transparent'
                         : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
@@ -232,6 +246,7 @@ export default function HomePage() {
                     <span
                       className="w-2 h-2 rounded-full flex-shrink-0"
                       style={{ backgroundColor: activeCategory === key ? 'white' : color }}
+                      aria-hidden="true"
                     />
                     {label}
                   </button>

@@ -276,7 +276,9 @@ function ContentEditModal({
   }
 
   async function handleDelete() {
-    if (!item?.id || !confirm('Delete this content?')) return;
+    if (!item?.id) return;
+    const caption = item.caption || 'this content';
+    if (!confirm(`Delete "${caption}"? This action cannot be undone.`)) return;
     try {
       const res = await fetch(`/api/admin/discover?id=${item.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
@@ -313,7 +315,11 @@ function ContentEditModal({
           <h2 className="font-bold flex-1">{isNew ? 'New Content' : 'Edit Content'}</h2>
           <div className="flex items-center gap-2">
             {!isNew && (
-              <button onClick={handleDelete} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+              <button
+                onClick={handleDelete}
+                className="p-2 text-red-500 hover:bg-red-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                aria-label="Delete this content"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
@@ -672,8 +678,9 @@ function ContentCard({
           <div className="flex gap-1">
             <button
               onClick={(e) => { e.stopPropagation(); onStatusChange(item.id, item.status === 'published' ? 'draft' : 'published'); }}
-              className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors"
+              className="text-muted-foreground hover:text-foreground p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
               title={item.status === 'published' ? 'Unpublish' : 'Publish'}
+              aria-label={item.status === 'published' ? `Unpublish ${item.caption || 'content'}` : `Publish ${item.caption || 'content'}`}
             >
               {item.status === 'published' ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
@@ -747,13 +754,15 @@ function ListRow({
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(item)}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+            aria-label={`Edit ${item.caption || 'content'}`}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onStatusChange(item.id, item.status === 'published' ? 'draft' : 'published')}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+            aria-label={item.status === 'published' ? `Unpublish ${item.caption || 'content'}` : `Publish ${item.caption || 'content'}`}
           >
             {item.status === 'published' ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           </button>
@@ -843,7 +852,7 @@ export function DiscoverManager({ initialItems }: { initialItems: DiscoverConten
   }, []);
 
   return (
-    <div className="space-y-5">
+    <div className="p-6 space-y-5">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>

@@ -89,7 +89,11 @@ function ProviderCard({
       onDragStart={() => onDragStart(provider.id)}
       onDragEnd={onDragEnd}
       onClick={() => onClick(provider)}
-      className="rounded-lg border cursor-pointer select-none transition-all hover:shadow-md active:opacity-70"
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(provider); } }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${provider.business_name} — ${provider.type}, ${provider.region.replace('-', ' ')}. Click to view details, drag to change stage.`}
+      className="rounded-lg border cursor-pointer select-none transition-all hover:shadow-md active:opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400"
       style={{ background: '#fff', borderColor: '#E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
     >
       {/* Cover image */}
@@ -147,13 +151,14 @@ function ProviderCard({
             <Mail className="w-3.5 h-3.5 text-gray-400" />
             <button
               title="Copy Invite Link"
+              aria-label={`Copy invite link for ${provider.business_name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 const slug = provider.business_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
                 const url = `${window.location.origin}/join/${slug}`;
                 navigator.clipboard.writeText(url);
               }}
-              className="hover:bg-cyan-100 rounded p-0.5 transition-colors"
+              className="hover:bg-cyan-100 rounded p-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-colors"
             >
               <Link2 className="w-3.5 h-3.5 text-cyan-600" />
             </button>
@@ -232,7 +237,7 @@ function ProviderModal({
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400">
+          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-400" aria-label="Close provider details">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -359,17 +364,19 @@ function ProviderModal({
               </div>
             )}
             <div className="flex gap-2">
+              <label htmlFor="provider-note" className="sr-only">Add a note</label>
               <input
+                id="provider-note"
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddNote(); } }}
                 placeholder="Add a note..."
-                className="flex-1 text-sm px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-400"
+                className="flex-1 text-sm px-3 py-2 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               />
               <button
                 onClick={handleAddNote}
                 disabled={!noteText.trim() || savingNote}
-                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-all"
+                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
                 style={{ background: '#3B82F6', color: '#fff' }}
               >
                 {savingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
@@ -558,37 +565,49 @@ export default function AdminProvidersPage() {
         {/* Filters */}
         {showFilters && (
           <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
-            <select
-              value={filterRegion}
-              onChange={(e) => setFilterRegion(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none"
-            >
-              <option value="">All regions</option>
-              {REGIONS.map((r) => (
-                <option key={r} value={r}>{r.replace('-', ' ')}</option>
-              ))}
-            </select>
-            <select
-              value={filterTier}
-              onChange={(e) => setFilterTier(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none"
-            >
-              <option value="">All tiers</option>
-              <option value="A">Tier A</option>
-              <option value="B">Tier B</option>
-              <option value="C">Tier C</option>
-            </select>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none"
-            >
-              <option value="">All types</option>
-              <option value="hotel">Hotel</option>
-              <option value="restaurant">Restaurant</option>
-              <option value="tour">Tour</option>
-              <option value="experience">Experience</option>
-            </select>
+            <div>
+              <label htmlFor="filter-region" className="sr-only">Filter by region</label>
+              <select
+                id="filter-region"
+                value={filterRegion}
+                onChange={(e) => setFilterRegion(e.target.value)}
+                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">All regions</option>
+                {REGIONS.map((r) => (
+                  <option key={r} value={r}>{r.replace('-', ' ')}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="filter-tier" className="sr-only">Filter by tier</label>
+              <select
+                id="filter-tier"
+                value={filterTier}
+                onChange={(e) => setFilterTier(e.target.value)}
+                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">All tiers</option>
+                <option value="A">Tier A</option>
+                <option value="B">Tier B</option>
+                <option value="C">Tier C</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="filter-type" className="sr-only">Filter by type</label>
+              <select
+                id="filter-type"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">All types</option>
+                <option value="hotel">Hotel</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="tour">Tour</option>
+                <option value="experience">Experience</option>
+              </select>
+            </div>
             {(filterRegion || filterTier || filterType) && (
               <button
                 onClick={() => { setFilterRegion(''); setFilterTier(''); setFilterType(''); }}

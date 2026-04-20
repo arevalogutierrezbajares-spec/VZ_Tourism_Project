@@ -89,7 +89,7 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
               <div className="text-sm font-medium" style={{ color: '#c9a96e' }}>
                 {service.price}
               </div>
-              <div className="text-xs mt-1 mb-6" style={{ color: '#666' }}>
+              <div className="text-xs mt-1 mb-6" style={{ color: '#888' }}>
                 {service.priceContext}
               </div>
               <ul
@@ -112,7 +112,7 @@ export function ServiceCards({ onServiceSelect }: ServiceCardsProps) {
               </ul>
               <button
                 onClick={() => handleSelect(service.type)}
-                className="mt-auto w-full py-3 text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-90"
+                className="mt-auto w-full min-h-[44px] py-3 text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
                 style={{
                   border: '1px solid rgba(201,169,110,0.4)',
                   color: '#c9a96e',

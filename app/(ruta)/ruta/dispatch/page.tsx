@@ -118,12 +118,14 @@ export default function DispatchPage() {
           >
             Rides ({rides.length})
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="tablist" aria-label="Ride filter">
             {(['active', 'all'] as const).map((f) => (
               <button
                 key={f}
+                role="tab"
+                aria-selected={filter === f}
                 onClick={() => setFilter(f)}
-                className="text-[10px] uppercase tracking-wider px-3 py-1"
+                className="text-[10px] uppercase tracking-wider px-3 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
                 style={{
                   background:
                     filter === f
@@ -134,7 +136,7 @@ export default function DispatchPage() {
                       ? 'rgba(201,169,110,0.3)'
                       : 'rgba(255,255,255,0.05)'
                   }`,
-                  color: filter === f ? '#c9a96e' : '#666',
+                  color: filter === f ? '#c9a96e' : '#888',
                 }}
               >
                 {f}
@@ -152,7 +154,7 @@ export default function DispatchPage() {
             <p className="text-sm mb-2" style={{ color: '#666' }}>
               No {filter === 'active' ? 'active ' : ''}rides
             </p>
-            <p className="text-xs" style={{ color: '#444' }}>
+            <p className="text-xs" style={{ color: '#777' }}>
               Rides will appear here when passengers book.
             </p>
           </div>
@@ -162,7 +164,7 @@ export default function DispatchPage() {
               <button
                 key={ride.id}
                 onClick={() => setSelectedRide(ride.id)}
-                className="w-full text-left p-4 transition-colors hover:bg-white/[0.02]"
+                className="w-full text-left p-4 transition-colors hover:bg-white/[0.02] cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#c9a96e]"
                 style={{
                   borderBottom: '1px solid rgba(255,255,255,0.03)',
                   background:
@@ -207,7 +209,7 @@ export default function DispatchPage() {
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm" style={{ color: '#444' }}>
+            <p className="text-sm" style={{ color: '#777' }}>
               Select a ride to view details
             </p>
           </div>
@@ -246,8 +248,9 @@ function RideDetail({
         </div>
         <button
           onClick={onClose}
-          className="text-xs px-3 py-1"
-          style={{ color: '#666', border: '1px solid rgba(255,255,255,0.1)' }}
+          aria-label="Close ride details"
+          className="text-xs px-3 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+          style={{ color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}
         >
           Close
         </button>
@@ -284,7 +287,7 @@ function RideDetail({
           </p>
           <button
             onClick={() => onConfirmZelle(ride.id)}
-            className="px-6 py-2 text-xs font-semibold uppercase tracking-wider"
+            className="px-6 py-2 text-xs font-semibold uppercase tracking-wider cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ffb400] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{ background: '#ffb400', color: '#0a0a0a' }}
           >
             Confirm Payment Received
@@ -312,17 +315,21 @@ function RideDetail({
               <select
                 value={selectedDriver}
                 onChange={(e) => setSelectedDriver(e.target.value)}
-                className="w-full py-2 px-3 text-sm"
+                className="w-full py-2 px-3 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3b82f6]"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#e8e8e8',
                 }}
+                aria-label="Select driver"
               >
                 <option value="">Select driver...</option>
+                {drivers.filter(d => d.status === 'available').length === 0 ? (
+                  <option disabled>No available drivers</option>
+                ) : null}
                 {drivers.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.full_name}
+                    {d.full_name} ({d.status})
                   </option>
                 ))}
               </select>
@@ -334,12 +341,13 @@ function RideDetail({
               <select
                 value={selectedVehicle}
                 onChange={(e) => setSelectedVehicle(e.target.value)}
-                className="w-full py-2 px-3 text-sm"
+                className="w-full py-2 px-3 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3b82f6]"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#e8e8e8',
                 }}
+                aria-label="Select vehicle"
               >
                 <option value="">Select vehicle...</option>
                 {vehicles.map((v) => (
@@ -357,7 +365,7 @@ function RideDetail({
               }
             }}
             disabled={!selectedDriver || !selectedVehicle}
-            className="px-6 py-2 text-xs font-semibold uppercase tracking-wider disabled:opacity-40"
+            className="px-6 py-2 text-xs font-semibold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{ background: '#3b82f6', color: '#fff' }}
           >
             Assign Driver
@@ -366,7 +374,7 @@ function RideDetail({
       )}
 
       {/* Ride ID for reference */}
-      <div className="text-xs" style={{ color: '#333' }}>
+      <div className="text-xs" style={{ color: '#555' }}>
         Ride ID: {ride.id}
       </div>
     </div>

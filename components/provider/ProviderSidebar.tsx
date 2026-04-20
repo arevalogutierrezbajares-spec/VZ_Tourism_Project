@@ -296,6 +296,7 @@ export function ProviderSidebar() {
                   <Link
                     href="/"
                     className="flex items-center justify-center w-full py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    aria-label="Back to app"
                   />
                 }
               >

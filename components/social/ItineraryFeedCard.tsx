@@ -3,11 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ReactionBar } from './ReactionBar';
+import { Loader2, AlertCircle } from 'lucide-react';
 import type { Itinerary } from '@/types/database';
 import { formatCurrency, formatDate, getInitials, pluralize } from '@/lib/utils';
 
@@ -19,34 +21,43 @@ interface ItineraryFeedCardProps {
 
 export function ItineraryFeedCard({ itinerary, showActions = false, className }: ItineraryFeedCardProps) {
   const router = useRouter();
+  const [cloneState, setCloneState] = useState<'idle' | 'loading' | 'error'>('idle');
   const recommendCount = (itinerary as unknown as Record<string, unknown>).recommendation_count as number
     ?? (itinerary.saves + itinerary.likes);
 
-  const handleCustomize = async () => {
+  const handleCustomize = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCloneState('loading');
     try {
       const res = await fetch(`/api/itineraries/${itinerary.id}/clone`, { method: 'POST' });
       if (res.status === 401) {
         router.push('/login');
         return;
       }
-      if (!res.ok) return;
+      if (!res.ok) {
+        setCloneState('error');
+        setTimeout(() => setCloneState('idle'), 3000);
+        return;
+      }
       const { id } = await res.json();
       router.push(`/itinerary/${id}`);
     } catch {
-      // silent fail
+      setCloneState('error');
+      setTimeout(() => setCloneState('idle'), 3000);
     }
   };
 
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow ${className || ''}`}>
+    <Card className={`overflow-hidden hover:shadow-md transition-shadow rounded-2xl ${className || ''}`}>
       {itinerary.cover_image_url && (
         <Link href={`/itinerary/${itinerary.id}`}>
           <div className="relative aspect-video overflow-hidden">
             <Image
               src={itinerary.cover_image_url}
-              alt={itinerary.title}
+              alt={`Cover photo for ${itinerary.title}`}
               fill
-              className="object-cover hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover motion-safe:hover:scale-105 transition-transform duration-500"
             />
             <span className="absolute top-2 left-2 bg-black/60 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
               {pluralize(itinerary.total_days, 'day')}
@@ -65,14 +76,14 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
         {itinerary.user && (
           <div className="flex items-center gap-2">
             <Avatar className="w-7 h-7">
-              <AvatarImage src={itinerary.user.avatar_url || undefined} />
+              <AvatarImage src={itinerary.user.avatar_url || undefined} alt={`${itinerary.user.full_name}'s avatar`} />
               <AvatarFallback className="text-xs">
                 {getInitials(itinerary.user.full_name)}
               </AvatarFallback>
             </Avatar>
             <span className="text-sm font-medium">{itinerary.user.full_name}</span>
             {itinerary.user.role === 'creator' && (
-              <Badge variant="secondary" className="text-xs">Creator</Badge>
+              <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
             )}
           </div>
         )}
@@ -128,10 +139,18 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
               )}
             </span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCustomize}>
-                Customize
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCustomize}
+                disabled={cloneState === 'loading'}
+                className="cursor-pointer"
+              >
+                {cloneState === 'loading' && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+                {cloneState === 'error' && <AlertCircle className="w-3 h-3 mr-1 text-destructive" />}
+                {cloneState === 'error' ? 'Failed' : 'Customize'}
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="cursor-pointer">
                 <Link href={`/itinerary/${itinerary.id}`}>Book This Trip</Link>
               </Button>
             </div>

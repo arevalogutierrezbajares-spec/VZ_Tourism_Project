@@ -26,7 +26,7 @@ export function Navbar() {
   return (
     <>
     <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="navigation" aria-label="Main navigation">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <Logo size="md" />
@@ -35,35 +35,40 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-6">
           <Link
             href="/map"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/map' ? 'text-primary' : 'text-muted-foreground'}`}
+            aria-current={pathname === '/map' ? 'page' : undefined}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/map' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Map className="w-4 h-4" />
             Map
           </Link>
           <Link
             href="/explore"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground'}`}
+            aria-current={pathname.startsWith('/explore') ? 'page' : undefined}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <BookOpen className="w-4 h-4" />
             Explore
           </Link>
           <Link
             href="/itineraries"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/itineraries' ? 'text-primary' : 'text-muted-foreground'}`}
+            aria-current={pathname === '/itineraries' ? 'page' : undefined}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/itineraries' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Route className="w-4 h-4" />
             Itineraries
           </Link>
           <Link
             href="/discover"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/discover' ? 'text-primary' : 'text-muted-foreground'}`}
+            aria-current={pathname === '/discover' ? 'page' : undefined}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/discover' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Sparkles className="w-4 h-4" />
             Discover
           </Link>
           <Link
             href="/safety"
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname === '/safety' ? 'text-primary' : 'text-muted-foreground'}`}
+            aria-current={pathname === '/safety' ? 'page' : undefined}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/safety' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Shield className="w-4 h-4" />
             Safety
@@ -71,7 +76,8 @@ export function Navbar() {
           {isProvider && (
             <Link
               href="/dashboard"
-              className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}
+              aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined}
+              className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}
             >
               <LayoutDashboard className="w-4 h-4" />
               Dashboard
@@ -83,7 +89,7 @@ export function Navbar() {
           {/* AI Search trigger */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -145,7 +151,7 @@ export function Navbar() {
                     </>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="text-red-600">
+                  <DropdownMenuItem onClick={signOut} className="text-destructive">
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

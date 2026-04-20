@@ -98,8 +98,20 @@ export async function POST(request: NextRequest) {
     .limit(1)
     .maybeSingle()
 
-  // Check for anomalous ping
-  const anomaly = isAnomalousPing(ping)
+  // Get previous ping for anomaly comparison
+  const { data: prevPing } = await supabase
+    .from('ruta_tracker_pings')
+    .select('lat, lng, timestamp')
+    .eq('device_id', ping.device_id)
+    .order('timestamp', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Check for anomalous ping (with previous ping context)
+  const anomaly = isAnomalousPing(
+    ping,
+    prevPing ? { lat: prevPing.lat, lng: prevPing.lng, timestamp: prevPing.timestamp } : undefined
+  )
   if (anomaly.anomalous) {
     console.warn(`Anomalous tracker ping from ${ping.device_id}: ${anomaly.reason}`)
   }

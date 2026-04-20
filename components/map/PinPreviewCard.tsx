@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { X, Star, PlusCircle } from 'lucide-react';
+import { X, Star, PlusCircle, MapPin as MapPinIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,42 +48,53 @@ export function PinPreviewCard({ pin, onClose }: PinPreviewCardProps) {
     toast.success(`Added "${pin.title}" to Day ${targetDay}`);
   };
 
+  const hasImage = Boolean(pin.imageUrl);
+  const hasPrice = pin.price != null && pin.price > 0;
+  const hasRating = pin.rating != null && pin.rating > 0;
+
   return (
-    <Card className="w-72 shadow-xl border-0 overflow-hidden">
-      {pin.imageUrl && (
+    <Card className="w-72 shadow-xl border-0 overflow-hidden" role="dialog" aria-label={`Preview: ${pin.title}`}>
+      {hasImage ? (
         <div className="relative h-32">
-          <Image src={pin.imageUrl} alt={pin.title} fill sizes="288px" className="object-cover" />
+          <Image src={pin.imageUrl!} alt={pin.title} fill sizes="288px" className="object-cover" />
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 w-6 h-6 bg-black/30 text-white hover:bg-black/50"
+            className="absolute top-2 right-2 w-8 h-8 bg-black/30 text-white hover:bg-black/50 focus-visible:ring-2 focus-visible:ring-white"
             onClick={onClose}
+            aria-label="Close preview"
           >
-            <X className="w-3 h-3" />
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className="relative h-20 bg-muted/50 flex items-center justify-center">
+          <MapPinIcon className="w-6 h-6 text-muted-foreground/40" aria-hidden="true" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 w-8 h-8 focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={onClose}
+            aria-label="Close preview"
+          >
+            <X className="w-4 h-4" />
           </Button>
         </div>
       )}
       <CardContent className="p-3">
-        {!pin.imageUrl && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 w-6 h-6"
-            onClick={onClose}
-          >
-            <X className="w-3 h-3" />
-          </Button>
-        )}
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-sm leading-tight line-clamp-2">{pin.title}</h3>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              {pin.rating && (
+              {hasRating && (
                 <>
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-medium">{pin.rating.toFixed(1)}</span>
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" aria-hidden="true" />
+                  <span className="text-xs font-medium">{pin.rating!.toFixed(1)}</span>
+                  {pin.reviewCount != null && pin.reviewCount > 0 && (
+                    <span className="text-xs text-muted-foreground">({pin.reviewCount})</span>
+                  )}
                 </>
               )}
               {pin.category && (
@@ -92,18 +103,23 @@ export function PinPreviewCard({ pin, onClose }: PinPreviewCardProps) {
                 </Badge>
               )}
             </div>
-            {pin.price && (
+            {hasPrice && (
               <span className="text-sm font-bold text-primary">
-                {formatCurrency(pin.price, 'USD')}
+                {formatCurrency(pin.price!, 'USD')}
               </span>
             )}
           </div>
+          {pin.city && (
+            <p className="text-xs text-muted-foreground truncate">
+              {[pin.city, pin.region].filter(Boolean).join(', ')}
+            </p>
+          )}
         </div>
         <div className="flex gap-2 mt-2">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-7 text-xs gap-1"
+            className="flex-1 h-8 text-xs gap-1"
             onClick={handleAddToItinerary}
           >
             <PlusCircle className="w-3 h-3" />
@@ -112,7 +128,7 @@ export function PinPreviewCard({ pin, onClose }: PinPreviewCardProps) {
           {pin.listingId && (
             <Link
               href={`/listing/${pin.listingId}`}
-              className="flex-1 inline-flex items-center justify-center h-7 rounded-[min(var(--radius-md),12px)] px-2 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+              className="flex-1 inline-flex items-center justify-center h-8 rounded-[min(var(--radius-md),12px)] px-2 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               View details
             </Link>

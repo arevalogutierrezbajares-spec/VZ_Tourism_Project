@@ -13,10 +13,10 @@ interface SafetyBadgeProps {
 }
 
 const levelConfig: Record<SafetyLevel, { label: string; className: string }> = {
-  green: { label: 'Safe', className: 'bg-green-100 text-green-800 border-green-200' },
-  yellow: { label: 'Caution', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  orange: { label: 'High Caution', className: 'bg-orange-100 text-orange-800 border-orange-200' },
-  red: { label: 'Avoid', className: 'bg-red-100 text-red-800 border-red-200' },
+  green: { label: 'Safe', className: 'bg-status-confirmed/15 text-status-confirmed border-status-confirmed/30' },
+  yellow: { label: 'Caution', className: 'bg-status-pending/15 text-status-pending border-status-pending/30' },
+  orange: { label: 'High Caution', className: 'bg-destructive/10 text-destructive border-destructive/20' },
+  red: { label: 'Avoid', className: 'bg-status-cancelled/15 text-status-cancelled border-status-cancelled/30' },
 };
 
 export function SafetyBadge({ level, showIcon = true, className, size = 'md' }: SafetyBadgeProps) {

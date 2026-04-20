@@ -131,7 +131,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                   <ul className="space-y-2">
                     {listing.includes.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-status-confirmed flex-shrink-0 mt-0.5" aria-hidden="true" />
                         {item}
                       </li>
                     ))}
@@ -144,7 +144,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                   <ul className="space-y-2">
                     {listing.excludes.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <XCircle className="w-4 h-4 text-status-cancelled flex-shrink-0 mt-0.5" aria-hidden="true" />
                         {item}
                       </li>
                     ))}
@@ -236,7 +236,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               setAddedToItinerary(true);
               setTimeout(() => setAddedToItinerary(false), 2500);
             }}
-            className="w-full py-3 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {addedToItinerary ? '✓ Added to itinerary' : '+ Add to itinerary'}
           </button>

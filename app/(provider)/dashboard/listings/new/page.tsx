@@ -79,9 +79,9 @@ export default function NewListingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Category *</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select onValueChange={(v) => setValue('category', v as ListingForm['category'])}>
-                  <SelectTrigger>
+                  <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -93,9 +93,9 @@ export default function NewListingPage() {
                 {errors.category && <p className="text-xs text-destructive">{errors.category.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label>Region *</Label>
+                <Label htmlFor="region">Region *</Label>
                 <Select onValueChange={(v) => setValue('region', v as string)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="region">
                     <SelectValue placeholder="Select region" />
                   </SelectTrigger>
                   <SelectContent>
@@ -168,8 +168,10 @@ export default function NewListingPage() {
                 <p className="text-xs text-muted-foreground">Make this listing visible to tourists</p>
               </div>
               <Switch
+                id="is_published"
                 checked={isPublished}
                 onCheckedChange={(v) => setValue('is_published', v)}
+                aria-label="Publish listing"
               />
             </div>
           </CardContent>

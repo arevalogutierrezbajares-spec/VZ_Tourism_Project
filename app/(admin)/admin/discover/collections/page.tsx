@@ -194,7 +194,8 @@ function CollectionModal({
   }
 
   async function handleDelete() {
-    if (!collection || !confirm('Delete this collection?')) return;
+    if (!collection) return;
+    if (!confirm(`Delete collection "${collection.name}"? This cannot be undone.`)) return;
     try {
       const res = await fetch(`/api/admin/discover/collections?id=${collection.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
@@ -260,7 +261,11 @@ function CollectionModal({
 
           <div className="flex gap-2 pt-2">
             {!isNew && (
-              <button onClick={handleDelete} className="p-2.5 text-red-500 hover:bg-red-50 border border-red-200 rounded-lg transition-colors">
+              <button
+                onClick={handleDelete}
+                className="p-2.5 text-red-500 hover:bg-red-50 border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                aria-label="Delete collection"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
@@ -334,7 +339,7 @@ export default function CollectionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
@@ -405,13 +410,15 @@ export default function CollectionsPage() {
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setEditCollection(c)}
-                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white transition-colors"
+                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+                    aria-label={`Edit collection ${c.name}`}
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => togglePublish(c)}
-                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white transition-colors"
+                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+                    aria-label={c.is_published ? `Unpublish ${c.name}` : `Publish ${c.name}`}
                   >
                     {c.is_published ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>

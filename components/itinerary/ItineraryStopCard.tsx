@@ -141,7 +141,7 @@ export function ItineraryStopCard({
         )}
 
         {isDraggable && !showPhoto && (
-          <div className="flex items-center cursor-grab text-muted-foreground/50 hover:text-muted-foreground">
+          <div className="flex items-center cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground" aria-label="Drag to reorder">
             <GripVertical className="w-4 h-4" />
           </div>
         )}
@@ -153,27 +153,28 @@ export function ItineraryStopCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                className="w-7 h-7 min-w-[28px] min-h-[28px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
                 onClick={handleGetAlternatives}
                 disabled={isLoadingAlts}
-                title="Suggest alternatives"
+                aria-label={alternatives.length > 0 ? `Hide alternatives for ${stop.title}` : `Suggest alternatives for ${stop.title}`}
               >
                 {isLoadingAlts ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : alternatives.length > 0 ? (
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 ) : (
-                  <ArrowLeftRight className="w-3 h-3" />
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
                 )}
               </Button>
               {onRemove && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  className="w-7 h-7 min-w-[28px] min-h-[28px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                   onClick={() => onRemove(stop.id)}
+                  aria-label={`Remove ${stop.title}`}
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               )}
             </div>
@@ -206,8 +207,8 @@ export function ItineraryStopCard({
               </span>
             )}
             {stop.source_type === 'ai_suggested' && (
-              <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-0">
-                <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+              <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-0" title="AI-generated suggestion — verify details">
+                <Sparkles className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" />
                 AI
               </Badge>
             )}

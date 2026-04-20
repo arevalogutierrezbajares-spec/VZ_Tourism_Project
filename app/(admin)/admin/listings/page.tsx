@@ -251,7 +251,8 @@ function EditPanel({
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Close edit panel"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
         >
           <X className="w-4 h-4 text-gray-500" />
         </button>
@@ -278,9 +279,10 @@ function EditPanel({
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
         {/* Name */}
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Name</label>
+          <label htmlFor="edit-name" className="block text-xs font-medium text-gray-600 mb-1.5">Name</label>
           <input
-            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+            id="edit-name"
+            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
           />
@@ -301,7 +303,7 @@ function EditPanel({
               </button>
             </div>
             <input
-              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.type}
               onChange={(e) => update('type', e.target.value)}
             />
@@ -309,7 +311,7 @@ function EditPanel({
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Status</label>
             <select
-              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.status}
               onChange={(e) => update('status', e.target.value)}
             >
@@ -325,7 +327,7 @@ function EditPanel({
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Region</label>
             <select
-              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.region}
               onChange={(e) => update('region', e.target.value)}
             >
@@ -335,7 +337,7 @@ function EditPanel({
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">City</label>
             <input
-              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.city || ''}
               onChange={(e) => update('city', e.target.value)}
             />
@@ -387,7 +389,7 @@ function EditPanel({
             </div>
           ) : (
             <textarea
-              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400 resize-none"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
               rows={4}
               value={form.description || ''}
               onChange={(e) => update('description', e.target.value)}
@@ -424,7 +426,7 @@ function EditPanel({
             ))}
           </div>
           <input
-            className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+            className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Add tag and press Enter"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
@@ -441,19 +443,19 @@ function EditPanel({
         <div className="space-y-3">
           <label className="text-xs font-medium text-gray-600 block">Contact</label>
           <input
-            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Phone"
             value={form.phone || ''}
             onChange={(e) => update('phone', e.target.value)}
           />
           <input
-            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Website"
             value={form.website || ''}
             onChange={(e) => update('website', e.target.value)}
           />
           <input
-            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-400"
+            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Instagram handle"
             value={form.instagram_handle || ''}
             onChange={(e) => update('instagram_handle', e.target.value)}
@@ -532,8 +534,15 @@ function CommandPalette({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4"
+      style={{ background: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
           <Command className="w-4 h-4 text-gray-400" />
           <input
@@ -614,14 +623,14 @@ function BulkPreviewModal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={onClose} role="dialog" aria-modal="true" aria-label="Preview bulk changes">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div>
             <h2 className="font-semibold text-gray-900">Preview Changes</h2>
             <p className="text-xs text-gray-500 mt-0.5">{preview.changes.length} listings will be updated</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Close preview">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
@@ -903,7 +912,7 @@ function OutreachModal({
               <h2 className="font-bold text-gray-900 text-sm">Enviar Outreach ⚡</h2>
               <p className="text-xs text-gray-500 mt-0.5">Mensaje generado por IA · Personalizado</p>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded transition-colors" aria-label="Close outreach modal">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -943,12 +952,16 @@ function OutreachModal({
                   style={{ background: tc.bg, border: `1px solid ${tc.color}22` }}
                 >
                   {editMode ? (
-                    <textarea
-                      value={editedText}
-                      onChange={(e) => setEditedText(e.target.value)}
-                      rows={8}
-                      className="w-full bg-transparent resize-none focus:outline-none text-gray-800"
-                    />
+                    <>
+                      <label htmlFor="outreach-edit" className="sr-only">Edit outreach message</label>
+                      <textarea
+                        id="outreach-edit"
+                        value={editedText}
+                        onChange={(e) => setEditedText(e.target.value)}
+                        rows={8}
+                        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 rounded text-gray-800"
+                      />
+                    </>
                   ) : (
                     <p className="text-gray-800">{currentText}</p>
                   )}
@@ -969,10 +982,11 @@ function OutreachModal({
           <div className="flex items-center gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50">
             <button
               onClick={generateMessages}
-              disabled={generating}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-white transition-colors disabled:opacity-50"
+              disabled={generating || sending}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Regenerate AI messages"
             >
-              <RefreshCw className="w-3 h-3" /> Regenerar
+              <RefreshCw className={`w-3 h-3 ${generating ? 'animate-spin' : ''}`} /> Regenerar
             </button>
             <button
               onClick={() => { setEditMode(!editMode); if (!editMode) setEditedText(getTabText(messages, tab)); }}
@@ -1349,8 +1363,9 @@ function AdminListingsInner() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowCommandPalette(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
               title="Cmd+K"
+              aria-label="Open command palette (Cmd+K)"
             >
               <Command className="w-3.5 h-3.5" />
               <span>Cmd+K</span>
@@ -1363,10 +1378,10 @@ function AdminListingsInner() {
               Export CSV
             </a>
             <button
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-white font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
               style={{ background: '#3B82F6' }}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4" aria-hidden="true" />
               Add Listing
             </button>
           </div>
@@ -1375,47 +1390,65 @@ function AdminListingsInner() {
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <label htmlFor="listings-search" className="sr-only">Search listings</label>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
             <input
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
+              id="listings-search"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               placeholder="Search listings…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
 
-          <select
-            className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 bg-white"
-            value={category}
-            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-          >
-            {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
+          <div>
+            <label htmlFor="filter-category" className="sr-only">Filter by category</label>
+            <select
+              id="filter-category"
+              className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white"
+              value={category}
+              onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+            >
+              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
 
-          <select
-            className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 bg-white capitalize"
-            value={region}
-            onChange={(e) => { setRegion(e.target.value); setPage(1); }}
-          >
-            <option value="all">All Regions</option>
-            {REGIONS.map((r) => <option key={r} value={r} className="capitalize">{r}</option>)}
-          </select>
+          <div>
+            <label htmlFor="filter-region" className="sr-only">Filter by region</label>
+            <select
+              id="filter-region"
+              className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white capitalize"
+              value={region}
+              onChange={(e) => { setRegion(e.target.value); setPage(1); }}
+            >
+              <option value="all">All Regions</option>
+              {REGIONS.map((r) => <option key={r} value={r} className="capitalize">{r}</option>)}
+            </select>
+          </div>
 
-          <select
-            className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 bg-white capitalize"
-            value={status}
-            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          >
-            {STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s === 'all' ? 'All Statuses' : s}</option>)}
-          </select>
+          <div>
+            <label htmlFor="filter-status" className="sr-only">Filter by status</label>
+            <select
+              id="filter-status"
+              className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white capitalize"
+              value={status}
+              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+            >
+              {STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s === 'all' ? 'All Statuses' : s}</option>)}
+            </select>
+          </div>
 
-          <select
-            className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 bg-white"
-            value={platformStatus}
-            onChange={(e) => { setPlatformStatus(e.target.value); setPage(1); }}
-          >
-            {PLATFORM_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
+          <div>
+            <label htmlFor="filter-platform" className="sr-only">Filter by platform status</label>
+            <select
+              id="filter-platform"
+              className="text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white"
+              value={platformStatus}
+              onChange={(e) => { setPlatformStatus(e.target.value); setPage(1); }}
+            >
+              {PLATFORM_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
 
           {missingData && (
             <button
@@ -1536,7 +1569,11 @@ function AdminListingsInner() {
           <thead className="sticky top-0 z-10 bg-white border-b border-gray-100">
             <tr>
               <th className="w-10 px-3 py-3">
-                <button onClick={toggleAll} className="text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={toggleAll}
+                  className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                  aria-label={allSelected ? 'Deselect all listings' : 'Select all listings'}
+                >
                   {allSelected ? <CheckSquare className="w-4 h-4 text-blue-500" /> : <Square className="w-4 h-4" />}
                 </button>
               </th>
@@ -1595,7 +1632,11 @@ function AdminListingsInner() {
                   style={{ background: isSelected ? '#EFF6FF' : idx % 2 === 0 ? '#fff' : '#FAFAFA' }}
                 >
                   <td className="px-3 py-2.5">
-                    <button onClick={() => toggleOne(l.id)} className="text-gray-400 hover:text-blue-500">
+                    <button
+                      onClick={() => toggleOne(l.id)}
+                      className="text-gray-400 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                      aria-label={isSelected ? `Deselect ${l.name}` : `Select ${l.name}`}
+                    >
                       {isSelected ? <CheckSquare className="w-4 h-4 text-blue-500" /> : <Square className="w-4 h-4" />}
                     </button>
                   </td>
@@ -1660,8 +1701,9 @@ function AdminListingsInner() {
                       {/* AI sparkle */}
                       <div className="relative">
                         <button
-                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-purple-100 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors"
                           title="AI Actions"
+                          aria-label={`AI actions for ${l.name}`}
                           onClick={(e) => { e.stopPropagation(); setAiPopoverRow(isAiOpen ? null : l.id); }}
                         >
                           <Sparkles className="w-3.5 h-3.5 text-purple-500" />
@@ -1676,16 +1718,18 @@ function AdminListingsInner() {
                       </div>
                       {(!l.platform_status || l.platform_status === 'scraped') && (
                         <button
-                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-100 transition-colors"
-                          title="Send Outreach ⚡"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
+                          title="Send Outreach"
+                          aria-label={`Send outreach to ${l.name}`}
                           onClick={() => setOutreachListing(l)}
                         >
                           <Zap className="w-3.5 h-3.5 text-green-500" />
                         </button>
                       )}
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-cyan-100 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-colors"
                         title="Copy Invite Link"
+                        aria-label={`Copy invite link for ${l.name}`}
                         onClick={async (e) => {
                           e.stopPropagation();
                           const url = `${window.location.origin}/join/${l.slug}`;
@@ -1696,15 +1740,17 @@ function AdminListingsInner() {
                         <Link2 className="w-3.5 h-3.5 text-cyan-600" />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-blue-100 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
                         title="Edit"
+                        aria-label={`Edit ${l.name}`}
                         onClick={() => setEditingListing(l)}
                       >
                         <Edit2 className="w-3.5 h-3.5 text-blue-500" />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-amber-100 transition-colors"
-                        title="Feature"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+                        title={l.status === 'featured' ? 'Unfeature' : 'Feature'}
+                        aria-label={l.status === 'featured' ? `Unfeature ${l.name}` : `Feature ${l.name}`}
                         onClick={async () => {
                           await fetch('/api/admin/listings', {
                             method: 'PATCH',
@@ -1717,10 +1763,11 @@ function AdminListingsInner() {
                         <Star className={`w-3.5 h-3.5 ${l.status === 'featured' ? 'text-amber-400 fill-amber-400' : 'text-gray-400'}`} />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
                         title="Archive"
+                        aria-label={`Archive ${l.name}`}
                         onClick={async () => {
-                          if (!confirm(`Archive "${l.name}"?`)) return;
+                          if (!confirm(`Archive "${l.name}"? This will remove it from public listings.`)) return;
                           await fetch(`/api/admin/listings?id=${l.id}`, { method: 'DELETE' });
                           setAllListings((prev) => prev.map((x) => x.id === l.id ? { ...x, status: 'archived' } : x));
                           setToast({ msg: `Archived "${l.name}"`, type: 'success' });
@@ -1747,7 +1794,8 @@ function AdminListingsInner() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+              aria-label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -1780,7 +1828,8 @@ function AdminListingsInner() {
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+              aria-label="Next page"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

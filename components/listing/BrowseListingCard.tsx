@@ -144,17 +144,17 @@ function StarRating({ rating }: { rating: number }) {
   const half = rating - full >= 0.5;
   const empty = 5 - full - (half ? 1 : 0);
   return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1" role="img" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
+      <div className="flex items-center gap-0.5" aria-hidden="true">
         {Array.from({ length: full }).map((_, i) => (
-          <span key={`f${i}`} className="text-amber-400 text-sm leading-none">★</span>
+          <span key={`f${i}`} className="text-accent text-sm leading-none">★</span>
         ))}
-        {half && <span className="text-amber-400 text-sm leading-none">★</span>}
+        {half && <span className="text-accent text-sm leading-none">★</span>}
         {Array.from({ length: empty }).map((_, i) => (
-          <span key={`e${i}`} className="text-gray-200 text-sm leading-none">★</span>
+          <span key={`e${i}`} className="text-muted-foreground/30 text-sm leading-none">★</span>
         ))}
       </div>
-      <span className="text-sm font-semibold text-gray-800">{rating.toFixed(1)}</span>
+      <span className="text-sm font-semibold text-foreground">{rating.toFixed(1)}</span>
     </div>
   );
 }
@@ -217,7 +217,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
     return (
       <Link href={`/listing/${listing.slug}`} className="group block">
         <div className={cn(
-          'bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden border',
+          'bg-background rounded-2xl shadow-sm hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:transition-all duration-200 overflow-hidden border cursor-pointer',
           !isOnboarded && 'opacity-90'
         )}>
           <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
@@ -266,7 +266,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
   return (
     <Link href={`/listing/${listing.slug}`} className="group block">
       <div className={cn(
-        'bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden',
+        'bg-background rounded-xl shadow-sm hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-all duration-200 overflow-hidden cursor-pointer',
         borderAccent,
         !isOnboarded && 'opacity-90'
       )}>
@@ -296,16 +296,17 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
 
             {/* Heart — top right */}
             <button
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
+              className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (isFavorited) removeFavorite(listing.id);
                 else addFavorite(listing.id);
               }}
-              aria-label={isFavorited ? 'Remove from saved' : 'Save'}
+              aria-label={isFavorited ? 'Remove from saved' : 'Save to favorites'}
+              aria-pressed={isFavorited}
             >
-              <Heart className={cn('w-4 h-4 transition-colors', isFavorited ? 'fill-rose-500 text-rose-500' : 'text-gray-500 hover:text-rose-500')} />
+              <Heart className={cn('w-5 h-5 transition-colors', isFavorited ? 'fill-rose-500 text-rose-500' : 'text-muted-foreground hover:text-rose-500')} aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -8,7 +8,7 @@ import { formatCurrency, getInitials } from '@/lib/utils';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import { useRouter } from 'next/navigation';
 import type { Itinerary, ItineraryStop } from '@/types/database';
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface ItineraryDetailProps {
   itinerary: Itinerary & { recommendation_count?: number };
@@ -22,31 +22,78 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
   const router = useRouter();
   const stops = itinerary.stops || [];
   const totalDays = itinerary.total_days || 1;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const toggleDay = (day: number) => {
     setExpandedDay(expandedDay === day ? null : day);
   };
 
+  // Focus trap + Escape to close + autofocus close button
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+    const previouslyFocused = document.activeElement as HTMLElement;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+      previouslyFocused?.focus?.();
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-background rounded-2xl shadow-2xl max-w-3xl w-full mx-4 my-8 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Itinerary details: ${itinerary.title}`}
+    >
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div
+        ref={dialogRef}
+        className="relative bg-background rounded-2xl shadow-2xl max-w-3xl w-full mx-4 my-8 overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300"
+      >
         {/* Hero image */}
         {itinerary.cover_image_url && (
           <div className="relative h-56 md:h-72 overflow-hidden">
             <img
               src={itinerary.cover_image_url}
-              alt={itinerary.title}
+              alt={`Cover image for ${itinerary.title}`}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-4 left-6 right-16 text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-1">{itinerary.title}</h2>
-              <div className="flex items-center gap-3 text-sm text-white/85">
+              <div className="flex items-center gap-3 text-sm text-white/90">
                 <span>{itinerary.total_days} days</span>
-                <span>·</span>
+                <span aria-hidden="true">·</span>
                 <span>{itinerary.regions.join(' → ')}</span>
-                <span>·</span>
+                <span aria-hidden="true">·</span>
                 <span>{formatCurrency(itinerary.estimated_cost_usd)}/person</span>
               </div>
             </div>
@@ -55,8 +102,10 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
 
         {/* Close button */}
         <button
+          ref={closeButtonRef}
           onClick={onClose}
-          className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors z-10"
+          aria-label="Close itinerary details"
+          className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors z-10 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
           <X className="w-5 h-5" />
         </button>
@@ -112,7 +161,9 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                   <div key={day} className="border rounded-xl overflow-hidden">
                     <button
                       onClick={() => toggleDay(day)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
+                      aria-expanded={isExpanded}
+                      aria-controls={`day-${day}-stops`}
+                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset focus-visible:outline-none cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
@@ -136,7 +187,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                     </button>
 
                     {isExpanded && dayStops.length > 0 && (
-                      <div className="px-4 pb-4 space-y-3 border-t bg-muted/20">
+                      <div id={`day-${day}-stops`} className="px-4 pb-4 space-y-3 border-t bg-muted/20">
                         {dayStops.map((stop, i) => (
                           <div key={stop.id || i} className="pt-3">
                             <div className="flex items-start gap-3">
@@ -181,7 +232,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                     )}
 
                     {isExpanded && dayStops.length === 0 && (
-                      <div className="px-4 pb-4 border-t">
+                      <div id={`day-${day}-stops`} className="px-4 pb-4 border-t">
                         <p className="text-sm text-muted-foreground italic pt-3">Flexible day, no fixed plans</p>
                       </div>
                     )}

@@ -63,7 +63,7 @@ export function ContactSection() {
               href="https://wa.me/584121234567"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 text-sm font-semibold uppercase tracking-wider transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-3 px-8 py-4 text-sm font-semibold uppercase tracking-wider transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
               style={{
                 background: '#c9a96e',
                 color: '#0a0a0a',
@@ -75,7 +75,7 @@ export function ContactSection() {
               {t.contactSection.ctaButton}
             </a>
 
-            <p className="mt-4 text-xs" style={{ color: '#555' }}>
+            <p className="mt-4 text-xs" style={{ color: '#888' }}>
               {t.contactSection.ctaNote}
             </p>
           </div>
@@ -90,7 +90,7 @@ export function ContactSection() {
                   href={data.href}
                   target={data.href.startsWith('http') ? '_blank' : undefined}
                   rel={data.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className="flex items-center gap-5 p-5 transition-colors hover:bg-white/[0.03]"
+                  className="flex items-center gap-5 p-5 transition-colors hover:bg-white/[0.03] cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#c9a96e]"
                   style={{
                     background: 'rgba(255,255,255,0.02)',
                     border: '1px solid rgba(255,255,255,0.05)',
@@ -108,7 +108,7 @@ export function ContactSection() {
                       <span className="text-xs" style={{ color: '#666' }}>{option.sublabel}</span>
                     </div>
                     <div className="text-sm mt-0.5" style={{ color: '#c9a96e' }}>{data.value}</div>
-                    <div className="text-xs mt-1" style={{ color: '#555' }}>{option.note}</div>
+                    <div className="text-xs mt-1" style={{ color: '#888' }}>{option.note}</div>
                   </div>
                 </a>
               )

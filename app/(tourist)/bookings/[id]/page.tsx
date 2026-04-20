@@ -45,21 +45,21 @@ function getRefundEstimate(daysUntil: number, totalUsd: number) {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode; note?: string }> = {
-  confirmed: { label: 'Confirmed', color: 'bg-green-500', icon: <CheckCircle className="w-5 h-5" /> },
+  confirmed: { label: 'Confirmed', color: 'bg-status-confirmed', icon: <CheckCircle className="w-5 h-5" aria-hidden="true" /> },
   pending: {
     label: 'Awaiting Confirmation',
-    color: 'bg-amber-500',
-    icon: <Clock className="w-5 h-5" />,
+    color: 'bg-status-pending',
+    icon: <Clock className="w-5 h-5" aria-hidden="true" />,
     note: 'The provider is reviewing your request. You\'ll hear back within 24 hours.',
   },
   payment_submitted: {
     label: 'Payment Sent',
-    color: 'bg-blue-500',
-    icon: <Clock className="w-5 h-5" />,
+    color: 'bg-status-info',
+    icon: <Clock className="w-5 h-5" aria-hidden="true" />,
     note: 'We received your payment details and are verifying within 1 hour.',
   },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500', icon: <XCircle className="w-5 h-5" /> },
-  completed: { label: 'Completed', color: 'bg-blue-500', icon: <CheckCircle className="w-5 h-5" /> },
+  cancelled: { label: 'Cancelled', color: 'bg-status-cancelled', icon: <XCircle className="w-5 h-5" aria-hidden="true" /> },
+  completed: { label: 'Completed', color: 'bg-status-info', icon: <CheckCircle className="w-5 h-5" aria-hidden="true" /> },
 };
 
 function generateICS(booking: GuestBooking): string {
@@ -113,14 +113,17 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     if (!booking) return;
     setCancelling(true);
     try {
-      await fetch(`/api/bookings/${booking.id}`, {
-        method: 'PUT',
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'cancelled' }),
       });
+      if (!res.ok) throw new Error('Failed to cancel booking');
       setBooking((b) => b ? { ...b, status: 'cancelled' } : b);
       setShowCancelModal(false);
     } catch {
+      // Show error feedback
+      alert('Failed to cancel booking. Please try again or contact support.');
     } finally {
       setCancelling(false);
     }
@@ -129,7 +132,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   if (loading || fetching) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -152,7 +155,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="container px-4 py-16 max-w-2xl mx-auto text-center">
         <p className="text-muted-foreground mb-4">Booking not found.</p>
-        <Link href="/trips" className="text-sky-500 hover:underline text-sm">← Back to My Trips</Link>
+        <Link href="/trips" className="text-primary hover:underline text-sm">Back to My Trips</Link>
       </div>
     );
   }
@@ -187,8 +190,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       <div className="space-y-4">
         {/* Listing card */}
         <Card className="rounded-xl shadow-sm overflow-hidden">
-          <div className="h-40 bg-gradient-to-br from-sky-100 to-amber-100 flex items-center justify-center">
-            <MapPin className="w-12 h-12 text-sky-400" />
+          <div className="h-40 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+            <MapPin className="w-12 h-12 text-primary" aria-hidden="true" />
           </div>
           <CardContent className="p-4">
             <h2 className="text-xl font-bold mb-1">{booking.listing_name}</h2>
@@ -204,7 +207,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               </span>
             </div>
             {isUpcoming && daysUntilCheckin >= 0 && (
-              <p className="text-sm font-semibold text-sky-600 mt-2">
+              <p className="text-sm font-semibold text-primary mt-2">
                 {daysUntilCheckin === 0 ? 'Check-in today!' : daysUntilCheckin === 1 ? 'Check-in tomorrow!' : `Check-in in ${daysUntilCheckin} days`}
               </p>
             )}
@@ -242,7 +245,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white text-sm font-medium hover:bg-green-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] text-white text-sm font-medium hover:bg-[#20bd5a] transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               Message via WhatsApp
@@ -250,7 +253,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             {booking.guest_phone && (
               <a
                 href={`tel:${booking.guest_phone}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium hover:border-sky-400 hover:text-sky-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium hover:border-primary/60 hover:text-primary transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 Call
@@ -261,14 +264,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Pre-trip info */}
         {withinWeek && (
-          <Card className="rounded-xl shadow-sm border-amber-200 bg-amber-50">
+          <Card className="rounded-xl shadow-sm border-status-pending/30 bg-status-pending/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+              <CardTitle className="text-base flex items-center gap-2 text-foreground">
                 <Cloud className="w-4 h-4" />
                 Pre-trip Info
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-amber-900 space-y-2">
+            <CardContent className="text-sm text-foreground space-y-2">
               <p className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>
@@ -302,7 +305,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleAddToCalendar}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium hover:border-sky-400 hover:text-sky-600 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium hover:border-primary/60 hover:text-primary transition-colors"
             >
               <Calendar className="w-4 h-4" />
               Add to Calendar
@@ -311,7 +314,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               href={shareUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium hover:border-green-400 hover:text-green-600 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium hover:border-secondary/60 hover:text-secondary transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               Share via WhatsApp
@@ -319,7 +322,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             {isUpcoming && (
               <button
                 onClick={() => setShowCancelModal(true)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors ml-auto"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors ml-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
               >
                 <XCircle className="w-4 h-4" />
                 Cancel Booking
@@ -333,15 +336,20 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       {showCancelModal && (() => {
         const refund = getRefundEstimate(daysUntilCheckin, booking.total_usd);
         const refundColors: Record<string, string> = {
-          green:  'bg-green-50 border-green-200 text-green-800',
-          yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-          orange: 'bg-orange-50 border-orange-200 text-orange-800',
-          red:    'bg-red-50 border-red-200 text-red-800',
+          green:  'bg-status-confirmed/10 border-status-confirmed/30 text-foreground',
+          yellow: 'bg-status-pending/10 border-status-pending/30 text-foreground',
+          orange: 'bg-status-pending/10 border-status-pending/30 text-foreground',
+          red:    'bg-status-cancelled/10 border-status-cancelled/30 text-foreground',
         };
         return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold">Cancel this booking?</h3>
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-dialog-title"
+        >
+          <div className="bg-background rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <h3 id="cancel-dialog-title" className="text-lg font-bold">Cancel this booking?</h3>
 
             {/* Refund estimate */}
             <div className={`rounded-xl border px-4 py-3 text-sm ${refundColors[refund.tier]}`}>
@@ -377,14 +385,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="flex-1 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Keep Booking
               </button>
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
               >
                 {cancelling ? 'Cancelling…' : 'Yes, Cancel'}
               </button>

@@ -109,7 +109,9 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
             )}
           </div>
           <div>
+            <label htmlFor="review-body" className="text-sm font-medium mb-1 block">Your review</label>
             <Textarea
+              id="review-body"
               placeholder="Share your experience..."
               rows={4}
               {...register('body')}

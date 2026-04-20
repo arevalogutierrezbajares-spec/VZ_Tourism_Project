@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,9 +15,27 @@ import { createClient } from '@/lib/supabase/client';
 import { registerSchema, type RegisterFormData } from '@/lib/validators';
 import toast from 'react-hot-toast';
 
+function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+  if (!password) return { score: 0, label: '', color: '' };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' };
+  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-orange-500' };
+  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-yellow-500' };
+  if (score <= 4) return { score: 4, label: 'Strong', color: 'bg-green-500' };
+  return { score: 5, label: 'Very strong', color: 'bg-green-600' };
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
@@ -69,70 +88,107 @@ export default function RegisterPage() {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name">Full name *</Label>
+            <Label htmlFor="reg-full_name">Full name *</Label>
             <Input
-              id="full_name"
+              id="reg-full_name"
               placeholder="Carlos Rodríguez"
               autoComplete="name"
+              aria-required="true"
+              aria-invalid={!!errors.full_name}
+              aria-describedby={errors.full_name ? 'reg-name-error' : undefined}
               {...register('full_name')}
             />
-            {errors.full_name && <p className="text-xs text-destructive">{errors.full_name.message}</p>}
+            {errors.full_name && <p id="reg-name-error" className="text-xs text-destructive" role="alert">{errors.full_name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="reg-email">Email *</Label>
             <Input
-              id="email"
+              id="reg-email"
               type="email"
               placeholder="you@example.com"
               autoComplete="email"
+              inputMode="email"
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'reg-email-error' : undefined}
               {...register('email')}
             />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            {errors.email && <p id="reg-email-error" className="text-xs text-destructive" role="alert">{errors.email.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register('password')}
-              />
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+              <Label htmlFor="reg-password">Password *</Label>
+              <div className="relative">
+                <Input
+                  id="reg-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className="pr-10"
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'reg-password-error' : 'password-strength'}
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p id="reg-password-error" className="text-xs text-destructive" role="alert">{errors.password.message}</p>}
+              <PasswordStrengthBar password={watch('password') ?? ''} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm *</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register('confirmPassword')}
-              />
+              <Label htmlFor="reg-confirmPassword">Confirm *</Label>
+              <div className="relative">
+                <Input
+                  id="reg-confirmPassword"
+                  type={showConfirm ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className="pr-10"
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby={errors.confirmPassword ? 'reg-confirm-error' : undefined}
+                  {...register('confirmPassword')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={showConfirm ? 'Hide password confirmation' : 'Show password confirmation'}
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               {errors.confirmPassword && (
-                <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                <p id="reg-confirm-error" className="text-xs text-destructive" role="alert">{errors.confirmPassword.message}</p>
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="reg-phone">Phone</Label>
               <Input
-                id="phone"
+                id="reg-phone"
                 type="tel"
+                inputMode="tel"
                 placeholder="+58 412 123 4567"
+                autoComplete="tel"
                 {...register('phone')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nationality">Nationality</Label>
+              <Label htmlFor="reg-nationality">Nationality</Label>
               <Input
-                id="nationality"
+                id="reg-nationality"
                 placeholder="Venezuelan"
+                autoComplete="country-name"
                 {...register('nationality')}
               />
             </div>
@@ -152,10 +208,10 @@ export default function RegisterPage() {
             </label>
           </div>
           {errors.acceptTerms && (
-            <p className="text-xs text-destructive">{errors.acceptTerms.message}</p>
+            <p className="text-xs text-destructive" role="alert">{errors.acceptTerms.message}</p>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
             {isLoading ? 'Creating account...' : 'Create account'}
           </Button>
         </form>
@@ -168,5 +224,25 @@ export default function RegisterPage() {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function PasswordStrengthBar({ password }: { password: string }) {
+  const strength = useMemo(() => getPasswordStrength(password), [password]);
+  if (!password) return null;
+  return (
+    <div className="space-y-1" id="password-strength">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((level) => (
+          <div
+            key={level}
+            className={`h-1 flex-1 rounded-full transition-colors ${
+              level <= strength.score ? strength.color : 'bg-gray-200'
+            }`}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">{strength.label}</p>
+    </div>
   );
 }

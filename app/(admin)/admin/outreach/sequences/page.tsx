@@ -168,8 +168,12 @@ export default function SequencesPage() {
                         {step.channel}
                       </span>
                       <button
-                        onClick={(e) => { e.stopPropagation(); removeStep(idx); }}
-                        className="text-gray-300 hover:text-red-400 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Remove step "${step.label}" from the sequence?`)) removeStep(idx);
+                        }}
+                        className="text-gray-300 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-400 rounded transition-colors"
+                        aria-label={`Remove step: ${step.label}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

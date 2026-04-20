@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Clock, ArrowRight, Mountain } from 'lucide-react';
 import { ListingCard } from '@/components/listing/ListingCard';
 import { SafetyBadge } from '@/components/common/SafetyBadge';
@@ -108,22 +109,25 @@ export default async function RegionPage({ params, searchParams }: Props) {
       {/* ── Hero ── */}
       <section className="relative h-[420px] sm:h-[500px] overflow-hidden">
         {content?.heroImage && (
-          <img
+          <Image
             src={content.heroImage}
-            alt={region.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            alt={`${region.name}, Venezuela — scenic landscape`}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10" />
 
         {/* Breadcrumb */}
         <div className="absolute top-6 left-0 w-full px-6 sm:px-10">
-          <nav className="text-sm text-white/60 flex items-center gap-1.5">
-            <Link href="/explore" className="hover:text-white transition-colors">Explore</Link>
-            <span>/</span>
-            <Link href="/explore" className="hover:text-white transition-colors">Destinations</Link>
-            <span>/</span>
-            <span className="text-white/90">{region.name}</span>
+          <nav className="text-sm text-white/60 flex items-center gap-1.5" aria-label="Breadcrumb">
+            <Link href="/explore" className="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded-sm">Explore</Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/explore" className="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded-sm">Destinations</Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-white/90" aria-current="page">{region.name}</span>
           </nav>
         </div>
 
@@ -223,10 +227,12 @@ export default async function RegionPage({ params, searchParams }: Props) {
                 <article key={i} className="group rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-300 bg-card flex flex-col sm:flex-row">
                   {/* Image */}
                   <div className="relative h-40 sm:h-auto sm:w-44 flex-shrink-0 overflow-hidden">
-                    <img
+                    <Image
                       src={guide.image}
                       alt={guide.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, 176px"
                     />
                   </div>
                   {/* Text */}
@@ -269,7 +275,8 @@ export default async function RegionPage({ params, searchParams }: Props) {
               <Link
                 key={t.id}
                 href={t.id === 'all' ? base : `${base}?tab=${t.id}`}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                aria-current={activeTab === t.id ? 'page' : undefined}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   activeTab === t.id
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground'

@@ -6,8 +6,7 @@ import { PinPreviewCard } from './PinPreviewCard';
 import { MapLegend } from './MapLegend';
 import { MapControls } from './MapControls';
 import type { MapPin } from '@/types/map';
-import { getCategoryColor } from '@/lib/mapbox/helpers';
-import { VENEZUELA_CENTER, VENEZUELA_DEFAULT_ZOOM } from '@/lib/constants';
+import { VENEZUELA_CENTER } from '@/lib/constants';
 
 interface MapContainerProps {
   className?: string;
@@ -174,7 +173,7 @@ export function MapContainer({
         paint: { 'text-color': '#ffffff' },
       });
 
-      // Individual pins
+      // Individual pins — radius 8 (visible) with transparent hit area for mobile touch targets
       map.addLayer({
         id: POINT_LAYER,
         type: 'circle',
@@ -195,7 +194,7 @@ export function MapContainer({
             'wellness', '#EC4899',
             /* default */ '#6B7280',
           ],
-          'circle-radius': 6,
+          'circle-radius': 8,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.9,
@@ -247,7 +246,7 @@ export function MapContainer({
         className: 'map-tooltip',
       });
 
-      // Click: cluster → zoom in
+      // Click: cluster → zoom in (respects prefers-reduced-motion)
       map.on('click', CLUSTER_LAYER, (e) => {
         if (!e.features?.length) return;
         const clusterId = e.features[0].properties['cluster_id'] as number;
@@ -255,7 +254,12 @@ export function MapContainer({
         if (!source) return;
         source.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
           if (err) return;
-          map.easeTo({ center: e.features![0].geometry.coordinates, zoom: zoomLevel });
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          map.easeTo({
+            center: e.features![0].geometry.coordinates,
+            zoom: zoomLevel,
+            duration: prefersReducedMotion ? 0 : 500,
+          });
         });
       });
 
@@ -315,7 +319,8 @@ export function MapContainer({
 
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     if (!token) {
-      console.warn('Mapbox token not configured');
+      setMapError('Mapbox token not configured');
+      setMapLoaded(true);
       return;
     }
 
@@ -417,21 +422,37 @@ export function MapContainer({
   }, [pins, hiddenCategories, mapLoaded]);
 
   // Fly to center when it changes (for search results)
+  // Respects prefers-reduced-motion by using jumpTo instead of flyTo
   useEffect(() => {
     if (!mapInstanceRef.current || !mapLoaded) return;
     // Only fly if it's a search-driven change (not the initial load)
     const [defaultLng, defaultLat] = VENEZUELA_CENTER;
     if (center[0] !== defaultLng || center[1] !== defaultLat) {
-      mapInstanceRef.current.flyTo({ center, zoom });
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) {
+        mapInstanceRef.current.easeTo({ center, zoom, duration: 0 });
+      } else {
+        mapInstanceRef.current.flyTo({ center, zoom });
+      }
     }
   }, [center, zoom, mapLoaded]);
 
   return (
-    <div className={`relative ${className}`}>
-      <div ref={mapRef} className="w-full h-full" />
+    <div className={`relative ${className}`} role="region" aria-label="Interactive map">
+      <div
+        ref={mapRef}
+        className="w-full h-full"
+        aria-label="Map display"
+        tabIndex={interactive ? 0 : -1}
+      />
 
-      {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      {/* Loading skeleton */}
+      {!mapLoaded && !mapError && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900"
+          role="status"
+          aria-live="polite"
+        >
           <div className="text-center space-y-3">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-sm text-muted-foreground">Loading map...</p>
@@ -439,15 +460,19 @@ export function MapContainer({
         </div>
       )}
 
+      {/* Error state */}
       {mapError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900 dark:to-blue-900 z-10">
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900 dark:to-blue-900 z-10"
+          role="alert"
+        >
           <div className="text-center space-y-3 p-6">
-            <div className="text-4xl">🗺️</div>
+            <div className="text-4xl" aria-hidden="true">🗺️</div>
             <h3 className="font-semibold text-lg">Map unavailable</h3>
             <p className="text-sm text-muted-foreground max-w-xs">{mapError}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              className="mt-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Retry
             </button>
@@ -455,18 +480,19 @@ export function MapContainer({
         </div>
       )}
 
+      {/* Missing token fallback */}
       {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900 dark:to-blue-900">
           <div className="text-center space-y-2 p-6">
-            <div className="text-4xl">🗺️</div>
+            <div className="text-4xl" aria-hidden="true">🗺️</div>
             <h3 className="font-semibold text-lg">Map Preview</h3>
             <p className="text-sm text-muted-foreground">
               Configure NEXT_PUBLIC_MAPBOX_TOKEN to enable the interactive map
             </p>
             <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-              <div className="p-2 bg-white/50 rounded">📍 Los Roques</div>
-              <div className="p-2 bg-white/50 rounded">⛰️ Mérida</div>
-              <div className="p-2 bg-white/50 rounded">🏝️ Margarita</div>
+              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Los Roques</div>
+              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Merida</div>
+              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Margarita</div>
             </div>
           </div>
         </div>
@@ -481,6 +507,7 @@ export function MapContainer({
         </div>
       )}
 
+      {/* Pin preview card */}
       {selectedPin && (
         <div className="absolute bottom-24 right-4 z-10">
           <PinPreviewCard

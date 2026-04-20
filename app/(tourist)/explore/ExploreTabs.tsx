@@ -33,13 +33,15 @@ export function ExploreTabs({ trending, newest }: ExploreTabsProps) {
   return (
     <>
       {/* Tab bar */}
-      <div className="flex gap-1 mb-8 bg-muted/50 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-8 bg-muted/50 rounded-xl p-1 w-fit" role="tablist" aria-label="Itinerary feed tabs">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
+            role="tab"
+            aria-selected={activeTab === id}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
               activeTab === id
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'

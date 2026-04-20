@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { ListingCard } from '@/components/listing/ListingCard';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import type { Listing } from '@/types/database';
 import { useDebounce } from '@/hooks/use-debounce';
+import toast from 'react-hot-toast';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -167,6 +169,7 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
       onClose();
     } catch (error) {
       console.error('Failed to resolve Google Place:', error);
+      toast.error('Failed to add this place. Please try again.');
     } finally {
       setResolvingPlaceId(null);
     }
@@ -192,6 +195,9 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Stop — Day {day}</DialogTitle>
+          <DialogDescription>
+            Search for experiences or places to add to your itinerary.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative">

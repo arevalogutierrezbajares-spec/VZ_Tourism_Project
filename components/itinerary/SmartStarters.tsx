@@ -72,7 +72,7 @@ export function SmartStarters({ onSend, className }: SmartStartersProps) {
               type="button"
               onClick={() => handleVibeClick(vibe.id, vibe.prompt)}
               className={cn(
-                'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center',
+                'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                 isSelected
                   ? 'border-primary bg-primary/5 text-primary'
                   : 'border-border hover:border-primary/40 hover:bg-muted/50 text-muted-foreground hover:text-foreground'
@@ -95,7 +95,7 @@ export function SmartStarters({ onSend, className }: SmartStartersProps) {
               type="button"
               onClick={() => handleDurationClick(d.days)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
+                'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                 selectedDays === d.days
                   ? 'bg-primary text-white border-primary'
                   : 'border-border hover:border-primary/40 text-muted-foreground hover:text-foreground'

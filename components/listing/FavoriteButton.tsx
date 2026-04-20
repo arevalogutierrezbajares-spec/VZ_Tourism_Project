@@ -32,18 +32,22 @@ export function FavoriteButton({ listingId, className }: FavoriteButtonProps) {
     <button
       onClick={handleClick}
       className={cn(
-        'flex items-center justify-center w-8 h-8 rounded-full bg-white/90 shadow-sm',
+        'flex items-center justify-center w-11 h-11 rounded-full bg-white/90 shadow-sm',
         'transition-all hover:bg-white active:scale-90',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
+        'cursor-pointer',
         className
       )}
       aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
+      aria-pressed={favorited}
       title={!isAuthenticated ? 'Sign in to save' : undefined}
     >
       <Heart
         className={cn(
-          'w-4 h-4 transition-colors',
-          favorited ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-gray-600'
+          'w-5 h-5 transition-colors',
+          favorited ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-foreground'
         )}
+        aria-hidden="true"
       />
     </button>
   );

@@ -81,9 +81,9 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
           <div
             className={`w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-semibold transition-colors ${
               i < current
-                ? 'bg-green-500 text-white'
+                ? 'bg-status-confirmed text-white'
                 : i === current
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground'
             }`}
           >
@@ -162,6 +162,7 @@ export function BookingForm({ listing }: BookingFormProps) {
   const { isAuthenticated } = useAuth();
   const [copied, setCopied] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Verified provider = instant book; otherwise = request to book
   const isInstantBook = listing.provider?.is_verified === true;
@@ -346,8 +347,19 @@ export function BookingForm({ listing }: BookingFormProps) {
                   id="guest_name"
                   placeholder="Your full name"
                   value={formData.guest_name}
-                  onChange={(e) => updateFormData({ guest_name: e.target.value })}
+                  onChange={(e) => {
+                    updateFormData({ guest_name: e.target.value });
+                    if (e.target.value.trim()) setFieldErrors((p) => ({ ...p, guest_name: '' }));
+                  }}
+                  onBlur={() => {
+                    if (!formData.guest_name.trim()) setFieldErrors((p) => ({ ...p, guest_name: 'Name is required' }));
+                  }}
+                  aria-invalid={!!fieldErrors.guest_name}
+                  aria-describedby={fieldErrors.guest_name ? 'guest_name_error' : undefined}
                 />
+                {fieldErrors.guest_name && (
+                  <p id="guest_name_error" className="text-xs text-destructive mt-0.5">{fieldErrors.guest_name}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -360,8 +372,23 @@ export function BookingForm({ listing }: BookingFormProps) {
                   type="email"
                   placeholder="you@example.com"
                   value={formData.guest_email}
-                  onChange={(e) => updateFormData({ guest_email: e.target.value })}
+                  onChange={(e) => {
+                    updateFormData({ guest_email: e.target.value });
+                    if (e.target.value.trim() && e.target.value.includes('@')) setFieldErrors((p) => ({ ...p, guest_email: '' }));
+                  }}
+                  onBlur={() => {
+                    if (!formData.guest_email.trim()) {
+                      setFieldErrors((p) => ({ ...p, guest_email: 'Email is required' }));
+                    } else if (!formData.guest_email.includes('@')) {
+                      setFieldErrors((p) => ({ ...p, guest_email: 'Enter a valid email address' }));
+                    }
+                  }}
+                  aria-invalid={!!fieldErrors.guest_email}
+                  aria-describedby={fieldErrors.guest_email ? 'guest_email_error' : undefined}
                 />
+                {fieldErrors.guest_email && (
+                  <p id="guest_email_error" className="text-xs text-destructive mt-0.5">{fieldErrors.guest_email}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -466,8 +493,8 @@ export function BookingForm({ listing }: BookingFormProps) {
             {/* Booking mode indicator */}
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
               isInstantBook
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-sky-50 text-sky-700 border border-sky-200'
+                ? 'bg-status-confirmed/10 text-status-confirmed border border-status-confirmed/30'
+                : 'bg-status-info/10 text-status-info border border-status-info/30'
             }`}>
               {isInstantBook ? (
                 <><Zap className="w-3.5 h-3.5 flex-shrink-0" /> Instant confirmation — pay now</>
@@ -482,12 +509,15 @@ export function BookingForm({ listing }: BookingFormProps) {
                 Back
               </Button>
               <Button className="flex-1" onClick={handleBookNow} disabled={isLoading}>
+                {isLoading && (
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" aria-hidden="true" />
+                )}
                 {isLoading
                   ? (isInstantBook ? 'Reserving...' : 'Sending request...')
                   : isInstantBook
                   ? 'Book Now'
                   : 'Request to Book'}
-                <ChevronRight className="w-4 h-4 ml-1" />
+                {!isLoading && <ChevronRight className="w-4 h-4 ml-1" />}
               </Button>
             </div>
           </>
@@ -514,7 +544,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                       }`}
                     >
                       <div
-                        className={`mt-0.5 p-1.5 rounded-md ${selected ? 'bg-primary text-white' : 'bg-muted'}`}
+                        className={`mt-0.5 p-1.5 rounded-md ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
                       >
                         <Icon className="w-4 h-4" />
                       </div>
@@ -522,7 +552,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{opt.label}</span>
                           {opt.badge && (
-                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">
+                            <span className="text-[10px] bg-status-confirmed/15 text-status-confirmed px-1.5 py-0.5 rounded font-medium">
                               {opt.badge}
                             </span>
                           )}
@@ -552,10 +582,11 @@ export function BookingForm({ listing }: BookingFormProps) {
                         <span className="font-mono font-medium">{paymentDetails.email}</span>
                         <button
                           onClick={() => copyToClipboard(paymentDetails.email!)}
-                          className="text-muted-foreground hover:text-foreground"
+                          className="text-muted-foreground hover:text-foreground p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label="Copy email address"
                         >
                           {copied ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                            <CheckCircle className="w-3.5 h-3.5 text-status-confirmed" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -575,10 +606,11 @@ export function BookingForm({ listing }: BookingFormProps) {
                         <span className="font-mono text-xs break-all">{paymentDetails.address}</span>
                         <button
                           onClick={() => copyToClipboard(paymentDetails.address!)}
-                          className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                          className="text-muted-foreground hover:text-foreground flex-shrink-0 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label="Copy USDT address"
                         >
                           {copied ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                            <CheckCircle className="w-3.5 h-3.5 text-status-confirmed" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -610,10 +642,13 @@ export function BookingForm({ listing }: BookingFormProps) {
             />
 
             <div className="flex gap-2">
-              <Button variant="outline" className="w-1/3" onClick={prevStep}>
+              <Button variant="outline" className="w-1/3" onClick={prevStep} aria-label="Go back to review">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <Button className="flex-1" onClick={handlePay} disabled={isLoading}>
+                {isLoading && (
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" aria-hidden="true" />
+                )}
                 {isLoading
                   ? 'Processing...'
                   : formData.payment_method === 'card'
@@ -629,7 +664,7 @@ export function BookingForm({ listing }: BookingFormProps) {
         {/* ─── DONE ─── */}
         {step === 'done' && (
           <div className="text-center space-y-3 py-4">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
+            <CheckCircle className="w-12 h-12 text-status-confirmed mx-auto" aria-hidden="true" />
             <h3 className="font-bold text-lg">Booking Submitted!</h3>
             <p className="text-sm text-muted-foreground">
               Redirecting to your confirmation page…

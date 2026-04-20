@@ -132,7 +132,7 @@ export function RutaNav() {
             <a
               key={item.href}
               href={item.href}
-              className="text-xs uppercase tracking-wider transition-colors hover:text-white"
+              className="text-xs uppercase tracking-wider transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] rounded-sm"
               style={{ color: '#888' }}
             >
               {item.label}
@@ -140,7 +140,7 @@ export function RutaNav() {
           ))}
           <a
             href="#book"
-            className="text-xs font-semibold uppercase tracking-wider px-6 py-2.5 transition-opacity hover:opacity-90"
+            className="text-xs font-semibold uppercase tracking-wider px-6 py-2.5 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#c9a96e] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
             style={{
               background: '#c9a96e',
               color: '#0a0a0a',
@@ -196,7 +196,7 @@ export function RutaNav() {
                 className="px-3 py-1.5 text-xs uppercase tracking-wider transition-colors"
                 style={{
                   border: `1px solid ${locale === code ? '#c9a96e' : 'rgba(255,255,255,0.1)'}`,
-                  color: locale === code ? '#c9a96e' : '#666',
+                  color: locale === code ? '#c9a96e' : '#888',
                   background: locale === code ? 'rgba(201,169,110,0.05)' : 'transparent',
                 }}
               >
@@ -242,7 +242,7 @@ export function RutaNav() {
               </svg>
               WhatsApp
             </a>
-            <span className="text-xs" style={{ color: '#555' }}>
+            <span className="text-xs" style={{ color: '#888' }}>
               ops@rutasecurity.com
             </span>
           </div>

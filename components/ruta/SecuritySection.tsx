@@ -41,7 +41,7 @@ export function SecuritySection() {
               }}
             >
               <h4 className="text-sm font-semibold mb-2">{feat.title}</h4>
-              <p className="text-xs leading-relaxed" style={{ color: '#999' }}>
+              <p className="text-xs leading-relaxed" style={{ color: '#aaa' }}>
                 {feat.description}
               </p>
             </div>

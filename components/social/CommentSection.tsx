@@ -50,14 +50,24 @@ export function CommentSection({ comments, onSubmit, isAuthenticated = true }: C
   return (
     <div className="space-y-4">
       {isAuthenticated && (
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex gap-2" aria-label="Add a comment">
+          <label htmlFor="comment-input" className="sr-only">Write a comment</label>
           <Input
+            id="comment-input"
             placeholder="Write a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="flex-1"
+            aria-describedby={isSubmitting ? 'comment-submitting' : undefined}
           />
-          <Button type="submit" size="icon" disabled={!newComment.trim() || isSubmitting}>
+          {isSubmitting && <span id="comment-submitting" className="sr-only">Submitting comment</span>}
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!newComment.trim() || isSubmitting}
+            aria-label="Submit comment"
+            className="min-w-[44px] min-h-[44px] cursor-pointer"
+          >
             <Send className="w-4 h-4" />
           </Button>
         </form>
@@ -67,7 +77,7 @@ export function CommentSection({ comments, onSubmit, isAuthenticated = true }: C
         {localComments.map((comment) => (
           <div key={comment.id} className="flex gap-3">
             <Avatar className="w-8 h-8 flex-shrink-0">
-              <AvatarImage src={comment.author.avatar} />
+              <AvatarImage src={comment.author.avatar} alt={`${comment.author.name}'s avatar`} />
               <AvatarFallback className="text-xs">
                 {getInitials(comment.author.name)}
               </AvatarFallback>

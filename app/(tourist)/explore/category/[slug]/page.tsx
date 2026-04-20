@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { ListingCard } from '@/components/listing/ListingCard';
 import { LISTING_CATEGORIES } from '@/lib/constants';
@@ -86,20 +87,23 @@ export default async function CategoryPage({ params }: Props) {
       {/* ── Hero ── */}
       <section className="relative h-[380px] sm:h-[440px] overflow-hidden">
         {content?.heroImage && (
-          <img
+          <Image
             src={content.heroImage}
-            alt={category.label}
-            className="absolute inset-0 w-full h-full object-cover"
+            alt={`${category.label} experiences in Venezuela`}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
 
         {/* Breadcrumb */}
         <div className="absolute top-6 left-0 w-full px-6 sm:px-10">
-          <nav className="text-sm text-white/60 flex items-center gap-1.5">
-            <Link href="/explore" className="hover:text-white transition-colors">Explore</Link>
-            <span>/</span>
-            <span className="text-white/90">{category.label}</span>
+          <nav className="text-sm text-white/60 flex items-center gap-1.5" aria-label="Breadcrumb">
+            <Link href="/explore" className="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded-sm">Explore</Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-white/90" aria-current="page">{category.label}</span>
           </nav>
         </div>
 
@@ -161,7 +165,7 @@ export default async function CategoryPage({ params }: Props) {
                 {/* AI CTA */}
                 <Link
                   href="/map?mode=ai"
-                  className="mt-2 flex items-center gap-2 w-full px-4 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity justify-center"
+                  className="mt-2 flex items-center gap-2 w-full px-4 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   Plan with AI
@@ -182,10 +186,12 @@ export default async function CategoryPage({ params }: Props) {
                 <article key={i} className="group rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-300 bg-card">
                   {/* Cover image */}
                   <div className="relative h-44 overflow-hidden">
-                    <img
+                    <Image
                       src={guide.image}
                       alt={guide.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <span className="absolute bottom-3 left-3 text-xs px-2.5 py-1 rounded-full bg-white/90 text-gray-800 font-medium">
@@ -243,7 +249,7 @@ export default async function CategoryPage({ params }: Props) {
               <p className="text-sm text-muted-foreground mt-1">We add new experiences every week — check back soon.</p>
               <Link
                 href="/map?mode=ai"
-                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 <Sparkles className="w-4 h-4" />
                 Ask the AI for ideas

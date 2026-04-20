@@ -186,9 +186,11 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
       {/* Search + region + view toggle row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <label htmlFor="explore-search" className="sr-only">Search listings</label>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
           <input
-            type="text"
+            id="explore-search"
+            type="search"
             placeholder="Search hotels, restaurants, experiences…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -197,7 +199,9 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
         </div>
 
         <div className="relative">
+          <label htmlFor="explore-region" className="sr-only">Filter by region</label>
           <select
+            id="explore-region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
             className="appearance-none pl-4 pr-9 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
@@ -212,16 +216,17 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
         </div>
 
         {/* View toggle */}
-        <div className="flex rounded-xl border overflow-hidden bg-background">
+        <div className="flex rounded-xl border overflow-hidden bg-background" role="group" aria-label="View mode">
           <button
             onClick={() => setViewMode('grid')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors',
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
               viewMode === 'grid'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
             aria-label="Grid view"
+            aria-pressed={viewMode === 'grid'}
           >
             <LayoutGrid className="w-4 h-4" />
             <span className="hidden sm:inline">Grid</span>
@@ -229,12 +234,13 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           <button
             onClick={() => setViewMode('map')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors',
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
               viewMode === 'map'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
             aria-label="Map view"
+            aria-pressed={viewMode === 'map'}
           >
             <Map className="w-4 h-4" />
             <span className="hidden sm:inline">Map</span>
@@ -244,19 +250,21 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
       {/* Category tabs + sort row */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit">
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit" role="tablist" aria-label="Filter by category">
           {CATEGORIES.map(({ id, label, icon }) => (
             <button
               key={id}
               onClick={() => setCategory(id)}
+              role="tab"
+              aria-selected={category === id}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
                 category === id
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>{icon}</span>
+              <span aria-hidden="true">{icon}</span>
               {label}
             </button>
           ))}
@@ -264,11 +272,13 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
         {/* Sort select */}
         <div className="relative flex items-center gap-1.5">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+          <label htmlFor="explore-sort" className="sr-only">Sort by</label>
+          <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
           <select
+            id="explore-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="appearance-none pl-1 pr-6 py-1.5 bg-transparent text-sm text-muted-foreground focus:outline-none cursor-pointer"
+            className="appearance-none pl-1 pr-6 py-1.5 bg-transparent text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 rounded-md cursor-pointer"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>{opt.label}</option>
@@ -319,7 +329,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-colors disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
                 </button>

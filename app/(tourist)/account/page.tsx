@@ -160,33 +160,40 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Personal Info</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Display Name</label>
+              <label htmlFor="acct-display-name" className="block text-sm font-medium mb-1">Display Name</label>
               <input
+                id="acct-display-name"
                 type="text"
                 value={form.display_name}
                 onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
                 placeholder={profile?.full_name ?? 'Your name'}
+                autoComplete="name"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Phone / WhatsApp</label>
+              <label htmlFor="acct-phone" className="block text-sm font-medium mb-1">Phone / WhatsApp</label>
               <input
+                id="acct-phone"
                 type="tel"
+                inputMode="tel"
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="+1 555 000 0000"
+                autoComplete="tel"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Country</label>
+              <label htmlFor="acct-country" className="block text-sm font-medium mb-1">Country</label>
               <select
+                id="acct-country"
                 value={form.country}
                 onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
+                autoComplete="country-name"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
-                <option value="">Select country…</option>
+                <option value="">Select country...</option>
                 {COUNTRIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -242,22 +249,27 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Emergency Contact</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Contact Name</label>
+              <label htmlFor="acct-emerg-name" className="block text-sm font-medium mb-1">Contact Name</label>
               <input
+                id="acct-emerg-name"
                 type="text"
                 value={form.emergency_contact_name}
                 onChange={(e) => setForm((f) => ({ ...f, emergency_contact_name: e.target.value }))}
                 placeholder="Full name"
+                autoComplete="off"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Contact Phone</label>
+              <label htmlFor="acct-emerg-phone" className="block text-sm font-medium mb-1">Contact Phone</label>
               <input
+                id="acct-emerg-phone"
                 type="tel"
+                inputMode="tel"
                 value={form.emergency_contact_phone}
                 onChange={(e) => setForm((f) => ({ ...f, emergency_contact_phone: e.target.value }))}
                 placeholder="+1 555 000 0000"
+                autoComplete="off"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
@@ -269,22 +281,27 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Payment Methods</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Zelle Email</label>
+              <label htmlFor="acct-zelle" className="block text-sm font-medium mb-1">Zelle Email</label>
               <input
+                id="acct-zelle"
                 type="email"
+                inputMode="email"
                 value={form.payment_zelle_email}
                 onChange={(e) => setForm((f) => ({ ...f, payment_zelle_email: e.target.value }))}
                 placeholder="email@example.com"
+                autoComplete="email"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">USDT Wallet Address (TRC-20)</label>
+              <label htmlFor="acct-usdt" className="block text-sm font-medium mb-1">USDT Wallet Address (TRC-20)</label>
               <input
+                id="acct-usdt"
                 type="text"
                 value={form.payment_usdt_address}
                 onChange={(e) => setForm((f) => ({ ...f, payment_usdt_address: e.target.value }))}
                 placeholder="T..."
+                autoComplete="off"
                 className="w-full rounded-lg border px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>

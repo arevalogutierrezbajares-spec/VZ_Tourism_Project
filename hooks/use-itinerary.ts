@@ -131,8 +131,11 @@ export function useItinerary() {
 
       if (!response.ok) throw new Error('Optimization failed');
 
-      const { suggestions } = await response.json();
-      toast.success(suggestions || 'Itinerary optimized! Review the updated order.');
+      const data = await response.json();
+      const message = data.optimization || data.suggestions || 'Itinerary optimized! Review the updated order.';
+      toast.success(typeof message === 'string' && message.length > 100
+        ? 'Optimization complete! Check the suggestions.'
+        : message);
     } catch {
       toast.error('Could not optimize itinerary. Please try again.');
     } finally {

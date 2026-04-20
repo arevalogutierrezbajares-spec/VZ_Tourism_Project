@@ -5,7 +5,7 @@ import { matchSpotsBatch } from '@/lib/match-spots';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const SONNET_MODEL = 'claude-sonnet-4-5-20241022';
+const SONNET_MODEL = 'claude-sonnet-4-5';
 
 export interface ExtractedSpot {
   extracted_name: string;

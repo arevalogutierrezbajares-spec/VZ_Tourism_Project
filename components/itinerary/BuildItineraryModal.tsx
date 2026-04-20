@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface BuildItineraryModalProps {
@@ -101,9 +102,9 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
                   Build my itinerary with AI
                 </DialogTitle>
               </div>
-              <p className="text-sm text-muted-foreground ml-10">
+              <DialogDescription className="text-sm text-muted-foreground ml-10">
                 How would you like to start?
-              </p>
+              </DialogDescription>
             </div>
 
             {/* Option cards */}
@@ -115,7 +116,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
                   <button
                     key={opt.id}
                     onClick={() => setSelected(opt.id)}
-                    className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-150 ${
+                    className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none ${
                       isSelected
                         ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/20'
                         : 'border-border hover:border-border/80 hover:bg-muted/40'
@@ -171,7 +172,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
               <button
                 onClick={handleContinue}
                 disabled={!selected}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
               >
                 Continue
                 <ArrowRight className="w-4 h-4" />
@@ -220,7 +221,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
               <button
                 onClick={handleContinue}
                 disabled={!pasteText.trim()}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
               >
                 Build my itinerary
                 <Sparkles className="w-4 h-4" />

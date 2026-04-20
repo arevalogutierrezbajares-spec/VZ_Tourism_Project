@@ -120,21 +120,21 @@ export function HeroSection() {
             {/* Primary — Build itinerary with AI */}
             <button
               onClick={() => setModalOpen(true)}
-              className="group relative flex items-center gap-3 px-9 py-4 rounded-2xl font-bold text-base sm:text-lg bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-400/40 hover:scale-105 active:scale-[1.02] transition-all duration-200 overflow-hidden"
+              className="group relative flex items-center gap-3 px-9 py-4 rounded-2xl font-bold text-base sm:text-lg bg-accent text-accent-foreground shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 hover:scale-105 active:scale-[1.02] transition-all duration-200 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
             >
               <Sparkles className="w-5 h-5 flex-shrink-0 transition-transform group-hover:rotate-12 duration-300" />
               <span>Build my itinerary with AI</span>
               {/* Shimmer sweep on hover */}
               <span
-                className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/35 to-transparent"
-                aria-hidden
+                className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/35 to-transparent motion-reduce:hidden"
+                aria-hidden="true"
               />
             </button>
 
             {/* Secondary — Explore */}
             <button
               onClick={scrollToCategories}
-              className="flex items-center gap-2.5 px-9 py-4 rounded-2xl font-semibold text-base sm:text-lg text-white border-2 border-white/50 hover:border-white hover:bg-white/10 active:bg-white/15 transition-all duration-200"
+              className="flex items-center gap-2.5 px-9 py-4 rounded-2xl font-semibold text-base sm:text-lg text-white border-2 border-white/50 hover:border-white hover:bg-white/10 active:bg-white/15 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-black"
             >
               Explore Venezuela
               <ChevronDown className="w-5 h-5" />
@@ -153,7 +153,7 @@ export function HeroSection() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce motion-reduce:animate-none" aria-hidden="true">
           <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center pt-2">
             <div className="w-1.5 h-2.5 rounded-full bg-white/50" />
           </div>

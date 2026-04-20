@@ -37,11 +37,11 @@ const PAYMENT_METHOD_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-green-100 text-green-800',
-  completed: 'bg-blue-100 text-blue-800',
-  cancelled: 'bg-red-100 text-red-800',
-  payment_submitted: 'bg-orange-100 text-orange-800',
+  pending: 'bg-status-pending/10 text-status-pending',
+  confirmed: 'bg-status-confirmed/10 text-status-confirmed',
+  completed: 'bg-status-info/10 text-status-info',
+  cancelled: 'bg-status-cancelled/10 text-status-cancelled',
+  payment_submitted: 'bg-status-pending/10 text-status-pending',
 };
 
 function Trend({ value, prev }: { value: number; prev: number }) {

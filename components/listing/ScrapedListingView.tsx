@@ -43,8 +43,8 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
   const half = rating - full >= 0.5;
   const empty = 5 - full - (half ? 1 : 0);
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-2" role="img" aria-label={`${rating.toFixed(1)} out of 5 stars, ${count.toLocaleString()} reviews`}>
+      <div className="flex items-center gap-0.5" aria-hidden="true">
         {Array.from({ length: full }).map((_, i) => (
           <span key={`f${i}`} className="text-accent text-lg">★</span>
         ))}
@@ -124,11 +124,13 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
 
       {/* Photo */}
       {listing.cover_image_url && (
-        <div className="mb-8 rounded-2xl overflow-hidden">
+        <div className="mb-8 rounded-2xl overflow-hidden relative h-64 md:h-96">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={listing.cover_image_url}
-            alt={listing.name}
-            className="w-full h-64 md:h-96 object-cover"
+            alt={`Photo of ${listing.name}`}
+            className="w-full h-full object-cover"
+            loading="eager"
           />
         </div>
       )}
@@ -241,13 +243,15 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
               </p>
             ) : (
               <form onSubmit={handleNotify} className="space-y-2">
+                <label htmlFor="notify-email" className="sr-only">Your email address</label>
                 <input
+                  id="notify-email"
                   type="email"
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full text-sm px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:border-blue-400"
+                  className="w-full text-sm px-3 py-2 rounded-md border border-border bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <button
                   type="submit"

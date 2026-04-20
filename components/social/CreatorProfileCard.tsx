@@ -17,10 +17,10 @@ interface CreatorProfileCardProps {
 export function CreatorProfileCard({ creator, compact = false }: CreatorProfileCardProps) {
   if (compact) {
     return (
-      <Link href={`/creator/${creator.username}`}>
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors">
+      <Link href={`/creator/${creator.username}`} className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:rounded-xl focus-visible:outline-none" aria-label={`View ${creator.username}'s profile`}>
+        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors cursor-pointer">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={creator.avatar_url || undefined} />
+            <AvatarImage src={creator.avatar_url || undefined} alt={`${creator.username}'s avatar`} />
             <AvatarFallback>{creator.username[0].toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
@@ -41,12 +41,12 @@ export function CreatorProfileCard({ creator, compact = false }: CreatorProfileC
     <div className="space-y-4">
       {creator.cover_image_url && (
         <div className="relative h-32 rounded-xl overflow-hidden">
-          <Image src={creator.cover_image_url} alt={creator.username} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
+          <Image src={creator.cover_image_url} alt={`${creator.username}'s cover photo`} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
         </div>
       )}
       <div className="flex items-end gap-4 px-2 -mt-8">
         <Avatar className="w-16 h-16 border-4 border-background shadow">
-          <AvatarImage src={creator.avatar_url || undefined} />
+          <AvatarImage src={creator.avatar_url || undefined} alt={`${creator.username}'s avatar`} />
           <AvatarFallback className="text-xl">{creator.username[0].toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 pb-1">
@@ -66,7 +66,8 @@ export function CreatorProfileCard({ creator, compact = false }: CreatorProfileC
             href={`https://instagram.com/${creator.instagram_handle}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 border rounded-lg px-2.5 py-1 text-sm font-medium hover:bg-muted transition-colors"
+            className="inline-flex items-center gap-1.5 border rounded-lg px-2.5 py-2 min-h-[44px] text-sm font-medium hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            aria-label={`Follow ${creator.username} on Instagram`}
           >
             <Share2 className="w-3.5 h-3.5" />
             Follow

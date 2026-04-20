@@ -1,11 +1,21 @@
 import type { DirectionsResult, GeocodingResult } from '@/types/map';
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 const BASE_URL = 'https://api.mapbox.com';
 
+function getToken(): string {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  if (!token) {
+    throw new Error(
+      'NEXT_PUBLIC_MAPBOX_TOKEN is not configured. Set it in your environment variables.'
+    );
+  }
+  return token;
+}
+
 export async function geocode(query: string, country = 'VE'): Promise<GeocodingResult[]> {
+  const token = getToken();
   const encoded = encodeURIComponent(query);
-  const url = `${BASE_URL}/geocoding/v5/mapbox.places/${encoded}.json?access_token=${MAPBOX_TOKEN}&country=${country}&limit=5`;
+  const url = `${BASE_URL}/geocoding/v5/mapbox.places/${encoded}.json?access_token=${token}&country=${country}&limit=5`;
 
   const response = await fetch(url);
   if (!response.ok) throw new Error('Geocoding failed');
@@ -29,7 +39,8 @@ export async function reverseGeocode(
   lat: number,
   lng: number
 ): Promise<GeocodingResult | null> {
-  const url = `${BASE_URL}/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+  const token = getToken();
+  const url = `${BASE_URL}/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&limit=1`;
 
   const response = await fetch(url);
   if (!response.ok) return null;
@@ -51,9 +62,10 @@ export async function getDirections(
   destination: [number, number],
   mode: 'driving' | 'walking' | 'cycling' = 'driving'
 ): Promise<DirectionsResult | null> {
+  const token = getToken();
   const coords = `${origin[0]},${origin[1]};${destination[0]},${destination[1]}`;
   const profile = mode === 'cycling' ? 'cycling' : mode === 'walking' ? 'walking' : 'driving-traffic';
-  const url = `${BASE_URL}/directions/v5/mapbox/${profile}/${coords}?access_token=${MAPBOX_TOKEN}&geometries=geojson&steps=true&overview=full`;
+  const url = `${BASE_URL}/directions/v5/mapbox/${profile}/${coords}?access_token=${token}&geometries=geojson&steps=true&overview=full`;
 
   const response = await fetch(url);
   if (!response.ok) return null;

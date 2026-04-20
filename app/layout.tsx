@@ -64,19 +64,19 @@ export default function RootLayout({
             duration: 4000,
             className: 'bg-card text-card-foreground border shadow-lg',
             style: {
-              background: 'hsl(var(--card))',
-              color: 'hsl(var(--card-foreground))',
+              background: 'var(--card)',
+              color: 'var(--card-foreground)',
             },
             success: {
               iconTheme: {
-                primary: 'hsl(var(--secondary))',
-                secondary: '#fff',
+                primary: 'var(--secondary)',
+                secondary: 'var(--primary-foreground)',
               },
             },
             error: {
               iconTheme: {
-                primary: 'hsl(var(--destructive))',
-                secondary: '#fff',
+                primary: 'var(--destructive)',
+                secondary: 'var(--primary-foreground)',
               },
             },
           }}
