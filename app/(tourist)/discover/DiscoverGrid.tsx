@@ -187,13 +187,12 @@ function PhotoCard({
             <MapPin className="w-3 h-3 flex-shrink-0" />
             <span>{item.region_name}</span>
           </div>
-          {/* "Add to trip" button — appears on hover/focus */}
+          {/* "Add to trip" button — always visible on mobile, hover-controlled on desktop */}
           <button
-            className="flex items-center gap-1 text-white text-xs font-semibold px-2.5 py-1.5 min-h-[32px] rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+            className="flex items-center gap-1 text-white text-xs font-semibold px-2.5 py-1.5 min-h-[32px] rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
             style={{
               background: 'rgba(29, 78, 216, 0.88)',
               backdropFilter: 'blur(4px)',
-              opacity: hovered ? 1 : 0,
               transform: hovered ? 'translateY(0)' : 'translateY(4px)',
               transition: 'opacity 200ms ease-out, transform 200ms ease-out',
             }}
@@ -310,16 +309,6 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
             backgroundSize: '32px 32px',
           }}
         />
-        {/* Gradient orbs */}
-        <div
-          className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-20 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #3b82f6, transparent)', transform: 'translate(-50%, -50%)' }}
-        />
-        <div
-          className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-15 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #f59e0b, transparent)', transform: 'translate(50%, 50%)' }}
-        />
-
         <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
           <div className="inline-flex items-center gap-2 text-blue-300 text-sm font-medium mb-4 px-4 py-1.5 rounded-full"
             style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>

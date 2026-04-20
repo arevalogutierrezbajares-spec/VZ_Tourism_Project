@@ -25,6 +25,7 @@ interface ApiListing {
   address: string;
   rating: number | null;
   review_count: number;
+  price_usd?: number | null;
   phone: string | null;
   website: string | null;
   cover_image_url: string | null;
@@ -176,8 +177,8 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
   const sortedListings = [...listings].sort((a, b) => {
     if (sortBy === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
     if (sortBy === 'reviews') return b.review_count - a.review_count;
-    // Price sorting removed — no reliable price data for scraped listings
-    if (sortBy === 'price_asc' || sortBy === 'price_desc') return 0;
+    if (sortBy === 'price_asc') return (a.price_usd ?? Infinity) - (b.price_usd ?? Infinity);
+    if (sortBy === 'price_desc') return (b.price_usd ?? -Infinity) - (a.price_usd ?? -Infinity);
     return 0; // default: server order
   });
 

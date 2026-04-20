@@ -84,7 +84,15 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                   key={region.id}
                   variant={filters.region === region.name ? 'default' : 'outline'}
                   className="cursor-pointer text-xs"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleRegionToggle(region.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleRegionToggle(region.name);
+                    }
+                  }}
                 >
                   {region.name}
                 </Badge>

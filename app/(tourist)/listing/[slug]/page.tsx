@@ -72,11 +72,45 @@ export default async function ListingPage({ params }: Props) {
 
       void supabase.rpc('increment_listing_views', { listing_id: supabaseListing.id });
 
+      // Check if current user has a completed booking for this listing
+      const { data: { user } } = await supabase.auth.getUser();
+      let canReview = false;
+      let reviewBookingId: string | undefined;
+      if (user) {
+        const { data: completedBooking } = await supabase
+          .from('guest_bookings')
+          .select('id')
+          .eq('guest_email', user.email)
+          .eq('listing_id', supabaseListing.id)
+          .eq('status', 'completed')
+          .maybeSingle();
+        if (completedBooking) {
+          canReview = true;
+          reviewBookingId = completedBooking.id;
+        }
+      }
+
       return (
-        <ListingDetail
-          listing={supabaseListing as Listing}
-          reviews={(reviews || []) as Review[]}
-        />
+        <>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'LodgingBusiness',
+                name: supabaseListing.title,
+                description: (supabaseListing.short_description as string | null)?.slice(0, 200),
+                image: (supabaseListing as Listing).cover_image_url ?? undefined,
+              }),
+            }}
+          />
+          <ListingDetail
+            listing={supabaseListing as Listing}
+            reviews={(reviews || []) as Review[]}
+            canReview={canReview}
+            bookingId={reviewBookingId}
+          />
+        </>
       );
     }
   } catch {
@@ -142,5 +176,21 @@ export default async function ListingPage({ params }: Props) {
     updated_at: scraped.updated_at || new Date().toISOString(),
   };
 
-  return <ListingDetail listing={listing} reviews={[]} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LodgingBusiness',
+            name: listing.title,
+            description: listing.description?.slice(0, 200),
+            image: listing.cover_image_url ?? undefined,
+          }),
+        }}
+      />
+      <ListingDetail listing={listing} reviews={[]} />
+    </>
+  );
 }

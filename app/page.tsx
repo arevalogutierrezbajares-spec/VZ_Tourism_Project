@@ -44,7 +44,7 @@ const EDITORIAL_PICKS = [
     subtitle: 'Caribbean perfection',
     description: 'Turquoise water, white sand, and nothing else. The archipelago that makes the Maldives jealous.',
     image: '/destinations/los roques1.jpg',
-    href: '/library/region/los-roques',
+    href: '/explore/region/los-roques',
     size: 'large' as const,
   },
   {
@@ -52,7 +52,7 @@ const EDITORIAL_PICKS = [
     subtitle: 'Andes adventure capital',
     description: 'Teleferico to 4,765m. Páramo hikes. Coffee farms. The adventure hub of South America.',
     image: '/destinations/merida.jpg',
-    href: '/library/region/merida',
+    href: '/explore/region/merida',
     size: 'medium' as const,
   },
   {
@@ -60,20 +60,20 @@ const EDITORIAL_PICKS = [
     subtitle: 'The world\'s highest waterfall',
     description: '979 meters of free-falling water in the heart of the Gran Sabana.',
     image: '/destinations/angel-falls-tour.jpg',
-    href: '/library/region/canaima',
+    href: '/explore/region/canaima',
     size: 'medium' as const,
   },
 ];
 
 const CATEGORIES = [
-  { label: 'Beaches', href: '/library/category/beaches', icon: '🏖' },
-  { label: 'Mountains', href: '/library/category/mountains', icon: '⛰' },
-  { label: 'Cities', href: '/library/category/cities', icon: '🏙' },
-  { label: 'Eco-tours', href: '/library/category/eco-tours', icon: '🌿' },
-  { label: 'Gastronomy', href: '/library/category/gastronomy', icon: '🍽' },
-  { label: 'Adventure', href: '/library/category/adventure', icon: '🧗' },
-  { label: 'Wellness', href: '/library/category/wellness', icon: '🧘' },
-  { label: 'Cultural', href: '/library/category/cultural', icon: '🎭' },
+  { label: 'Beaches', href: '/explore/category/beaches', icon: '🏖' },
+  { label: 'Mountains', href: '/explore/category/mountains', icon: '⛰' },
+  { label: 'Cities', href: '/explore/category/cities', icon: '🏙' },
+  { label: 'Eco-tours', href: '/explore/category/eco-tours', icon: '🌿' },
+  { label: 'Gastronomy', href: '/explore/category/gastronomy', icon: '🍽' },
+  { label: 'Adventure', href: '/explore/category/adventure', icon: '🧗' },
+  { label: 'Wellness', href: '/explore/category/wellness', icon: '🧘' },
+  { label: 'Cultural', href: '/explore/category/cultural', icon: '🎭' },
 ];
 
 export default function LandingPage() {

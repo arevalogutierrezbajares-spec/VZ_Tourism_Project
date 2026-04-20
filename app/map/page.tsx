@@ -296,7 +296,7 @@ function MapPageContent() {
             </Button>
           )}
           <a
-            href="/library"
+            href="/explore"
             className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 shadow-lg border border-gray-200 rounded-2xl px-2.5 py-1.5 text-sm font-medium hover:bg-gray-50"
           >
             <MapPin className="w-4 h-4" />
