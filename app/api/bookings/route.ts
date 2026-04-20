@@ -38,6 +38,7 @@ const createBookingSchema = z.object({
   special_requests: z.string().max(500).optional(),
   notes: z.string().max(500).optional(),
   payment_method: z.enum(['card', 'zelle', 'usdt', 'arrival']).default('card'),
+  idempotency_key: z.string().max(64).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -193,6 +194,47 @@ export async function POST(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let booking: any = null;
   const supabase = await createServiceClient();
+
+  // P1-BOK-008: idempotency — return existing booking if same (listing+email) created < 60s ago
+  const idempotency_key = parsed.data.idempotency_key;
+  if (idempotency_key && supabase) {
+    const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();
+    const { data: existing } = await supabase
+      .from('guest_bookings')
+      .select('*')
+      .eq('listing_id', listing_id)
+      .eq('guest_email', guest_email)
+      .gte('created_at', oneMinuteAgo)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json(
+        { data: existing, confirmation_code: (existing as Record<string, unknown>).confirmation_code },
+        { status: 200 }
+      );
+    }
+  }
+
+  // P1-BOK-004: availability check — prevent double bookings on same listing/dates
+  if (supabase) {
+    const checkInISO = checkIn.toISOString().split('T')[0];
+    const checkOutISO = checkOut.toISOString().split('T')[0];
+    const { data: conflicts } = await supabase
+      .from('guest_bookings')
+      .select('id')
+      .eq('listing_id', listing_id)
+      .in('status', ['confirmed', 'pending'])
+      .lt('check_in', checkOutISO)
+      .gt('check_out', checkInISO)
+      .limit(1);
+    if (conflicts && conflicts.length > 0) {
+      return NextResponse.json(
+        { error: 'These dates are no longer available. Please select different dates.' },
+        { status: 409 }
+      );
+    }
+  }
+
   if (supabase) {
     try {
       const { data, error } = await supabase

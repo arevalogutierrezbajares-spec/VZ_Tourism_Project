@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getBooking, updateBookingStatus, type BookingStatus } from '@/lib/bookings-store';
+import { stripe } from '@/lib/stripe/server';
 
 // Lazy-load scraped listings for cover image enrichment
 let _listings: Record<string, string | null>[] | null = null;
@@ -117,10 +118,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   // Try Supabase first — verify booking belongs to authenticated user (or provider owns listing) before updating
   try {
-    // First verify ownership
+    // First verify ownership (also fetch fields needed for refund logic)
     const { data: existing, error: fetchError } = await supabase
       .from('guest_bookings')
-      .select('guest_email, listing_id')
+      .select('guest_email, listing_id, status, payment_intent_id, stripe_checkout_session_id, total_usd')
       .eq('id', id)
       .single();
     if (fetchError?.code === 'PGRST116' || !existing) {
@@ -151,6 +152,32 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     if (!authorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // P1-BOK-005: issue Stripe refund when provider cancels a confirmed, card-paid booking
+    if (status === 'cancelled' && isProvider) {
+      const existingFull = existing as Record<string, unknown>;
+      if (existingFull.status === 'confirmed') {
+        const paymentIntentId = existingFull.payment_intent_id as string | null;
+        const sessionId = existingFull.stripe_checkout_session_id as string | null;
+        // Retrieve payment_intent_id from session if not stored directly
+        let refundTarget = paymentIntentId;
+        if (!refundTarget && sessionId) {
+          try {
+            const session = await stripe.checkout.sessions.retrieve(sessionId);
+            refundTarget = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+          } catch (sessionErr) {
+            console.error('Stripe session retrieve error:', sessionErr);
+          }
+        }
+        if (refundTarget) {
+          try {
+            await stripe.refunds.create({ payment_intent: refundTarget });
+          } catch (refundErr) {
+            console.error('Stripe refund failed (booking will still be cancelled):', refundErr);
+          }
+        }
+      }
     }
 
     const { data, error } = await supabase
