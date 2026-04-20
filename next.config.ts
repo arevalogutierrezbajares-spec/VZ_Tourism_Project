@@ -1,6 +1,29 @@
 import type { NextConfig } from "next";
 
+const securityHeaders = [
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+  { key: 'X-XSS-Protection', value: '1; mode=block' },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      { source: '/dashboard/messages', destination: '/dashboard/whatsapp', permanent: true },
+      { source: '/dashboard/messages/brain', destination: '/dashboard/whatsapp/brain', permanent: true },
+      { source: '/dashboard/messages/ai', destination: '/dashboard/whatsapp/settings', permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       {
