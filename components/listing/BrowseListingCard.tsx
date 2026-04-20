@@ -230,8 +230,9 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
+                  const img = e.target as HTMLImageElement;
+                  img.srcset = '';
+                  img.src = 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
                 }}
               />
             ) : (
@@ -289,8 +290,9 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
+                  const img = e.target as HTMLImageElement;
+                  img.srcset = '';
+                  img.src = 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
                 }}
               />
             ) : (

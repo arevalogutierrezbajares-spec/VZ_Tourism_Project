@@ -111,6 +111,14 @@ export async function GET(request: NextRequest) {
 
   const datesSelected = !!(checkIn && checkOut && checkIn < checkOut);
 
+  // Map explore-page filter values → actual DB category column values
+  const CATEGORY_MAP: Record<string, string> = {
+    hotel: 'accommodation',
+    restaurant: 'gastronomy',
+    experience: 'adventure',
+  };
+  const dbCategory = category ? (CATEGORY_MAP[category] ?? category) : undefined;
+
   // --- Supabase path (non-date-filtered) ---
   if (!datesSelected) {
     try {
@@ -122,6 +130,7 @@ export async function GET(request: NextRequest) {
           .eq('is_published', true)
           .order('platform_status', { ascending: false })  // founding_partner > verified > scraped
           .order('rating', { ascending: false })
+          .order('id', { ascending: true })               // stable tiebreaker — prevents page-boundary duplicates
           .range(offset, offset + limit - 1);
 
         if (region) query = query.eq('region', region);
@@ -129,7 +138,7 @@ export async function GET(request: NextRequest) {
           const s = search.replace(/[%_,()\\]/g, '\\$&');
           query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%,location_name.ilike.%${s}%`);
         }
-        if (category) query = query.eq('category', category);
+        if (dbCategory) query = query.eq('category', dbCategory);
         else if (type) query = query.eq('category', mapTypeToCategory(type));
         if (minPrice !== undefined && !isNaN(minPrice)) query = query.gte('price_usd', minPrice);
         if (maxPrice !== undefined && !isNaN(maxPrice)) query = query.lte('price_usd', maxPrice);
@@ -193,7 +202,7 @@ export async function GET(request: NextRequest) {
         const s = search.replace(/[%_,()\\]/g, '\\$&');
         query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%`);
       }
-      if (category) query = query.eq('category', category);
+      if (dbCategory) query = query.eq('category', dbCategory);
       else if (type) query = query.eq('category', mapTypeToCategory(type));
 
       const { data, error } = await query;

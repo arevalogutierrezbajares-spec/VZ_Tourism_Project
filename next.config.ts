@@ -62,6 +62,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'l.icdbcdn.com' },
       { protocol: 'https', hostname: 'd2hyz2bfif3cr8.cloudfront.net' },
       { protocol: 'https', hostname: '*.amazonaws.com' },
+      { protocol: 'https', hostname: 'www.venaventours.com' },
     ],
   },
   turbopack: {

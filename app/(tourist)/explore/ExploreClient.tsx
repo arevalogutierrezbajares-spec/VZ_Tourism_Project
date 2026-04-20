@@ -166,7 +166,11 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
     setLoadingMore(true);
     const res = await fetch(buildUrl(offset));
     const json = await res.json();
-    setListings((prev) => [...prev, ...(json.data ?? [])]);
+    setListings((prev) => {
+      const seen = new Set(prev.map((l) => l.id));
+      const fresh = (json.data ?? []).filter((l: ApiListing) => !seen.has(l.id));
+      return [...prev, ...fresh];
+    });
     setOffset((o) => o + PAGE_SIZE);
     setLoadingMore(false);
   };
