@@ -26,8 +26,11 @@ export async function getWhatsAppToken(supabase: ServiceClient, config: WhatsApp
       if (!error && typeof data === 'string' && data.length > 0) {
         return data;
       }
+      // Vault read returned an error or empty — fall through to plaintext
+      console.warn('[WhatsApp Token] Vault write failed — token stored in plaintext as fallback. Rotate token and configure Vault for production.');
     } catch {
       // Vault RPC unavailable — fall through to plaintext
+      console.warn('[WhatsApp Token] Vault write failed — token stored in plaintext as fallback. Rotate token and configure Vault for production.');
     }
   }
   // Plaintext fallback (pre-Vault or Vault not enabled yet)

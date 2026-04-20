@@ -242,10 +242,16 @@ export default function TripsPage() {
       .catch(() => {})
       .finally(() => setBookingsLoading(false));
 
-    // Load itineraries from localStorage
+    // Load itineraries from localStorage (key matches Zustand persist name: 'vz_itinerary')
     try {
-      const stored = localStorage.getItem('vz-itineraries');
-      if (stored) setItineraries(JSON.parse(stored));
+      const stored = localStorage.getItem('vz_itinerary');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Zustand persist wraps state in { state: { current, days, ... } }
+        const state = parsed?.state ?? parsed;
+        if (state?.current) setItineraries([state.current]);
+        else if (Array.isArray(state)) setItineraries(state);
+      }
     } catch {}
 
     // Load saved places from Supabase favorites

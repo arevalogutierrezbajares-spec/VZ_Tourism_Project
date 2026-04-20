@@ -90,53 +90,74 @@ async function proxyToPms(
   method: string,
   path: string,
 ) {
-  // Authenticate via Supabase
-  const supabase = await createClient();
-  if (!supabase) {
-    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+  // Dev-only: bypass auth and proxy directly to PMS
+  const isDev = process.env.DEV_SKIP_AUTH === 'true' && process.env.NODE_ENV === 'development';
+
+  let pmsHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+  let propertyId: string | null = request.headers.get('x-pms-property-id');
+
+  if (!isDev) {
+    // Authenticate via Supabase
+    const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check provider role
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'provider' && profile.role !== 'admin')) {
+      return NextResponse.json({ error: 'Forbidden — provider role required' }, { status: 403 });
+    }
+
+    // Get PMS token
+    let pmsAuth: Awaited<ReturnType<typeof getPmsToken>>;
+    try {
+      pmsAuth = await getPmsToken(user);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'PMS configuration error';
+      return NextResponse.json({ error: message }, { status: 503 });
+    }
+    if (!pmsAuth) {
+      return NextResponse.json({ error: 'PMS authentication failed' }, { status: 502 });
+    }
+
+    pmsHeaders['Authorization'] = `Bearer ${pmsAuth.token}`;
+    propertyId = propertyId || pmsAuth.propertyId;
+  } else {
+    // Dev mode: use bridge to get a token for a default dev user
+    const bridgeRes = await fetch(`${PMS_API_URL}/auth/bridge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_secret: PMS_BRIDGE_SECRET || 'dev-bridge-secret',
+        supabase_user_id: 'dev-user-001',
+        email: 'dev@localhost',
+        name: 'Dev User',
+      }),
+    });
+    if (bridgeRes.ok) {
+      const data = await bridgeRes.json() as { accessToken: string; user: { defaultPropertyId?: string } };
+      pmsHeaders['Authorization'] = `Bearer ${data.accessToken}`;
+      propertyId = propertyId || data.user.defaultPropertyId || null;
+    }
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Check provider role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || (profile.role !== 'provider' && profile.role !== 'admin')) {
-    return NextResponse.json({ error: 'Forbidden — provider role required' }, { status: 403 });
-  }
-
-  // Get PMS token
-  let pmsAuth: Awaited<ReturnType<typeof getPmsToken>>;
-  try {
-    pmsAuth = await getPmsToken(user);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'PMS configuration error';
-    return NextResponse.json({ error: message }, { status: 503 });
-  }
-  if (!pmsAuth) {
-    return NextResponse.json({ error: 'PMS authentication failed' }, { status: 502 });
+  if (propertyId) {
+    pmsHeaders['X-Property-Id'] = propertyId;
   }
 
   // Build headers for PMS API
-  const headers: Record<string, string> = {
-    'Authorization': `Bearer ${pmsAuth.token}`,
-    'Content-Type': 'application/json',
-  };
-
-  // Use property ID from request header, cookie, or default
-  const propertyId =
-    request.headers.get('x-pms-property-id') ||
-    pmsAuth.propertyId;
-  if (propertyId) {
-    headers['X-Property-Id'] = propertyId;
-  }
+  const headers = pmsHeaders;
 
   // Build the PMS API URL
   const pmsUrl = `${PMS_API_URL}/${path}${request.nextUrl.search}`;
@@ -173,12 +194,22 @@ async function proxyToPms(
   });
 }
 
+function sanitizePath(pathSegments: string[]): string | null {
+  // Reject any segment that is '..' or starts with '.'
+  if (pathSegments.some(seg => seg === '..' || seg.startsWith('.'))) {
+    return null;
+  }
+  return pathSegments.map(encodeURIComponent).join('/');
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  return proxyToPms(request, 'GET', path.join('/'));
+  const safePath = sanitizePath(path);
+  if (!safePath) return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+  return proxyToPms(request, 'GET', safePath);
 }
 
 export async function POST(
@@ -186,7 +217,9 @@ export async function POST(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  return proxyToPms(request, 'POST', path.join('/'));
+  const safePath = sanitizePath(path);
+  if (!safePath) return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+  return proxyToPms(request, 'POST', safePath);
 }
 
 export async function PATCH(
@@ -194,7 +227,9 @@ export async function PATCH(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  return proxyToPms(request, 'PATCH', path.join('/'));
+  const safePath = sanitizePath(path);
+  if (!safePath) return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+  return proxyToPms(request, 'PATCH', safePath);
 }
 
 export async function PUT(
@@ -202,7 +237,9 @@ export async function PUT(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  return proxyToPms(request, 'PUT', path.join('/'));
+  const safePath = sanitizePath(path);
+  if (!safePath) return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+  return proxyToPms(request, 'PUT', safePath);
 }
 
 export async function DELETE(
@@ -210,5 +247,7 @@ export async function DELETE(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  return proxyToPms(request, 'DELETE', path.join('/'));
+  const safePath = sanitizePath(path);
+  if (!safePath) return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+  return proxyToPms(request, 'DELETE', safePath);
 }

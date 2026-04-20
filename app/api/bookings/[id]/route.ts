@@ -5,19 +5,19 @@ import { stripe } from '@/lib/stripe/server';
 
 // Lazy-load scraped listings for cover image enrichment
 let _listings: Record<string, string | null>[] | null = null;
-function getListings() {
+async function getListings(): Promise<Record<string, string | null>[]> {
   if (_listings) return _listings;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _listings = require('@/data/scraped-listings.json') as Record<string, string | null>[];
+    const mod = await import('@/data/scraped-listings.json');
+    _listings = (mod.default ?? mod) as unknown as Record<string, string | null>[];
   } catch {
     _listings = [];
   }
   return _listings;
 }
 
-function enrichBooking(booking: Record<string, unknown>) {
-  const listings = getListings();
+async function enrichBooking(booking: Record<string, unknown>) {
+  const listings = await getListings();
   const listing = listings.find(
     (l) => l.id === booking.listing_id || l.slug === booking.listing_slug
   );
@@ -53,7 +53,7 @@ export async function GET(_: NextRequest, { params }: Params) {
       if ((data as Record<string, unknown>).guest_email !== user.email) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      return NextResponse.json({ data: enrichBooking(data as Record<string, unknown>) });
+      return NextResponse.json({ data: await enrichBooking(data as Record<string, unknown>) });
     }
     if (error?.code !== 'PGRST116') console.error('Supabase GET booking error:', error);
   } catch (err) {
@@ -66,7 +66,7 @@ export async function GET(_: NextRequest, { params }: Params) {
   if (booking.guest_email !== user.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  return NextResponse.json({ data: enrichBooking(booking as unknown as Record<string, unknown>) });
+  return NextResponse.json({ data: await enrichBooking(booking as unknown as Record<string, unknown>) });
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {

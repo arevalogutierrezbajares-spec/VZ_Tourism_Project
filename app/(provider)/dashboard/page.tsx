@@ -58,7 +58,7 @@ export default async function ProviderDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {provider?.business_name || 'Provider'}</h1>
+          <h1 className="text-2xl font-bold font-display">Welcome back, {provider?.business_name || 'Provider'}</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Here's what's happening with your business</p>
         </div>
         <Link href="/dashboard/listings/new">
@@ -78,8 +78,8 @@ export default async function ProviderDashboardPage() {
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-full bg-status-confirmed/10 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-status-confirmed" />
               </div>
             </div>
           </CardContent>
@@ -91,8 +91,8 @@ export default async function ProviderDashboardPage() {
                 <p className="text-sm text-muted-foreground">Pending Bookings</p>
                 <p className="text-2xl font-bold mt-1">{pendingBookings.toLocaleString()}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-yellow-600" />
+              <div className="w-10 h-10 rounded-full bg-status-pending/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-status-pending" />
               </div>
             </div>
           </CardContent>
@@ -104,8 +104,8 @@ export default async function ProviderDashboardPage() {
                 <p className="text-sm text-muted-foreground">Active Bookings</p>
                 <p className="text-2xl font-bold mt-1">{confirmedBookings.toLocaleString()}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -117,8 +117,8 @@ export default async function ProviderDashboardPage() {
                 <p className="text-sm text-muted-foreground">Avg. Rating</p>
                 <p className="text-2xl font-bold mt-1">{avgRating.toFixed(1)}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                <Star className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Star className="w-5 h-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>

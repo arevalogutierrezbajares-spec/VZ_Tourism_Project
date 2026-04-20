@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit'
 
 // Google Places Autocomplete + Place Details for coordinates
 // Much better Venezuela coverage than Mapbox for hotels, landmarks, addresses
 
 export async function GET(request: NextRequest) {
+  const rateLimitRes = rateLimit(getClientIp(request), 30)
+  if (rateLimitRes) return rateLimitRes
+
   const q = request.nextUrl.searchParams.get('q')
   const types = request.nextUrl.searchParams.get('types') || 'establishment'
   const country = request.nextUrl.searchParams.get('country') || 'VE'

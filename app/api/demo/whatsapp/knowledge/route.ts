@@ -24,6 +24,15 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+  // Only allow in development or with DEMO_SECRET header
+  const isDev = process.env.NODE_ENV === 'development';
+  const demoSecret = process.env.DEMO_SECRET;
+  const authHeader = request.headers.get('x-demo-secret');
+
+  if (!isDev && (!demoSecret || authHeader !== demoSecret)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const supabase = await createServiceClient();
   if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
 

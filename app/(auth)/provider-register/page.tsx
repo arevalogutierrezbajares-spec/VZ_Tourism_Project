@@ -40,7 +40,7 @@ export default function ProviderRegisterPage() {
     watch,
     formState: { errors },
   } = useForm<ProviderRegisterFormData>({
-    resolver: zodResolver(providerRegisterSchema) as any,
+    resolver: zodResolver(providerRegisterSchema),
     defaultValues: { acceptTerms: false },
   });
 

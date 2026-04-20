@@ -17,6 +17,7 @@ function mapTypeToCategory(type: string): string {
 }
 
 export async function GET(req: NextRequest) {
+  try {
   const auth = await requireAdmin();
   if ('error' in auth) return auth.error;
 
@@ -76,28 +77,42 @@ export async function GET(req: NextRequest) {
   const enriched = paginated.map((l) => ({ ...l, derivedCategory: mapTypeToCategory(l.type) }));
 
   return NextResponse.json({ listings: enriched, total, page, limit, pages: Math.ceil(total / limit) });
+  } catch (err) {
+    console.error('[admin/listings GET]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
-  const auth = await requireAdmin();
-  if ('error' in auth) return auth.error;
+  try {
+    const auth = await requireAdmin();
+    if ('error' in auth) return auth.error;
 
-  const body = await req.json();
-  const { id, ...fields } = body;
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-  const updated = await updateListing(id, fields);
-  if (!updated) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  return NextResponse.json({ listing: updated });
+    const body = await req.json();
+    const { id, ...fields } = body;
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const updated = await updateListing(id, fields);
+    if (!updated) return NextResponse.json({ error: 'not found' }, { status: 404 });
+    return NextResponse.json({ listing: updated });
+  } catch (err) {
+    console.error('[admin/listings PATCH]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {
-  const auth = await requireAdmin();
-  if ('error' in auth) return auth.error;
+  try {
+    const auth = await requireAdmin();
+    if ('error' in auth) return auth.error;
 
-  const { searchParams } = req.nextUrl;
-  const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-  const ok = await deleteListing(id);
-  if (!ok) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  return NextResponse.json({ ok: true });
+    const { searchParams } = req.nextUrl;
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const ok = await deleteListing(id);
+    if (!ok) return NextResponse.json({ error: 'not found' }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/listings DELETE]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

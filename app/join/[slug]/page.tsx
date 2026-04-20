@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { getListingBySlug, getAllListings } from '@/lib/local-listings';
-import { Star, MapPin, TrendingUp, Clock, CreditCard, CheckCircle2 } from 'lucide-react';
+import { Star, MapPin, Clock, CreditCard, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -29,7 +29,6 @@ export default async function JoinPage({ params }: Props) {
   // Regional stats
   const all = getAllListings();
   const regionCount = all.filter((l) => l.region === listing.region).length;
-  const viewerEstimate = Math.max(Math.round(listing.review_count * 1.8), 240);
 
   const capitalizedName = listing.name
     .split(' ')
@@ -79,16 +78,6 @@ export default async function JoinPage({ params }: Props) {
       {/* Stats row */}
       <div className="bg-blue-600 text-white">
         <div className="max-w-lg mx-auto px-6 py-4 flex items-center justify-around gap-4">
-          <div className="text-center">
-            <div className="text-xl font-bold flex items-center gap-1 justify-center">
-              <TrendingUp className="w-4 h-4" />
-              {viewerEstimate.toLocaleString()}
-            </div>
-            <div className="text-xs text-blue-100 mt-0.5">travelers viewed your area this month</div>
-          </div>
-          {listing.avg_rating && (
-            <div className="w-px h-10 bg-blue-500" />
-          )}
           {listing.avg_rating && (
             <div className="text-center">
               <div className="text-xl font-bold flex items-center gap-1 justify-center">
@@ -98,7 +87,9 @@ export default async function JoinPage({ params }: Props) {
               <div className="text-xs text-blue-100 mt-0.5">{listing.review_count.toLocaleString()} Google reviews</div>
             </div>
           )}
-          <div className="w-px h-10 bg-blue-500" />
+          {listing.avg_rating && (
+            <div className="w-px h-10 bg-blue-500" />
+          )}
           <div className="text-center">
             <div className="text-xl font-bold">{regionCount}</div>
             <div className="text-xs text-blue-100 mt-0.5">businesses in your region</div>

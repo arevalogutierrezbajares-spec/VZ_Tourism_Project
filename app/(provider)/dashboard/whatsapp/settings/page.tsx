@@ -34,6 +34,7 @@ export default function AiSettingsPage() {
   const [config, setConfig] = useState<AiConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [siteUrl, setSiteUrl] = useState('');
+  const [plaintextFallback, setPlaintextFallback] = useState(false);
 
   useEffect(() => {
     setSiteUrl(window.location.origin);
@@ -77,6 +78,10 @@ export default function AiSettingsPage() {
       body: JSON.stringify(patch),
     });
     if (!res.ok) throw new Error('Save failed');
+    const json = await res.json() as { plaintext_fallback?: boolean };
+    if (json.plaintext_fallback) {
+      setPlaintextFallback(true);
+    }
   };
 
   if (loading) {
@@ -95,10 +100,17 @@ export default function AiSettingsPage() {
   }
 
   return (
-    <AiSettingsPanel
-      initialConfig={config!}
-      onSave={handleSave}
-      siteUrl={siteUrl}
-    />
+    <div className="space-y-4">
+      {plaintextFallback && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+          Token stored in plaintext — Vault unavailable. Configure Supabase Vault for production security.
+        </div>
+      )}
+      <AiSettingsPanel
+        initialConfig={config!}
+        onSave={handleSave}
+        siteUrl={siteUrl}
+      />
+    </div>
   );
 }

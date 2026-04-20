@@ -1,21 +1,14 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import type { LocalBooking, BookingStatus } from '@/lib/bookings-store';
+import type { LocalBooking } from '@/lib/bookings-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProviderBookingActions } from '@/components/provider/ProviderBookingActions';
 import { createClient } from '@/lib/supabase/server';
+import { getStatusConfig } from '@/lib/status-config';
 
 export const metadata: Metadata = { title: 'Bookings' };
 export const dynamic = 'force-dynamic';
-
-const STATUS_COLORS: Record<BookingStatus, string> = {
-  pending: 'bg-status-pending/10 text-status-pending border-status-pending/20',
-  confirmed: 'bg-status-confirmed/10 text-status-confirmed border-status-confirmed/20',
-  cancelled: 'bg-status-cancelled/10 text-status-cancelled border-status-cancelled/20',
-  completed: 'bg-status-info/10 text-status-info border-status-info/20',
-  payment_submitted: 'bg-status-pending/10 text-status-pending border-status-pending/20',
-};
 
 const PAYMENT_LABELS: Record<string, string> = {
   card: 'Card',
@@ -50,8 +43,8 @@ function BookingRow({ booking }: { booking: LocalBooking }) {
                 <Badge variant="outline" className="text-xs">
                   {PAYMENT_LABELS[booking.payment_method] ?? booking.payment_method}
                 </Badge>
-                <Badge className={`text-xs ${STATUS_COLORS[booking.status] ?? ''}`}>
-                  {booking.status.replace('_', ' ')}
+                <Badge className={`text-xs ${getStatusConfig(booking.status).className}`}>
+                  {getStatusConfig(booking.status).label}
                 </Badge>
               </div>
             </div>

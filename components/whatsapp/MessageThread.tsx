@@ -14,15 +14,7 @@ import {
 import type {
   WaConversation, WaMessage, WaConversationStatus,
 } from '@/types/database';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<WaConversationStatus, { label: string; badge: string; dot: string }> = {
-  ai:        { label: 'AI',        badge: 'bg-green-100 text-green-800 border-green-200',  dot: 'bg-green-500' },
-  human:     { label: 'Human',     badge: 'bg-blue-100 text-blue-800 border-blue-200',     dot: 'bg-blue-500'  },
-  escalated: { label: 'Escalated', badge: 'bg-red-100 text-red-800 border-red-200',        dot: 'bg-red-500'   },
-  closed:    { label: 'Closed',    badge: 'bg-gray-100 text-gray-500 border-gray-200',     dot: 'bg-gray-400'  },
-};
+import { WA_STATUS_CONFIG as STATUS_CONFIG } from '@/lib/status-config';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -55,7 +47,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
   return (
     <div className={cn('flex gap-2 mb-2', isOut ? 'flex-row-reverse' : 'flex-row')}>
       <Avatar className="w-6 h-6 shrink-0 mt-auto">
-        <AvatarFallback className="text-[10px] bg-muted">
+        <AvatarFallback className="text-2xs bg-muted">
           {isOut ? (msg.is_ai ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />) : <Phone className="w-3 h-3" />}
         </AvatarFallback>
       </Avatar>
@@ -77,7 +69,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           <div className={cn('px-1', isOut ? 'text-right' : 'text-left')}>
             <button
               onClick={() => setShowTranslation((s) => !s)}
-              className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+              className="text-2xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
             >
               {showTranslation ? 'Hide translation' : `Show in English (${msg.detected_lang?.toUpperCase() ?? '?'})`}
             </button>
@@ -90,7 +82,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
         )}
 
         <div className={cn('flex items-center gap-1 px-1', isOut ? 'flex-row-reverse' : 'flex-row')}>
-          <span className="text-[10px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+          <span className="text-2xs text-muted-foreground">{formatTime(msg.created_at)}</span>
           {isOut && msg.is_ai && <Sparkles className="w-2.5 h-2.5 text-muted-foreground" />}
           {isOut && !msg.is_ai && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
           {msg.flagged && <AlertTriangle className="w-2.5 h-2.5 text-destructive" />}
@@ -107,7 +99,7 @@ function DayDivider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 my-4">
       <Separator className="flex-1" />
-      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium px-2">{label}</span>
+      <span className="text-2xs text-muted-foreground uppercase tracking-wider font-medium px-2">{label}</span>
       <Separator className="flex-1" />
     </div>
   );
@@ -187,7 +179,7 @@ export default function MessageThread({
           <div>
             <p className="text-sm font-semibold">{selected.guest_name ?? selected.guest_phone}</p>
             <div className="flex items-center gap-1.5">
-              <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded border', STATUS_CONFIG[selected.status].badge)}>
+              <span className={cn('text-2xs font-medium px-1.5 py-0.5 rounded border', STATUS_CONFIG[selected.status].badge)}>
                 {STATUS_CONFIG[selected.status].label}
               </span>
               <span className="text-xs text-muted-foreground">
@@ -234,7 +226,7 @@ export default function MessageThread({
               <Send className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5">↵ Send · ⇧↵ New line</p>
+          <p className="text-2xs text-muted-foreground mt-1.5">↵ Send · ⇧↵ New line</p>
         </div>
       ) : (
         <div className="px-4 py-3 border-t bg-muted/20 text-center shrink-0">

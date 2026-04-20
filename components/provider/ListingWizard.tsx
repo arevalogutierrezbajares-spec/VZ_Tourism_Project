@@ -95,7 +95,7 @@ export function ListingWizard() {
     watch,
     formState: { errors },
   } = useForm<ListingFormData>({
-    resolver: zodResolver(listingSchema) as any,
+    resolver: zodResolver(listingSchema),
     defaultValues: {
       tags: [],
       amenities: [],

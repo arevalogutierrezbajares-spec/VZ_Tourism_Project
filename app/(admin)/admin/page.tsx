@@ -46,13 +46,13 @@ export default function AdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Platform Overview</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Venezuela Tourism — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <h1 className="text-2xl font-bold text-foreground font-display">Platform Overview</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Venezuela Tourism — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex gap-2">
           <a
             href="/api/admin/listings/export"
-            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border bg-background text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
             aria-label="Export all listings as CSV"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
@@ -60,8 +60,7 @@ export default function AdminPage() {
           </a>
           <Link
             href="/admin/listings"
-            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-white font-medium transition-colors"
-            style={{ background: '#3B82F6' }}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground font-medium transition-colors"
           >
             <ListChecks className="w-4 h-4" />
             Manage Listings
@@ -72,24 +71,24 @@ export default function AdminPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+          <div key={label} className="bg-background rounded-xl p-4 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: bg }}>
-                <Icon className="w-4 h-4" style={{ color }} />
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-muted">
+                <Icon className="w-4 h-4 text-foreground" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+            <div className="text-2xl font-bold text-foreground">{value}</div>
+            <div className="text-2xs text-muted-foreground mt-0.5">{label}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Opportunities */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-500" />
-            <h2 className="font-semibold text-gray-900 text-sm">AI Opportunities</h2>
+        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">AI Opportunities</h2>
           </div>
           <div className="p-4 space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
@@ -120,9 +119,9 @@ export default function AdminPage() {
         </div>
 
         {/* Region Breakdown */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 text-sm">By Region</h2>
+        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h2 className="font-semibold text-foreground text-sm">By Region</h2>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(regionCounts)
@@ -133,11 +132,11 @@ export default function AdminPage() {
                 return (
                   <div key={region} className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className="capitalize text-gray-700">{region}</span>
-                      <span className="text-gray-400">{count.toLocaleString()}</span>
+                      <span className="capitalize text-foreground">{region}</span>
+                      <span className="text-muted-foreground">{count.toLocaleString()}</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#3B82F6' }} />
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -146,28 +145,28 @@ export default function AdminPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 text-sm">Quick Actions</h2>
+        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h2 className="font-semibold text-foreground text-sm">Quick Actions</h2>
           </div>
           <div className="p-4 space-y-2">
             {[
-              { label: 'Review New Scrapes', icon: RefreshCw, href: '/admin/scraper', color: '#6366F1' },
-              { label: 'Run AI Categorization', icon: Sparkles, href: '/admin/listings?action=ai_categorize', color: '#3B82F6' },
-              { label: 'Export All CSV', icon: Download, href: '/api/admin/listings/export', color: '#10B981', external: true },
-              { label: 'Manage Discover Feed', icon: Compass, href: '/admin/discover', color: '#F59E0B' },
-            ].map(({ label, icon: Icon, href, color, external }) => (
+              { label: 'Review New Scrapes', icon: RefreshCw, href: '/admin/scraper' },
+              { label: 'Run AI Categorization', icon: Sparkles, href: '/admin/listings?action=ai_categorize' },
+              { label: 'Export All CSV', icon: Download, href: '/api/admin/listings/export', external: true },
+              { label: 'Manage Discover Feed', icon: Compass, href: '/admin/discover' },
+            ].map(({ label, icon: Icon, href, external }) => (
               <Link
                 key={label}
                 href={href}
                 target={external ? '_blank' : undefined}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all group"
+                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-foreground/20 hover:bg-muted transition-all group"
               >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${color}15` }}>
-                  <Icon className="w-4 h-4" style={{ color }} />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-muted">
+                  <Icon className="w-4 h-4 text-foreground" />
                 </div>
-                <span className="text-sm text-gray-700 font-medium flex-1">{label}</span>
-                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                <span className="text-sm text-foreground font-medium flex-1">{label}</span>
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
               </Link>
             ))}
           </div>
@@ -175,16 +174,16 @@ export default function AdminPage() {
       </div>
 
       {/* Recent Listings */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900 text-sm">Recently Added</h2>
-          <Link href="/admin/listings" className="text-xs text-blue-500 hover:text-blue-700">
+      <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="font-semibold text-foreground text-sm">Recently Added</h2>
+          <Link href="/admin/listings" className="text-xs text-primary hover:underline">
             View all →
           </Link>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-border">
           {recent.map((l) => (
-            <div key={l.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors">
+            <div key={l.id} className="flex items-center gap-4 px-5 py-3 hover:bg-muted transition-colors">
               {l.cover_image_url ? (
                 <img
                   src={l.cover_image_url}
@@ -192,25 +191,25 @@ export default function AdminPage() {
                   className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0" />
+                <div className="w-10 h-10 rounded-lg bg-muted flex-shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">{l.name}</div>
-                <div className="text-xs text-gray-400 capitalize">{l.type} · {l.region}</div>
+                <div className="text-sm font-medium text-foreground truncate">{l.name}</div>
+                <div className="text-xs text-muted-foreground capitalize">{l.type} · {l.region}</div>
               </div>
               <div className="text-right flex-shrink-0">
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   {l.avg_rating ? `★ ${l.avg_rating}` : '—'}
                 </div>
-                <div
-                  className="text-[10px] px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
-                  style={{
-                    background: l.status === 'published' ? '#DCFCE7' : '#FEF3C7',
-                    color: l.status === 'published' ? '#166534' : '#92400E',
-                  }}
+                <span
+                  className={`text-2xs px-1.5 py-0.5 rounded-full mt-0.5 inline-block font-medium ${
+                    l.status === 'published'
+                      ? 'bg-status-confirmed/10 text-status-confirmed'
+                      : 'bg-status-pending/10 text-status-pending'
+                  }`}
                 >
                   {l.status}
-                </div>
+                </span>
               </div>
             </div>
           ))}

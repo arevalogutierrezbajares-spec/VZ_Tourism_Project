@@ -68,15 +68,12 @@ export function loadAll(): AdminListing[] {
 
 export function invalidateCache(): void {
   _cache = null;
-  // Also invalidate local-listings cache
-  try {
-    // Dynamic require to avoid circular import
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const ll = require('./local-listings');
+  // Also invalidate local-listings cache (dynamic import to avoid circular dependency)
+  import('./local-listings').then((ll) => {
     if (ll && typeof ll.invalidateCache === 'function') ll.invalidateCache();
-  } catch {
-    // ignore
-  }
+  }).catch(() => {
+    // ignore — local-listings may not be present
+  });
 }
 
 async function writeAll(listings: AdminListing[]): Promise<void> {

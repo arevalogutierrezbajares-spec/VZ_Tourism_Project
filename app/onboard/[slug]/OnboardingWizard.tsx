@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -1525,6 +1525,20 @@ function StepGoLive({
   const confettiRef = useRef<HTMLDivElement>(null);
   const name = capitalize(listing.name);
 
+  // Stable random values for confetti — computed once to avoid flicker on re-renders
+  const confettiItems = useMemo(
+    () =>
+      Array.from({ length: 40 }, (_, i) => ({
+        left: Math.random() * 100,
+        top: Math.random() * 60,
+        animationDelay: Math.random() * 2,
+        animationDuration: 1 + Math.random() * 2,
+        rotate: Math.random() * 360,
+        color: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'][i % 5],
+      })),
+    []
+  );
+
   // Trigger animation on mount
   useEffect(() => {
     const el = confettiRef.current;
@@ -1540,17 +1554,17 @@ function StepGoLive({
         className="fixed inset-0 pointer-events-none z-0 opacity-0 transition-opacity duration-500"
         style={{ opacity: 1 }}
       >
-        {Array.from({ length: 40 }, (_, i) => (
+        {confettiItems.map((item, i) => (
           <div
             key={i}
             className="absolute w-2 h-2 rounded-sm animate-bounce"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 60}%`,
-              backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'][i % 5],
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${1 + Math.random() * 2}s`,
-              transform: `rotate(${Math.random() * 360}deg)`,
+              left: `${item.left}%`,
+              top: `${item.top}%`,
+              backgroundColor: item.color,
+              animationDelay: `${item.animationDelay}s`,
+              animationDuration: `${item.animationDuration}s`,
+              transform: `rotate(${item.rotate}deg)`,
             }}
           />
         ))}

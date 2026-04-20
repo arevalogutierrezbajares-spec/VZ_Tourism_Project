@@ -68,6 +68,28 @@ export async function POST(request: NextRequest) {
     }, { status: 410 });
   }
 
+  // Atomic increment to prevent race conditions: only update if times_used hasn't changed since we read it.
+  // If max_uses is set, use an optimistic lock (.eq('times_used', ...)) so concurrent requests
+  // that both pass the check above can't both increment past the limit.
+  if (discountCode.max_uses !== null) {
+    const { data: updatedCode, error: updateError } = await supabase
+      .from('discount_codes')
+      .update({ times_used: discountCode.times_used + 1 })
+      .eq('id', discountCode.id)
+      .eq('times_used', discountCode.times_used) // optimistic lock: only succeeds if unchanged
+      .lt('times_used', discountCode.max_uses)   // belt-and-suspenders: still under the limit
+      .select('id')
+      .single();
+
+    if (updateError || !updatedCode) {
+      return NextResponse.json<DiscountValidationResult>({
+        valid: false, code_id: discountCode.id, creator_id: discountCode.creator_id,
+        discount_amount_usd: 0, net_total_usd: booking_total_usd,
+        error: 'Code no longer available — someone else just used the last slot',
+      }, { status: 409 });
+    }
+  }
+
   // Calculate discount
   let discount_amount_usd: number;
   if (discountCode.type === 'percentage') {

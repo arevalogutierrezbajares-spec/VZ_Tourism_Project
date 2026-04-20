@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
+import { NotificationBell } from '@/components/common/NotificationBell';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Tooltip,
@@ -242,9 +243,10 @@ export function ProviderSidebar() {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="ml-2">
+        <div className="ml-2 flex-1">
           <Logo size="sm" />
         </div>
+        <NotificationBell />
       </div>
 
       {/* Mobile sheet drawer */}
@@ -287,13 +289,16 @@ export function ProviderSidebar() {
               <p className="text-[10px] text-muted-foreground mt-0.5">Provider Dashboard</p>
             </div>
           )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <ChevronLeft className={cn('w-4 h-4 transition-transform duration-200', collapsed && 'rotate-180')} />
-          </button>
+          <div className="flex items-center gap-1">
+            {!collapsed && <NotificationBell />}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <ChevronLeft className={cn('w-4 h-4 transition-transform duration-200', collapsed && 'rotate-180')} />
+            </button>
+          </div>
         </div>
 
         <SidebarNav

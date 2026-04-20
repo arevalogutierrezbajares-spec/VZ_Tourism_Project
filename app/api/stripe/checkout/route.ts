@@ -20,10 +20,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { bookingId, successUrl, cancelUrl, discountCode } = body as {
+  const { bookingId, discountCode } = body as {
     bookingId?: string;
-    successUrl?: string;
-    cancelUrl?: string;
     discountCode?: string;
   };
 
@@ -89,10 +87,10 @@ export async function POST(request: NextRequest) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3111';
-  const resolvedSuccessUrl = successUrl || `${appUrl}/booking/confirmation?id=${bookingId}`;
-  const resolvedCancelUrl =
-    cancelUrl ||
-    (booking.listing_slug ? `${appUrl}/listing/${booking.listing_slug}` : `${appUrl}/`);
+  const resolvedSuccessUrl = `${appUrl}/booking/confirmation?id=${bookingId}`;
+  const resolvedCancelUrl = booking.listing_slug
+    ? `${appUrl}/listing/${booking.listing_slug}`
+    : `${appUrl}/`;
 
   // P1-BOK-007: $0 after discount — skip Stripe, confirm booking directly
   if (chargeAmount === 0) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendWhatsAppText } from '@/lib/whatsapp-api';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
+import { rateLimit } from '@/lib/api/rate-limit';
 
 /**
  * POST /api/whatsapp/send
@@ -22,6 +23,10 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+
+  // Rate limit: 10 messages/minute per provider (practical cap; posadas rarely send >10/min)
+  const rateLimitRes = rateLimit(`ws:${user.id}`, 10);
+  if (rateLimitRes) return rateLimitRes;
 
   let body: { conversation_id?: string; body?: string };
   try {

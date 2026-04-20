@@ -3,19 +3,19 @@ import { createClient } from '@/lib/supabase/server';
 
 // Lazy-load scraped listings for cover image + phone enrichment
 let _listings: Record<string, string | null>[] | null = null;
-function getListings() {
+async function getListings(): Promise<Record<string, string | null>[]> {
   if (_listings) return _listings;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _listings = require('@/data/scraped-listings.json') as Record<string, string | null>[];
+    const mod = await import('@/data/scraped-listings.json');
+    _listings = (mod.default ?? mod) as unknown as Record<string, string | null>[];
   } catch {
     _listings = [];
   }
   return _listings;
 }
 
-function enrichBooking(booking: Record<string, unknown>) {
-  const listings = getListings();
+async function enrichBooking(booking: Record<string, unknown>) {
+  const listings = await getListings();
   const listing = listings.find(
     (l) => l.id === booking.listing_id || l.slug === booking.listing_slug
   );
@@ -44,6 +44,6 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const bookings = (data ?? []).map(enrichBooking);
+  const bookings = await Promise.all((data ?? []).map(enrichBooking));
   return NextResponse.json({ bookings });
 }

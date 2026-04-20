@@ -3,17 +3,22 @@ import { createClient } from '@/lib/supabase/server';
 import { ProviderSidebar } from '@/components/provider/ProviderSidebar';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  if (!supabase) redirect('/login?redirectTo=/dashboard');
+  // Dev-only: skip auth checks when DEV_SKIP_AUTH is set in .env.local
+  const skipAuth = process.env.DEV_SKIP_AUTH === 'true';
 
-  const { data: { user } } = await supabase.auth.getUser();
+  if (!skipAuth) {
+    const supabase = await createClient();
+    if (!supabase) redirect('/login?redirectTo=/dashboard');
 
-  if (!user) redirect('/login?redirectTo=/dashboard');
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
+    if (!user) redirect('/login?redirectTo=/dashboard');
 
-  if (!profile || (profile.role !== 'provider' && profile.role !== 'admin')) {
-    redirect('/');
+    const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
+
+    if (!profile || (profile.role !== 'provider' && profile.role !== 'admin')) {
+      redirect('/');
+    }
   }
 
   return (

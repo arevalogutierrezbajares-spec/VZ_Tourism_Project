@@ -22,15 +22,7 @@ import type {
 } from '@/types/database';
 import toast from 'react-hot-toast';
 import StatsStrip from '@/components/whatsapp/StatsStrip';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<WaConversationStatus, { label: string; badge: string; dot: string }> = {
-  ai:        { label: 'AI',        badge: 'bg-green-100 text-green-800 border-green-200',  dot: 'bg-green-500' },
-  human:     { label: 'Human',     badge: 'bg-blue-100 text-blue-800 border-blue-200',     dot: 'bg-blue-500'  },
-  escalated: { label: 'Escalated', badge: 'bg-red-100 text-red-800 border-red-200',        dot: 'bg-red-500'   },
-  closed:    { label: 'Closed',    badge: 'bg-gray-100 text-gray-500 border-gray-200',     dot: 'bg-gray-400'  },
-};
+import { WA_STATUS_CONFIG as STATUS_CONFIG } from '@/lib/status-config';
 
 const STAGE_CONFIG: Record<WaBookingStage, { label: string; color: string }> = {
   lead:       { label: 'Lead',       color: 'text-muted-foreground' },

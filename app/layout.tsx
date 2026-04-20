@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Fraunces, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 import { StoreHydration } from '@/components/common/StoreHydration';
 import { MotionProvider } from '@/components/common/MotionProvider';
 import './globals.css';
@@ -58,6 +59,7 @@ export default function RootLayout({
         <MotionProvider>
           {children}
         </MotionProvider>
+        <Analytics />
         <Toaster
           position="top-right"
           toastOptions={{

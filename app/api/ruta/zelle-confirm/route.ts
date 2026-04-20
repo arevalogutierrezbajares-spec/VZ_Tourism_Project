@@ -50,6 +50,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate verified amount vs quoted price (5% tolerance)
+    if (typeof verified_amount_usd === 'number' && ride.price_quoted_usd) {
+      const priceDelta = Math.abs(verified_amount_usd - ride.price_quoted_usd)
+      const tolerance = ride.price_quoted_usd * 0.05
+      if (priceDelta > tolerance) {
+        return NextResponse.json({
+          error: `Amount mismatch: expected $${ride.price_quoted_usd.toFixed(2)}, received $${verified_amount_usd.toFixed(2)}. Difference exceeds 5% tolerance.`
+        }, { status: 422 })
+      }
+    }
+
     // Update ride to confirmed with audit trail
     const { error: updateError } = await supabase
       .from('ruta_rides')

@@ -405,6 +405,36 @@ export default function CalendarPage() {
     isDragging.current = false;
   };
 
+  // ---------------------------------------------------------------------------
+  // Touch interaction (mirrors mouse logic for mobile drag-select)
+  // ---------------------------------------------------------------------------
+  const handleTouchStart = (e: React.TouchEvent, dateStr: string, dayData: DayData | undefined) => {
+    e.preventDefault(); // prevent scroll interference during drag
+    if (dayData?.booking_id) {
+      fetchBookingDetail(dayData.booking_id);
+      return;
+    }
+    isDragging.current = true;
+    setSelection({ mode: 'dragging', start: dateStr, end: dateStr });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dateStr = el?.getAttribute('data-date');
+    if (dateStr) {
+      setSelection((prev) =>
+        prev.mode === 'dragging' ? { ...prev, end: dateStr } : prev
+      );
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+  };
+
   const handleDayClick = (dateStr: string, dayData: DayData | undefined) => {
     if (dayData?.booking_id && dayData.booking_id !== 'booking_hold') {
       fetchBookingDetail(dayData.booking_id);
@@ -467,6 +497,8 @@ export default function CalendarPage() {
     <div
       className="flex flex-col gap-6 select-none"
       onMouseUp={handleDayMouseUp}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
     >
       {/* Header */}
       <div className="flex flex-col gap-1">
@@ -565,7 +597,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Day grid */}
-          <div className="grid grid-cols-7 border-t border-l rounded-xl overflow-hidden">
+          <div className="grid grid-cols-7 border-t border-l rounded-xl overflow-hidden touch-none">
             {/* Empty cells before first day */}
             {Array.from({ length: firstDayOfWeek }).map((_, i) => (
               <div
@@ -585,6 +617,7 @@ export default function CalendarPage() {
               return (
                 <div
                   key={dateStr}
+                  data-date={dateStr}
                   className={cn(
                     'h-20 border-r border-b p-1.5 cursor-pointer transition-colors',
                     selected
@@ -595,6 +628,7 @@ export default function CalendarPage() {
                   onMouseDown={() => handleDayMouseDown(dateStr, data)}
                   onMouseEnter={() => handleDayMouseEnter(dateStr)}
                   onClick={() => handleDayClick(dateStr, data)}
+                  onTouchStart={(e) => handleTouchStart(e, dateStr, data)}
                 >
                   {/* Day number */}
                   <div

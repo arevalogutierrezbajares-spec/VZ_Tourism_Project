@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from './Logo';
 import { SearchOverlay } from './SearchOverlay';
+import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/hooks/use-auth';
 import { getInitials } from '@/lib/utils';
 
@@ -105,6 +106,7 @@ export function Navbar() {
                 <Luggage className="w-4 h-4" />
                 My Trips
               </Link>
+              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
                   <Avatar className="w-8 h-8">

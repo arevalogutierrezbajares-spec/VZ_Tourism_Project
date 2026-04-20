@@ -26,9 +26,8 @@ export default function NewListingPage() {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ListingForm>({
-    resolver: zodResolver(listingSchema) as any,
+    resolver: zodResolver(listingSchema),
     defaultValues: {
       is_published: false,
       amenities: [],

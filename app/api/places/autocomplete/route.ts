@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { autocomplete } from '@/lib/google-places';
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const rateLimitRes = rateLimit(getClientIp(request), 30);
+  if (rateLimitRes) return rateLimitRes;
+
   if (!process.env.GOOGLE_PLACES_API_KEY) {
     return NextResponse.json({ error: 'Places service not configured' }, { status: 503 });
   }

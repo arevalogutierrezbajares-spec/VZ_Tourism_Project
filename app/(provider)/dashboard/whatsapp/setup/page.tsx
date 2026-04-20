@@ -938,6 +938,11 @@ export default function WhatsAppSetupPage() {
 
       if (!configRes.ok) throw new Error('Failed to save configuration');
 
+      const configJson = await configRes.json() as { plaintext_fallback?: boolean };
+      if (configJson.plaintext_fallback) {
+        toast('Token stored in plaintext — configure Supabase Vault for production security.', { icon: '⚠️' });
+      }
+
       // Save knowledge (only include fields the user actually filled in)
       const knowledgeBody: Record<string, unknown> = {};
       if (state.property_description) knowledgeBody.property_description = state.property_description;

@@ -173,7 +173,7 @@ export function MapContainer({
         paint: { 'text-color': '#ffffff' },
       });
 
-      // Individual pins — radius 8 (visible) with transparent hit area for mobile touch targets
+      // Individual pins — radius 8 (visible)
       map.addLayer({
         id: POINT_LAYER,
         type: 'circle',
@@ -198,6 +198,20 @@ export function MapContainer({
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.9,
+        },
+      });
+
+      // Transparent 44px hit-area circle added AFTER the visible pin layer so it sits on top
+      // and captures touch/click events within a 44px touch target (WCAG 2.5.5 minimum)
+      map.addLayer({
+        id: 'listing-pins-hitarea',
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': 22,
+          'circle-opacity': 0,
+          'circle-color': 'transparent',
         },
       });
 
@@ -263,8 +277,8 @@ export function MapContainer({
         });
       });
 
-      // Click: individual point → preview card
-      map.on('click', POINT_LAYER, (e) => {
+      // Shared handler for pin click (used by both the visible layer and the transparent hitarea)
+      function handlePinLayerClick(e: MapboxEvent) {
         if (!e.features?.length) return;
         const raw = e.features[0].properties['pinJson'] as string;
         try {
@@ -273,7 +287,11 @@ export function MapContainer({
         } catch {
           // ignore
         }
-      });
+      }
+
+      // Click: individual point → preview card (both visible pin and expanded hit-area)
+      map.on('click', POINT_LAYER, handlePinLayerClick);
+      map.on('click', 'listing-pins-hitarea', handlePinLayerClick);
 
       // Cursor changes
       map.on('mouseenter', CLUSTER_LAYER, () => {
@@ -283,8 +301,8 @@ export function MapContainer({
         map.getCanvas().style.cursor = '';
       });
 
-      // Hover tooltip on individual pins
-      map.on('mouseenter', POINT_LAYER, (e) => {
+      // Hover tooltip on individual pins (also triggered by the hitarea's expanded radius)
+      function handlePinMouseEnter(e: MapboxEvent) {
         map.getCanvas().style.cursor = 'pointer';
         if (!e.features?.length || !tooltipRef.current) return;
         const { title, city, region } = e.features[0].properties as {
@@ -303,11 +321,16 @@ export function MapContainer({
             }`
           )
           .addTo(mapInstanceRef.current!);
-      });
-      map.on('mouseleave', POINT_LAYER, () => {
+      }
+      function handlePinMouseLeave() {
         map.getCanvas().style.cursor = '';
         tooltipRef.current?.remove();
-      });
+      }
+
+      map.on('mouseenter', POINT_LAYER, handlePinMouseEnter);
+      map.on('mouseleave', POINT_LAYER, handlePinMouseLeave);
+      map.on('mouseenter', 'listing-pins-hitarea', handlePinMouseEnter);
+      map.on('mouseleave', 'listing-pins-hitarea', handlePinMouseLeave);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []

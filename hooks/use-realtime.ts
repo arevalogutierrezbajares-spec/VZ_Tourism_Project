@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -24,6 +24,10 @@ export function useRealtime<T>({
   enabled = true,
 }: UseRealtimeOptions<T>) {
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const reconnectAttempts = useRef(0);
+  const reconnectTimeout = useRef<NodeJS.Timeout>();
+  // retryCount is incremented by reconnectWithBackoff to re-trigger the useEffect
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!enabled) return;
@@ -42,6 +46,15 @@ export function useRealtime<T>({
       ...(filter ? { filter } : {}),
     };
 
+    function reconnectWithBackoff() {
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+      reconnectAttempts.current++;
+      reconnectTimeout.current = setTimeout(() => {
+        supabase.removeChannel(channel);
+        setRetryCount((c) => c + 1);
+      }, delay);
+    }
+
     channel
       .on('postgres_changes' as Parameters<typeof channel.on>[0], config, (payload) => {
         if (payload.eventType === 'INSERT' && onInsert) {
@@ -52,14 +65,25 @@ export function useRealtime<T>({
           onDelete(payload.old as T);
         }
       })
-      .subscribe();
+      .on('system' as Parameters<typeof channel.on>[0], { event: 'error' } as Parameters<typeof channel.on>[1], (error: unknown) => {
+        console.error('Realtime subscription error:', error);
+        reconnectWithBackoff();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          reconnectAttempts.current = 0;
+        }
+      });
 
     channelRef.current = channel;
 
     return () => {
+      clearTimeout(reconnectTimeout.current);
       supabase.removeChannel(channel);
     };
-  }, [table, event, filter, enabled, onInsert, onUpdate, onDelete]);
+  // retryCount is intentionally included so the effect re-runs on reconnect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table, event, filter, enabled, onInsert, onUpdate, onDelete, retryCount]);
 
   return channelRef.current;
 }

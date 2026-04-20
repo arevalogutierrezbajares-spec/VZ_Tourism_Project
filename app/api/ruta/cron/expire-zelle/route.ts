@@ -5,10 +5,10 @@ import { createServiceClient } from '@/lib/supabase/server'
 // vercel.json: { "crons": [{ "path": "/api/ruta/cron/expire-zelle", "schedule": "*/15 * * * *" }] }
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret (Vercel sets this automatically for cron jobs)
-  const authHeader = request.headers.get('authorization')
+  // Verify cron secret — fail closed if CRON_SECRET is not set
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  const authHeader = request.headers.get('authorization')?.replace('Bearer ', '')
+  if (!cronSecret || authHeader !== cronSecret) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
 
   const expiredCount = expiredRides?.length || 0
   if (expiredCount > 0) {
-    console.log(`Expired ${expiredCount} Zelle rides:`, expiredRides?.map((r) => r.id))
     // TODO: Send expiration notification emails
   }
 

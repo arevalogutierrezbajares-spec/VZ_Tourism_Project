@@ -55,8 +55,8 @@ const STATUS_CONFIG: Record<
   completed: {
     label: 'Completed',
     icon: CheckCircle,
-    color: 'text-status-info',
-    bg: 'bg-status-info/10 border-status-info/30',
+    color: 'text-status-confirmed',
+    bg: 'bg-status-confirmed/10 border-status-confirmed/30',
   },
 };
 

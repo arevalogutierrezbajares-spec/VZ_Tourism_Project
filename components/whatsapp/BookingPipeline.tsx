@@ -49,7 +49,7 @@ function ModeButton({
         </div>
         <div>
           <p className={cn('text-xs font-medium', active ? 'text-primary' : 'text-foreground')}>{label}</p>
-          <p className="text-[10px] text-muted-foreground">{description}</p>
+          <p className="text-2xs text-muted-foreground">{description}</p>
         </div>
         {active && <Circle className="w-1.5 h-1.5 fill-primary text-primary ml-auto" />}
       </div>
@@ -76,7 +76,7 @@ export default function BookingPipeline({
     <div className="w-52 flex-shrink-0 flex flex-col overflow-y-auto bg-background">
       {/* Mode control */}
       <div className="p-4 border-b">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
+        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
           Handling Mode
         </p>
         <div className="space-y-1.5">
@@ -114,7 +114,7 @@ export default function BookingPipeline({
 
       {/* Booking stage */}
       <div className="p-4 border-b">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
+        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
           Booking Stage
         </p>
         <div className="space-y-0.5">
@@ -141,7 +141,7 @@ export default function BookingPipeline({
 
       {/* Guest info */}
       <div className="p-4 border-b">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
+        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
           Guest
         </p>
         <div className="space-y-1">
@@ -155,7 +155,7 @@ export default function BookingPipeline({
 
       {/* Quick actions */}
       <div className="p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
+        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
           Quick Actions
         </p>
         <div className="space-y-1.5">

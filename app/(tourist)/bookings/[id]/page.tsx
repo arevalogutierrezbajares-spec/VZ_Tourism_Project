@@ -8,6 +8,7 @@ import {
   MapPin, Phone, MessageCircle, Calendar, Users, CreditCard,
   CheckCircle, Clock, XCircle, ChevronLeft, Cloud, AlertTriangle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
@@ -123,7 +124,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       setShowCancelModal(false);
     } catch {
       // Show error feedback
-      alert('Failed to cancel booking. Please try again or contact support.');
+      toast.error('Failed to cancel booking. Please try again or contact support.');
     } finally {
       setCancelling(false);
     }

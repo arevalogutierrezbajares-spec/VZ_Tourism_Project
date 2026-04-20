@@ -331,7 +331,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-11 w-11"
                   onClick={() =>
                     updateFormData({
                       guest_count: Math.max(
@@ -351,7 +351,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-11 w-11"
                   onClick={() =>
                     updateFormData({
                       guest_count: Math.min(

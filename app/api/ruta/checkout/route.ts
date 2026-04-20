@@ -53,10 +53,9 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         )
       }
-    } catch {
-      // If quote re-calculation fails (e.g., Mapbox down), allow the submitted price
-      // since the original quote was server-generated
-      console.warn('Price re-validation failed, accepting submitted price')
+    } catch (priceValidationError) {
+      console.error('Price validation unavailable:', priceValidationError)
+      return NextResponse.json({ error: 'Price validation temporarily unavailable. Please try again.' }, { status: 503 })
     }
 
     const supabase = await createClient()

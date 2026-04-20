@@ -50,12 +50,12 @@ interface Stats {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
-  confirmed: { bg: '#ECFDF5', color: '#059669', label: 'Confirmed' },
-  completed: { bg: '#EFF6FF', color: '#2563EB', label: 'Completed' },
-  pending: { bg: '#FFFBEB', color: '#D97706', label: 'Pending' },
-  cancelled: { bg: '#FEF2F2', color: '#DC2626', label: 'Cancelled' },
-  payment_submitted: { bg: '#F5F3FF', color: '#7C3AED', label: 'Payment Submitted' },
+const STATUS_STYLES: Record<string, { className: string; label: string }> = {
+  confirmed: { className: 'bg-status-confirmed/10 text-status-confirmed', label: 'Confirmed' },
+  completed: { className: 'bg-status-completed/10 text-status-completed', label: 'Completed' },
+  pending: { className: 'bg-status-pending/10 text-status-pending', label: 'Pending' },
+  cancelled: { className: 'bg-status-cancelled/10 text-status-cancelled', label: 'Cancelled' },
+  payment_submitted: { className: 'bg-status-payment-submitted/10 text-status-payment-submitted', label: 'Payment Submitted' },
 };
 
 const PM_LABELS: Record<string, string> = {
@@ -78,24 +78,23 @@ type SortKey = 'created_at' | 'check_in' | 'total_usd' | 'commission_usd' | 'sta
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 
 function StatCard({
-  label, value, sub, icon: Icon, color,
+  label, value, sub, icon: Icon,
 }: {
   label: string;
   value: string;
   sub?: string;
   icon: React.ElementType;
-  color: string;
 }) {
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-100">
+    <div className="bg-background rounded-xl p-4 border border-border">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-gray-500 font-medium">{label}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+          <p className="text-xs text-muted-foreground font-medium">{label}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+          {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
         </div>
-        <div className="rounded-lg p-2" style={{ background: `${color}20` }}>
-          <Icon className="w-5 h-5" style={{ color }} />
+        <div className="rounded-lg p-2 bg-muted">
+          <Icon className="w-5 h-5 text-foreground" />
         </div>
       </div>
     </div>
@@ -214,16 +213,16 @@ export default function AdminBookingsPage() {
   const hasFilters = filterStatus || filterPayment || filterDateFrom || filterDateTo;
 
   return (
-    <div className="p-6 space-y-6 min-h-full" style={{ background: '#F3F4F6' }}>
+    <div className="p-6 space-y-6 min-h-full bg-muted/30">
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Bookings Overview</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{bookings.length} bookings</p>
+          <h1 className="text-xl font-bold text-foreground">Bookings Overview</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{bookings.length} bookings</p>
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:bg-gray-50"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-background text-sm text-muted-foreground hover:bg-muted"
         >
           <Filter className="w-4 h-4" />
           Filters
@@ -233,13 +232,13 @@ export default function AdminBookingsPage() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white rounded-xl p-4 border border-gray-100 flex flex-wrap items-end gap-3">
+        <div className="bg-background rounded-xl p-4 border border-border flex flex-wrap items-end gap-3">
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Status</label>
+            <label className="text-xs text-muted-foreground block mb-1">Status</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 outline-none bg-white"
+              className="text-sm px-3 py-1.5 rounded-lg border border-border outline-none bg-background"
             >
               <option value="">All statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -249,11 +248,11 @@ export default function AdminBookingsPage() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Payment</label>
+            <label className="text-xs text-muted-foreground block mb-1">Payment</label>
             <select
               value={filterPayment}
               onChange={(e) => setFilterPayment(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 outline-none bg-white"
+              className="text-sm px-3 py-1.5 rounded-lg border border-border outline-none bg-background"
             >
               <option value="">All methods</option>
               <option value="card">Card</option>
@@ -263,21 +262,21 @@ export default function AdminBookingsPage() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">From</label>
+            <label className="text-xs text-muted-foreground block mb-1">From</label>
             <input
               type="date"
               value={filterDateFrom}
               onChange={(e) => setFilterDateFrom(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 outline-none bg-white"
+              className="text-sm px-3 py-1.5 rounded-lg border border-border outline-none bg-background"
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">To</label>
+            <label className="text-xs text-muted-foreground block mb-1">To</label>
             <input
               type="date"
               value={filterDateTo}
               onChange={(e) => setFilterDateTo(e.target.value)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 outline-none bg-white"
+              className="text-sm px-3 py-1.5 rounded-lg border border-border outline-none bg-background"
             />
           </div>
           {hasFilters && (
@@ -298,41 +297,36 @@ export default function AdminBookingsPage() {
           value={String(stats?.total ?? 0)}
           sub="All time"
           icon={CalendarDays}
-          color="#3B82F6"
         />
         <StatCard
           label="This Month"
           value={String(thisMonth.count)}
           sub={`${fmtDate(new Date().toISOString().slice(0,8)+'01')} – today`}
           icon={TrendingUp}
-          color="#8B5CF6"
         />
         <StatCard
           label="Revenue (Month)"
           value={fmt(thisMonth.revenue)}
           sub={`Commission: ${fmt(thisMonth.commission)}`}
           icon={DollarSign}
-          color="#059669"
         />
         <StatCard
           label="Avg Booking Value"
           value={fmt(stats?.avgBookingValue ?? 0)}
           sub="All bookings"
           icon={DollarSign}
-          color="#D97706"
         />
         <StatCard
           label="Cancellation Rate"
           value={`${(stats?.cancellationRate ?? 0).toFixed(1)}%`}
           sub={`Net to providers: ${fmt(thisMonth.netProvider)}`}
           icon={XCircle}
-          color="#DC2626"
         />
       </div>
 
       {/* Revenue chart */}
-      <div className="bg-white rounded-xl p-5 border border-gray-100" role="img" aria-label="Bar chart showing daily bookings over the last 30 days">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">Daily Bookings — Last 30 Days</h2>
+      <div className="bg-background rounded-xl p-5 border border-border" role="img" aria-label="Bar chart showing daily bookings over the last 30 days">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Daily Bookings — Last 30 Days</h2>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
@@ -359,11 +353,11 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Bookings table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="bg-background rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+              <tr className="bg-muted border-b border-border">
                 {([
                   ['Date', 'created_at'],
                   ['Guest', null],
@@ -378,7 +372,7 @@ export default function AdminBookingsPage() {
                   <th
                     key={label}
                     onClick={() => key && toggleSort(key)}
-                    className={`px-4 py-3 text-left text-xs font-medium text-gray-500 whitespace-nowrap ${key ? 'cursor-pointer hover:text-gray-700' : ''}`}
+                    className={`px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap ${key ? 'cursor-pointer hover:text-foreground' : ''}`}
                   >
                     <span className="flex items-center gap-1">
                       {label}
@@ -392,7 +386,7 @@ export default function AdminBookingsPage() {
             <tbody>
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-gray-400 text-sm">
+                  <td colSpan={10} className="text-center py-10 text-muted-foreground text-sm">
                     No bookings found
                   </td>
                 </tr>
@@ -403,65 +397,62 @@ export default function AdminBookingsPage() {
                 return (
                   <Fragment key={b.id}>
                     <tr
-                      className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="border-b border-border hover:bg-muted cursor-pointer transition-colors"
                       onClick={() => setExpandedRow(isExpanded ? null : b.id)}
                       tabIndex={0}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedRow(isExpanded ? null : b.id); } }}
                       aria-expanded={isExpanded}
                     >
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                         {fmtDate(b.created_at)}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{b.guest_name}</div>
-                        <div className="text-xs text-gray-400">{b.guest_email}</div>
+                        <div className="font-medium text-foreground">{b.guest_name}</div>
+                        <div className="text-xs text-muted-foreground">{b.guest_email}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-gray-800 max-w-[160px] truncate">{b.listing_name}</div>
+                        <div className="text-foreground max-w-[160px] truncate">{b.listing_name}</div>
                         {b.provider_name && (
-                          <div className="text-xs text-gray-400 truncate">{b.provider_name}</div>
+                          <div className="text-xs text-muted-foreground truncate">{b.provider_name}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(b.check_in)}</td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(b.check_out)}</td>
-                      <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{fmtDate(b.check_in)}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{fmtDate(b.check_out)}</td>
+                      <td className="px-4 py-3 font-semibold text-foreground whitespace-nowrap">
                         {fmt(b.total_usd)}
                       </td>
-                      <td className="px-4 py-3 text-green-700 whitespace-nowrap">
+                      <td className="px-4 py-3 text-status-confirmed whitespace-nowrap">
                         {fmt(b.commission_usd)}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
-                          style={{ background: statusStyle.bg, color: statusStyle.color }}
-                        >
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${statusStyle.className}`}>
                           {statusStyle.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                         {PM_LABELS[b.payment_method] ?? b.payment_method}
                       </td>
                       <td className="px-4 py-3">
                         <ChevronRight
-                          className="w-4 h-4 text-gray-300 transition-transform"
+                          className="w-4 h-4 text-muted-foreground transition-transform"
                           style={{ transform: isExpanded ? 'rotate(90deg)' : 'none' }}
                         />
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr style={{ background: '#FAFAFA' }}>
+                      <tr className="bg-muted/50">
                         <td colSpan={10} className="px-6 py-4">
                           <div className="grid grid-cols-3 gap-6 text-sm">
                             <div>
-                              <p className="text-xs font-medium text-gray-500 mb-2">GUEST INFO</p>
+                              <p className="text-xs font-medium text-muted-foreground mb-2">GUEST INFO</p>
                               <p className="font-medium">{b.guest_name}</p>
-                              <p className="text-gray-500">{b.guest_email}</p>
-                              {b.guest_phone && <p className="text-gray-500">{b.guest_phone}</p>}
-                              <p className="text-gray-500 mt-1">{b.guest_count} guest{b.guest_count !== 1 ? 's' : ''}</p>
+                              <p className="text-muted-foreground">{b.guest_email}</p>
+                              {b.guest_phone && <p className="text-muted-foreground">{b.guest_phone}</p>}
+                              <p className="text-muted-foreground mt-1">{b.guest_count} guest{b.guest_count !== 1 ? 's' : ''}</p>
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-gray-500 mb-2">PAYMENT BREAKDOWN</p>
-                              <div className="space-y-1 text-gray-600">
+                              <p className="text-xs font-medium text-muted-foreground mb-2">PAYMENT BREAKDOWN</p>
+                              <div className="space-y-1 text-muted-foreground">
                                 <div className="flex justify-between">
                                   <span>{b.nights}n × {fmt(b.base_price_usd)}</span>
                                   <span>{fmt(b.subtotal_usd)}</span>
@@ -470,31 +461,31 @@ export default function AdminBookingsPage() {
                                   <span>Service fee</span>
                                   <span>{fmt(b.service_fee_usd)}</span>
                                 </div>
-                                <div className="flex justify-between font-semibold text-gray-900 pt-1 border-t border-gray-200">
+                                <div className="flex justify-between font-semibold text-foreground pt-1 border-t border-border">
                                   <span>Total</span>
                                   <span>{fmt(b.total_usd)}</span>
                                 </div>
-                                <div className="flex justify-between text-green-600">
+                                <div className="flex justify-between text-status-confirmed">
                                   <span>Commission (platform)</span>
                                   <span>{fmt(b.commission_usd)}</span>
                                 </div>
-                                <div className="flex justify-between text-blue-600">
+                                <div className="flex justify-between text-primary">
                                   <span>Net to provider</span>
                                   <span>{fmt(b.net_provider_usd)}</span>
                                 </div>
                               </div>
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-gray-500 mb-2">BOOKING DETAILS</p>
-                              <div className="space-y-1 text-gray-600">
-                                <p><span className="font-medium text-gray-700">Code: </span>{b.confirmation_code}</p>
-                                <p><span className="font-medium text-gray-700">Payment: </span>{PM_LABELS[b.payment_method] ?? b.payment_method}</p>
-                                <p><span className="font-medium text-gray-700">Booked: </span>{new Date(b.created_at).toLocaleString()}</p>
+                              <p className="text-xs font-medium text-muted-foreground mb-2">BOOKING DETAILS</p>
+                              <div className="space-y-1 text-muted-foreground">
+                                <p><span className="font-medium text-foreground">Code: </span>{b.confirmation_code}</p>
+                                <p><span className="font-medium text-foreground">Payment: </span>{PM_LABELS[b.payment_method] ?? b.payment_method}</p>
+                                <p><span className="font-medium text-foreground">Booked: </span>{new Date(b.created_at).toLocaleString()}</p>
                                 {b.special_requests && (
-                                  <p><span className="font-medium text-gray-700">Requests: </span>{b.special_requests}</p>
+                                  <p><span className="font-medium text-foreground">Requests: </span>{b.special_requests}</p>
                                 )}
                                 {b.notes && (
-                                  <p><span className="font-medium text-gray-700">Notes: </span>{b.notes}</p>
+                                  <p><span className="font-medium text-foreground">Notes: </span>{b.notes}</p>
                                 )}
                               </div>
                             </div>
@@ -509,7 +500,7 @@ export default function AdminBookingsPage() {
           </table>
         </div>
         {sorted.length > 0 && (
-          <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+          <div className="px-4 py-3 border-t border-border text-xs text-muted-foreground">
             Showing {sorted.length} booking{sorted.length !== 1 ? 's' : ''}
           </div>
         )}

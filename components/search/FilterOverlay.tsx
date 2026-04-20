@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -141,6 +141,9 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                       : {}
                   }
                 >
+                  {filters.safetyLevel === level.value && (
+                    <CheckCircle className="w-3.5 h-3.5 mr-1 inline" aria-hidden="true" />
+                  )}
                   {level.label}
                 </button>
               ))}

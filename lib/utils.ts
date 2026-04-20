@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, formatDistance, parseISO } from 'date-fns';
-import { v4 as uuidv4 } from 'uuid';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,7 +65,7 @@ export function truncate(text: string | null | undefined, maxLength: number, ell
 }
 
 export function generateId(): string {
-  return uuidv4();
+  return crypto.randomUUID();
 }
 
 export function calculateDistance(

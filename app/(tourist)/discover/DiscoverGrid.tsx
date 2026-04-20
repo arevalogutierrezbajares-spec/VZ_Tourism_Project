@@ -233,9 +233,9 @@ function PhotoCard({
         </div>
       </div>
 
-      {/* Featured badge */}
+      {/* Featured badge — placed below the category icon (top-3 left-3) to avoid overlap */}
       {item.featured && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2">
+        <div className="absolute top-12 left-3">
           <span
             className="text-xs font-semibold px-2.5 py-1 rounded-full text-white bg-accent whitespace-nowrap"
           >
@@ -315,7 +315,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
             <span aria-hidden="true">✦</span>
             <span>Visual Discovery</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-bold font-display text-white mb-4 tracking-tight">
             Discover{' '}
             <span style={{ background: 'linear-gradient(135deg, #60a5fa, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Venezuela

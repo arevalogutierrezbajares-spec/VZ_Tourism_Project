@@ -70,7 +70,7 @@ function TabButton({ active, icon, label, badge, onClick }: {
       <span className="flex-1">{label}</span>
       {badge !== undefined && (
         <span className={cn(
-          'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+          'text-2xs font-bold px-1.5 py-0.5 rounded-full',
           active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
         )}>
           {badge}
@@ -526,7 +526,7 @@ function RulesTab({ cfg, onChange, onSave, saving }: {
               min={0} max={5000} step={500}
               onValueChange={(v) => setLocal((l) => ({ ...l, response_delay_ms: (Array.isArray(v) ? v[0] : v) ?? 0 }))}
             />
-            <p className="text-[10px] text-muted-foreground text-center mt-1">{delayLabel(local.response_delay_ms)}</p>
+            <p className="text-2xs text-muted-foreground text-center mt-1">{delayLabel(local.response_delay_ms)}</p>
           </div>
         </SettingRow>
       </div>
@@ -553,7 +553,7 @@ function RulesTab({ cfg, onChange, onSave, saving }: {
             min={0} max={1} step={0.05}
             onValueChange={(v) => setLocal((l) => ({ ...l, sentiment_threshold: (Array.isArray(v) ? v[0] : v) ?? 0.3 }))}
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-2xs text-muted-foreground">
             <span>Hair-trigger</span>
             <span>Balanced (0.3)</span>
             <span>Very relaxed</span>
@@ -787,7 +787,7 @@ function InstructionsTab({ cfg, onChange, onSave, saving }: {
             placeholder={"- Always greet guests by name if known.\n- Never book less than 2 nights.\n- If asked about group rates (8+ people), escalate to the owner."}
           />
           <p className={cn(
-            'absolute bottom-2 right-3 text-[10px]',
+            'absolute bottom-2 right-3 text-2xs',
             text.length > MAX * 0.9 ? 'text-destructive' : 'text-muted-foreground'
           )}>
             {text.length}/{MAX}

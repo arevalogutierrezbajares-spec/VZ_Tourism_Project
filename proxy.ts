@@ -9,6 +9,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // Dev-only: bypass auth for dashboard routes when DEV_SKIP_AUTH is set
+  // (only set this in .env.local — never in production env)
+  if (process.env.DEV_SKIP_AUTH === 'true') {
+    return NextResponse.next({ request });
+  }
+
   // Skip auth pages to avoid redirect loops
   if (pathname === '/login' || pathname === '/register' || pathname === '/admin/login' || pathname === '/auth') {
     const { supabaseResponse, user } = await updateSession(request);

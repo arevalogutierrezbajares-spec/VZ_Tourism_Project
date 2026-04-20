@@ -41,10 +41,13 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema) as any,
   });
+
+  const emailValue = watch('email');
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -191,6 +194,23 @@ function LoginForm() {
           <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Didn&apos;t receive a confirmation email?{' '}
+            <button
+              type="button"
+              className="text-primary hover:underline font-medium"
+              onClick={async () => {
+                if (!emailValue) { toast.error('Enter your email first'); return; }
+                const supabase = createClient();
+                if (!supabase) { toast.error('Authentication is not configured'); return; }
+                await supabase.auth.resend({ type: 'signup', email: emailValue });
+                toast.success('Confirmation email resent — check your inbox');
+              }}
+            >
+              Resend it
+            </button>
+          </p>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">

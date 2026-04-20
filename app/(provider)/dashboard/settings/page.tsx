@@ -22,7 +22,7 @@ export default function SettingsPage() {
   const [providerId, setProviderId] = useState<string>('');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProviderForm>({
-    resolver: zodResolver(providerSchema) as any,
+    resolver: zodResolver(providerSchema),
   });
 
   useEffect(() => {

@@ -25,7 +25,7 @@ export function AdminSafetyZoneForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<Form>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema),
   });
 
   async function onSubmit(data: Form) {

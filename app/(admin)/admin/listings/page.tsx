@@ -83,18 +83,15 @@ function missingDataWarnings(l: Listing): string[] {
 }
 
 function statusBadge(status: string) {
-  const map: Record<string, { bg: string; text: string }> = {
-    published: { bg: '#DCFCE7', text: '#166534' },
-    featured: { bg: '#DBEAFE', text: '#1E40AF' },
-    draft: { bg: '#FEF3C7', text: '#92400E' },
-    archived: { bg: '#F3F4F6', text: '#6B7280' },
+  const classMap: Record<string, string> = {
+    published: 'bg-status-confirmed/10 text-status-confirmed',
+    featured: 'bg-primary/10 text-primary',
+    draft: 'bg-status-pending/10 text-status-pending',
+    archived: 'bg-muted text-muted-foreground',
   };
-  const s = map[status] || { bg: '#F3F4F6', text: '#6B7280' };
+  const cls = classMap[status] || 'bg-muted text-muted-foreground';
   return (
-    <span
-      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-      style={{ background: s.bg, color: s.text }}
-    >
+    <span className={`text-2xs font-medium px-2 py-0.5 rounded-full ${cls}`}>
       {status}
     </span>
   );
@@ -102,20 +99,17 @@ function statusBadge(status: string) {
 
 function platformStatusBadge(ps: string | undefined) {
   const s = ps || 'scraped';
-  const map: Record<string, { bg: string; text: string; label: string }> = {
-    scraped:          { bg: '#F3F4F6', text: '#6B7280', label: 'Scraped' },
-    outreach_sent:    { bg: '#FEF3C7', text: '#92400E', label: 'Outreach Sent' },
-    interested:       { bg: '#DBEAFE', text: '#1D4ED8', label: 'Interested' },
-    onboarding:       { bg: '#EDE9FE', text: '#5B21B6', label: 'Onboarding' },
-    verified:         { bg: '#D1FAE5', text: '#065F46', label: '✅ Verified' },
-    founding_partner: { bg: '#FEF9C3', text: '#713F12', label: '🏆 Founding' },
+  const map: Record<string, { cls: string; label: string }> = {
+    scraped:          { cls: 'bg-muted text-muted-foreground',                         label: 'Scraped' },
+    outreach_sent:    { cls: 'bg-status-pending/10 text-status-pending',               label: 'Outreach Sent' },
+    interested:       { cls: 'bg-primary/10 text-primary',                             label: 'Interested' },
+    onboarding:       { cls: 'bg-status-payment-submitted/10 text-status-payment-submitted', label: 'Onboarding' },
+    verified:         { cls: 'bg-status-confirmed/10 text-status-confirmed',           label: '✅ Verified' },
+    founding_partner: { cls: 'bg-status-completed/10 text-status-completed',           label: '🏆 Founding' },
   };
   const style = map[s] || map.scraped;
   return (
-    <span
-      className="text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
-      style={{ background: style.bg, color: style.text }}
-    >
+    <span className={`text-2xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${style.cls}`}>
       {style.label}
     </span>
   );
@@ -240,14 +234,14 @@ function EditPanel({
 
   return (
     <div
-      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-2xl"
-      style={{ width: 480, background: '#fff', borderLeft: '1px solid #E5E7EB' }}
+      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-2xl bg-background border-l border-border"
+      style={{ width: 480 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div>
-          <h2 className="font-semibold text-gray-900 text-sm truncate max-w-[320px]">{listing.name}</h2>
-          <p className="text-xs text-gray-400 capitalize">{listing.type} · {listing.region}</p>
+          <h2 className="font-semibold text-foreground text-sm truncate max-w-[320px]">{listing.name}</h2>
+          <p className="text-xs text-muted-foreground capitalize">{listing.type} · {listing.region}</p>
         </div>
         <button
           onClick={onClose}
@@ -279,7 +273,7 @@ function EditPanel({
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
         {/* Name */}
         <div>
-          <label htmlFor="edit-name" className="block text-xs font-medium text-gray-600 mb-1.5">Name</label>
+          <label htmlFor="edit-name" className="block text-xs font-medium text-muted-foreground mb-1.5">Name</label>
           <input
             id="edit-name"
             className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
@@ -292,7 +286,7 @@ function EditPanel({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-gray-600">Type</label>
+              <label className="text-xs font-medium text-muted-foreground">Type</label>
               <button
                 onClick={autoCategorize}
                 disabled={!!aiLoading}
@@ -309,7 +303,7 @@ function EditPanel({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Status</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Status</label>
             <select
               className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.status}
@@ -325,7 +319,7 @@ function EditPanel({
         {/* Region / City */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Region</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Region</label>
             <select
               className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.region}
@@ -335,7 +329,7 @@ function EditPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">City</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">City</label>
             <input
               className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               value={form.city || ''}
@@ -347,12 +341,11 @@ function EditPanel({
         {/* Description */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600">Description</label>
+            <label className="text-xs font-medium text-muted-foreground">Description</label>
             <button
               onClick={improveDescription}
               disabled={!!aiLoading}
-              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium transition-colors"
-              style={{ background: '#EFF6FF', color: '#3B82F6' }}
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium transition-colors bg-primary/10 text-primary"
             >
               {aiLoading === 'description' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
               ✨ Improve with AI
@@ -370,8 +363,7 @@ function EditPanel({
               </div>
               <div className="flex gap-2">
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
-                  style={{ background: '#10B981' }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-status-confirmed text-white transition-colors"
                   onClick={() => {
                     update('description', descDiff.improved);
                     setDescDiff(null);
@@ -400,12 +392,11 @@ function EditPanel({
         {/* Tags */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600">Tags</label>
+            <label className="text-xs font-medium text-muted-foreground">Tags</label>
             <button
               onClick={generateTags}
               disabled={!!aiLoading}
-              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium transition-colors"
-              style={{ background: '#EFF6FF', color: '#3B82F6' }}
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium transition-colors bg-primary/10 text-primary"
             >
               {aiLoading === 'tags' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
               AI Tags
@@ -415,8 +406,7 @@ function EditPanel({
             {(form.category_tags || []).map((tag) => (
               <span
                 key={tag}
-                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
-                style={{ background: '#EFF6FF', color: '#3B82F6' }}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary"
               >
                 {tag}
                 <button onClick={() => update('category_tags', form.category_tags.filter((t) => t !== tag))}>
@@ -441,7 +431,7 @@ function EditPanel({
 
         {/* Contact */}
         <div className="space-y-3">
-          <label className="text-xs font-medium text-gray-600 block">Contact</label>
+          <label className="text-xs font-medium text-muted-foreground block">Contact</label>
           <input
             className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Phone"
@@ -464,27 +454,26 @@ function EditPanel({
 
         {/* Rating display */}
         {listing.avg_rating && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
             <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="text-sm font-medium text-gray-700">{listing.avg_rating}</span>
-            <span className="text-xs text-gray-400">({listing.review_count} reviews)</span>
+            <span className="text-sm font-medium text-foreground">{listing.avg_rating}</span>
+            <span className="text-xs text-muted-foreground">({listing.review_count} reviews)</span>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-gray-100 flex gap-2">
+      <div className="px-5 py-4 border-t border-border flex gap-2">
         <button
           onClick={onClose}
-          className="flex-1 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex-1 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex-1 py-2 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
-          style={{ background: '#3B82F6' }}
+          className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground transition-colors flex items-center justify-center gap-2"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
           Save
@@ -588,8 +577,7 @@ function CommandPalette({
             </div>
             <div className="flex gap-2">
               <button
-                className="flex-1 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-                style={{ background: '#3B82F6' }}
+                className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground transition-colors"
                 onClick={() => {
                   onApplyFilter(result.filter as Record<string, string>);
                   onClose();
@@ -662,8 +650,7 @@ function BulkPreviewModal({
           </button>
           <button
             onClick={onApply}
-            className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
-            style={{ background: '#3B82F6' }}
+            className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
           >
             Apply All ({preview.changes.length})
           </button>
@@ -700,10 +687,10 @@ function AIBulkProgress({
         </div>
         {/* Progress bar */}
         <div className="px-5 pt-4">
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${pct}%`, background: '#3B82F6' }}
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${pct}%` }}
             />
           </div>
           <p className="text-xs text-gray-500 mt-1.5">{pct}% complete</p>
@@ -716,7 +703,7 @@ function AIBulkProgress({
               {tags && (
                 <div className="flex gap-1 mt-1 flex-wrap">
                   {tags.slice(0, 5).map((t) => (
-                    <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#EFF6FF', color: '#3B82F6' }}>{t}</span>
+                    <span key={t} className="text-2xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{t}</span>
                   ))}
                 </div>
               )}
@@ -730,8 +717,7 @@ function AIBulkProgress({
             </button>
             <button
               onClick={onApply}
-              className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: '#10B981' }}
+              className="flex-1 py-2 rounded-lg text-sm font-medium bg-status-confirmed text-white"
             >
               Apply All
             </button>
@@ -838,9 +824,9 @@ function OutreachModal({
   };
 
   const tabConfig = {
-    whatsapp: { label: 'WhatsApp', icon: <MessageCircle className="w-3.5 h-3.5" />, color: '#25D366', bg: '#F0FDF4' },
-    instagram: { label: 'Instagram DM', icon: <AtSign className="w-3.5 h-3.5" />, color: '#E1306C', bg: '#FDF2F8' },
-    email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, color: '#3B82F6', bg: '#EFF6FF' },
+    whatsapp: { label: 'WhatsApp', icon: <MessageCircle className="w-3.5 h-3.5" />, activeCls: 'border-b-[#25D366] text-[#25D366]', msgCls: 'bg-green-50 border border-green-200' },
+    instagram: { label: 'Instagram DM', icon: <AtSign className="w-3.5 h-3.5" />, activeCls: 'border-b-[#E1306C] text-[#E1306C]', msgCls: 'bg-pink-50 border border-pink-200' },
+    email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, activeCls: 'border-b-primary text-primary', msgCls: 'bg-primary/5 border border-primary/20' },
   };
 
   const currentText = editMode ? editedText : getTabText(messages, tab);
@@ -848,10 +834,10 @@ function OutreachModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-[820px] max-h-[90vh] flex overflow-hidden">
+      <div className="bg-background rounded-2xl shadow-2xl w-[820px] max-h-[90vh] flex overflow-hidden">
         {/* Left panel: Business info */}
-        <div className="w-[280px] flex-shrink-0 border-r border-gray-100 p-5 overflow-y-auto bg-gray-50">
-          <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Negocio</p>
+        <div className="w-[280px] flex-shrink-0 border-r border-border p-5 overflow-y-auto bg-muted/30">
+          <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Negocio</p>
           {listing.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -918,7 +904,7 @@ function OutreachModal({
           </div>
 
           {/* Channel tabs */}
-          <div className="flex border-b border-gray-100">
+          <div className="flex border-b border-border">
             {(['whatsapp', 'instagram', 'email'] as const).map((t) => {
               const c = tabConfig[t];
               const isActive = tab === t;
@@ -926,11 +912,9 @@ function OutreachModal({
                 <button
                   key={t}
                   onClick={() => handleTabChange(t)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors"
-                  style={{
-                    borderBottomColor: isActive ? c.color : 'transparent',
-                    color: isActive ? c.color : '#9CA3AF',
-                  }}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+                    isActive ? c.activeCls : 'border-b-transparent text-muted-foreground'
+                  }`}
                 >
                   {c.icon} {c.label}
                 </button>
@@ -947,10 +931,7 @@ function OutreachModal({
               </div>
             ) : messages ? (
               <div className="space-y-3">
-                <div
-                  className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap"
-                  style={{ background: tc.bg, border: `1px solid ${tc.color}22` }}
-                >
+                <div className={`rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap ${tc.msgCls}`}>
                   {editMode ? (
                     <>
                       <label htmlFor="outreach-edit" className="sr-only">Edit outreach message</label>
@@ -998,8 +979,9 @@ function OutreachModal({
             <button
               onClick={handleSend}
               disabled={sending || !messages || !!sent}
-              className="flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-lg text-white font-medium transition-colors disabled:opacity-50"
-              style={{ background: sent === tab ? '#10B981' : tc.color }}
+              className={`flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-lg text-white font-medium transition-colors disabled:opacity-50 ${
+                sent === tab ? 'bg-status-confirmed' : 'bg-primary'
+              }`}
             >
               {sending ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1033,6 +1015,9 @@ function AdminListingsInner() {
 
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [apiOffset, setApiOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [region, setRegion] = useState(searchParams.get('region') || 'all');
@@ -1058,19 +1043,35 @@ function AdminListingsInner() {
   const [bulkValue, setBulkValue] = useState('');
   const [outreachListing, setOutreachListing] = useState<Listing | null>(null);
 
-  // Fetch all listings once
-  const fetchListings = useCallback(async () => {
-    setLoading(true);
+  // Fetch listings with offset-based pagination
+  const fetchListings = useCallback(async (offset = 0, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     try {
-      const res = await fetch('/api/admin/listings?limit=9999');
+      const res = await fetch(`/api/admin/listings?limit=50&offset=${offset}`);
       const data = await res.json();
-      setAllListings(data.listings || []);
+      const page = data.listings || [];
+      if (append) {
+        setAllListings((prev) => [...prev, ...page]);
+      } else {
+        setAllListings(page);
+      }
+      setApiOffset(offset + page.length);
+      setHasMore(page.length === 50);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, []);
 
-  useEffect(() => { fetchListings(); }, [fetchListings]);
+  const loadMore = useCallback(() => {
+    fetchListings(apiOffset, true);
+  }, [fetchListings, apiOffset]);
+
+  useEffect(() => { fetchListings(0); }, [fetchListings]);
 
   // Keyboard shortcut for command palette
   useEffect(() => {
@@ -1226,7 +1227,7 @@ function AdminListingsInner() {
         setToast({ msg: `Updated platform status for ${data.count} listings`, type: 'success' });
         setSelectedIds(new Set());
         setBulkAction('');
-        await fetchListings();
+        await fetchListings(0);
       }
       return;
     }
@@ -1268,7 +1269,7 @@ function AdminListingsInner() {
       setSelectedIds(new Set());
       setBulkAction('');
       setBulkPreview(null);
-      await fetchListings();
+      await fetchListings(0);
     }
   }
 
@@ -1282,7 +1283,7 @@ function AdminListingsInner() {
     });
     setToast({ msg: `Applied AI changes to ${ids.length} listings`, type: 'success' });
     setAiProgress(null);
-    await fetchListings();
+    await fetchListings(0);
   }
 
   // Save from edit panel
@@ -1305,15 +1306,17 @@ function AdminListingsInner() {
   const selectedCount = selectedIds.size;
 
   return (
-    <div className="flex flex-col h-full" style={{ minHeight: '100vh', background: '#F9FAFB' }}>
+    <div className="flex flex-col h-full min-h-screen bg-muted/30">
       {/* Toast */}
       {toast && (
         <div
-          className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
-          style={{
-            background: toast.type === 'success' ? '#DCFCE7' : toast.type === 'error' ? '#FEE2E2' : '#DBEAFE',
-            color: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991B1B' : '#1E40AF',
-          }}
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
+            toast.type === 'success'
+              ? 'bg-status-confirmed/10 text-status-confirmed'
+              : toast.type === 'error'
+              ? 'bg-status-cancelled/10 text-status-cancelled'
+              : 'bg-primary/10 text-primary'
+          }`}
         >
           {toast.type === 'success' && <Check className="w-4 h-4" />}
           {toast.type === 'error' && <X className="w-4 h-4" />}
@@ -1344,11 +1347,11 @@ function AdminListingsInner() {
       )}
 
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
+      <div className="bg-background border-b border-border px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Listings Manager</h1>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <h1 className="text-xl font-bold text-foreground">Listings Manager</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {loading ? 'Loading…' : `${filtered.length.toLocaleString()} of ${allListings.length.toLocaleString()} listings`}
             </p>
             {!loading && (
@@ -1379,8 +1382,7 @@ function AdminListingsInner() {
               Export CSV
             </a>
             <button
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
-              style={{ background: '#3B82F6' }}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
               onClick={() => router.push('/admin/listings/new')}
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
@@ -1454,8 +1456,7 @@ function AdminListingsInner() {
 
           {missingData && (
             <button
-              className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg font-medium"
-              style={{ background: '#FEF3C7', color: '#92400E' }}
+              className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg font-medium bg-status-pending/10 text-status-pending"
               onClick={() => setMissingData('')}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
@@ -1476,7 +1477,7 @@ function AdminListingsInner() {
 
         {/* Bulk actions bar */}
         {selectedCount > 0 && (
-          <div className="mt-3 flex items-center gap-2 p-3 rounded-xl" style={{ background: '#EFF6FF' }}>
+          <div className="mt-3 flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
             <span className="text-sm font-medium text-blue-800">{selectedCount} selected</span>
             <div className="flex-1" />
             <select
@@ -1538,8 +1539,7 @@ function AdminListingsInner() {
             {bulkAction && !bulkAction.startsWith('ai_') && (
               <button
                 onClick={() => executeBulk(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
-                style={{ background: '#3B82F6' }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground transition-colors"
               >
                 <Eye className="w-3.5 h-3.5" />
                 Preview
@@ -1548,8 +1548,7 @@ function AdminListingsInner() {
             {bulkAction?.startsWith('ai_') && (
               <button
                 onClick={() => executeBulk(false)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
-                style={{ background: '#8B5CF6' }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-status-payment-submitted text-white transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Run AI
@@ -1568,7 +1567,7 @@ function AdminListingsInner() {
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full border-collapse">
-          <thead className="sticky top-0 z-10 bg-white border-b border-gray-100">
+          <thead className="sticky top-0 z-10 bg-background border-b border-border">
             <tr>
               <th className="w-10 px-3 py-3">
                 <button
@@ -1591,17 +1590,17 @@ function AdminListingsInner() {
               ].map(({ col, label }) => (
                 <th
                   key={col}
-                  className="px-3 py-3 text-left cursor-pointer select-none"
+                  className="px-3 py-3 text-left text-muted-foreground cursor-pointer select-none"
                   onClick={() => sort(col)}
                 >
                   <div className="flex items-center gap-1">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</span>
                     <SortIcon col={col} />
                   </div>
                 </th>
               ))}
               <th className="px-3 py-3 text-right">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Actions</span>
               </th>
             </tr>
           </thead>
@@ -1630,8 +1629,9 @@ function AdminListingsInner() {
               return (
                 <tr
                   key={l.id}
-                  className="group border-b border-gray-50 hover:bg-blue-50/30 transition-colors"
-                  style={{ background: isSelected ? '#EFF6FF' : idx % 2 === 0 ? '#fff' : '#FAFAFA' }}
+                  className={`group border-b border-border hover:bg-primary/5 transition-colors ${
+                    isSelected ? 'bg-primary/10' : idx % 2 === 0 ? 'bg-background' : 'bg-muted/30'
+                  }`}
                 >
                   <td className="px-3 py-2.5">
                     <button
@@ -1651,7 +1651,7 @@ function AdminListingsInner() {
                   </td>
                   <td className="px-3 py-2.5 max-w-[260px]">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900 truncate">{l.name}</span>
+                      <span className="text-sm font-medium text-foreground truncate">{l.name}</span>
                       {warnings.length > 0 && (
                         <span title={`Missing: ${warnings.join(', ')}`}>
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
@@ -1663,8 +1663,7 @@ function AdminListingsInner() {
                         {warnings.map((w) => (
                           <button
                             key={w}
-                            className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                            style={{ background: '#FEF3C7', color: '#92400E' }}
+                            className="text-2xs px-1.5 py-0.5 rounded-full font-medium bg-status-pending/10 text-status-pending"
                             onClick={() => handleRowAI(l, w === 'description' ? 'generate_description' : w === 'tags' ? 'generate_tags' : 'generate_description')}
                           >
                             Fix {w} ✨
@@ -1674,10 +1673,10 @@ function AdminListingsInner() {
                     )}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="text-xs text-gray-500 capitalize">{l.type}</span>
+                    <span className="text-xs text-muted-foreground capitalize">{l.type}</span>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="text-xs text-gray-500 capitalize">{l.region}</span>
+                    <span className="text-xs text-muted-foreground capitalize">{l.region}</span>
                   </td>
                   <td className="px-3 py-2.5">
                     {l.avg_rating ? (
@@ -1686,11 +1685,11 @@ function AdminListingsInner() {
                         {l.avg_rating}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-300">—</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="text-xs text-gray-500">{l.review_count?.toLocaleString() || '—'}</span>
+                    <span className="text-xs text-muted-foreground">{l.review_count?.toLocaleString() || '—'}</span>
                   </td>
                   <td className="px-3 py-2.5">
                     {platformStatusBadge(l.platform_status)}
@@ -1786,17 +1785,32 @@ function AdminListingsInner() {
         </table>
       </div>
 
+      {/* Load more */}
+      {!loading && hasMore && (
+        <div className="bg-background border-t border-border px-6 py-3 flex items-center justify-center gap-3">
+          <p className="text-sm text-muted-foreground">{allListings.length.toLocaleString()} loaded</p>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
+          >
+            {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
+            {loadingMore ? 'Loading…' : 'Load more'}
+          </button>
+        </div>
+      )}
+
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <div className="bg-white border-t border-gray-100 px-6 py-3 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+        <div className="bg-background border-t border-border px-6 py-3 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
             {((page - 1) * PAGE_SIZE + 1).toLocaleString()}–{Math.min(page * PAGE_SIZE, filtered.length).toLocaleString()} of {filtered.length.toLocaleString()}
           </p>
           <div className="flex items-center gap-2">
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border disabled:opacity-40 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
               aria-label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1816,12 +1830,11 @@ function AdminListingsInner() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors"
-                  style={{
-                    background: p === page ? '#3B82F6' : 'transparent',
-                    color: p === page ? '#fff' : '#6B7280',
-                    border: p === page ? 'none' : '1px solid #E5E7EB',
-                  }}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors ${
+                    p === page
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground border border-border hover:bg-muted'
+                  }`}
                 >
                   {p}
                 </button>
@@ -1830,7 +1843,7 @@ function AdminListingsInner() {
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border disabled:opacity-40 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
               aria-label="Next page"
             >
               <ChevronRight className="w-4 h-4" />

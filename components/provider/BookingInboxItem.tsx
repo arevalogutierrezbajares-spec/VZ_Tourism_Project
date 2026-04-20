@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Booking } from '@/types/database';
 import { formatDate, formatCurrency, getInitials, pluralize } from '@/lib/utils';
-import { BOOKING_STATUSES } from '@/lib/constants';
+import { getStatusConfig } from '@/lib/status-config';
 
 interface BookingInboxItemProps {
   booking: Booking;
@@ -14,7 +14,7 @@ interface BookingInboxItemProps {
 }
 
 export function BookingInboxItem({ booking, onConfirm, onCancel }: BookingInboxItemProps) {
-  const statusConfig = BOOKING_STATUSES.find((s) => s.value === booking.status);
+  const statusCfg = getStatusConfig(booking.status);
 
   return (
     <div className="flex items-start gap-4 p-4 rounded-xl border hover:bg-muted/30 transition-colors">
@@ -28,8 +28,8 @@ export function BookingInboxItem({ booking, onConfirm, onCancel }: BookingInboxI
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
           <p className="font-medium text-sm">{booking.tourist?.full_name || 'Guest'}</p>
-          <Badge className={`text-xs ${statusConfig?.color || 'bg-gray-100 text-gray-800'}`}>
-            {booking.status}
+          <Badge className={`text-xs ${statusCfg.className}`}>
+            {statusCfg.label}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground truncate">
@@ -51,7 +51,7 @@ export function BookingInboxItem({ booking, onConfirm, onCancel }: BookingInboxI
           <Button
             size="sm"
             variant="outline"
-            className="text-red-600 border-red-200 hover:bg-red-50 h-7"
+            className="text-status-cancelled border-status-cancelled/20 hover:bg-status-cancelled/10 h-7"
             onClick={() => onCancel?.(booking.id)}
           >
             Decline

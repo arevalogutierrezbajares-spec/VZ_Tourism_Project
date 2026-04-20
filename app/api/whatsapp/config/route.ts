@@ -101,7 +101,9 @@ export async function PUT(request: NextRequest) {
   // If access_token is being set, attempt Vault encryption via service client
   // (service client needed because upsert_wa_access_token is SECURITY DEFINER)
   let vaultUpdates: Record<string, unknown> = {};
+  let plaintextFallback = false;
   if (typeof updates.access_token === 'string') {
+    let vaultSuccess = false;
     try {
       const serviceSupabase = await createServiceClient();
       if (serviceSupabase) {
@@ -120,11 +122,16 @@ export async function PUT(request: NextRequest) {
           if (vaultId) {
             // Token stored in Vault — store reference, keep plaintext as fallback during migration
             vaultUpdates = { access_token_vault_id: vaultId };
+            vaultSuccess = true;
           }
         }
       }
     } catch {
       // Vault not available — plaintext stored as-is
+    }
+    if (!vaultSuccess) {
+      console.warn('[WhatsApp Token] Vault write failed — token stored in plaintext as fallback. Rotate token and configure Vault for production.');
+      plaintextFallback = true;
     }
   }
 
@@ -143,5 +150,5 @@ export async function PUT(request: NextRequest) {
     responseData.verify_token = plaintextVerifyToken;
   }
 
-  return NextResponse.json({ data: responseData });
+  return NextResponse.json({ data: responseData, plaintext_fallback: plaintextFallback });
 }

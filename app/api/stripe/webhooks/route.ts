@@ -65,18 +65,27 @@ export async function POST(request: NextRequest) {
           const booking = getBooking(bookingId);
           const discountAmount = booking?.discount_amount_usd ?? 0;
 
-          // Fire both in parallel — webhook must not fail if these do
-          await Promise.allSettled([
-            supabase.from('discount_code_uses').insert({
-              code_id: discountCodeId,
-              guest_booking_id: bookingId,
-              discount_amount_usd: discountAmount,
-            }),
-            supabase.rpc('increment_discount_code_use', {
-              p_code_id: discountCodeId,
-              p_revenue: discountAmount,
-            }),
-          ]);
+          // Check for existing use record (idempotency)
+          const { data: existingUse } = await supabase
+            .from('discount_code_uses')
+            .select('id')
+            .eq('guest_booking_id', bookingId)
+            .maybeSingle();
+
+          if (!existingUse) {
+            // Only insert and increment if no use record exists
+            await Promise.allSettled([
+              supabase.from('discount_code_uses').insert({
+                code_id: discountCodeId,
+                guest_booking_id: bookingId,
+                discount_amount_usd: discountAmount,
+              }),
+              supabase.rpc('increment_discount_code_use', {
+                p_code_id: discountCodeId,
+                p_revenue: discountAmount,
+              }),
+            ]);
+          }
         }
         break;
       }

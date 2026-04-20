@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -142,7 +142,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
   );
 }
 
-/** Lightbox overlay with keyboard navigation and focus trap */
+/** Lightbox overlay with keyboard navigation, focus trap, and touch swipe support */
 function LightboxOverlay({
   images,
   currentIndex,
@@ -158,6 +158,20 @@ function LightboxOverlay({
   onNext: () => void;
   onGoTo: (i: number) => void;
 }) {
+  const touchStartX = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (delta > 50) onPrev();  // swipe right = previous
+    if (delta < -50) onNext(); // swipe left = next
+  }
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -181,6 +195,8 @@ function LightboxOverlay({
     <div
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
       onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       role="dialog"
       aria-modal="true"
       aria-label={`Image gallery, showing image ${currentIndex + 1} of ${images.length}`}

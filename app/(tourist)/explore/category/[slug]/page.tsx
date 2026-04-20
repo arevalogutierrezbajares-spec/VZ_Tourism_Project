@@ -183,41 +183,49 @@ export default async function CategoryPage({ params }: Props) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {content.guides.map((guide, i) => (
-                <article key={i} className="group rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-300 bg-card">
-                  {/* Cover image */}
-                  <div className="relative h-44 overflow-hidden">
-                    <Image
-                      src={guide.image}
-                      alt={guide.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <span className="absolute bottom-3 left-3 text-xs px-2.5 py-1 rounded-full bg-white/90 text-gray-800 font-medium">
-                      {guide.tag}
-                    </span>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {guide.readTime}
-                    </div>
-                    <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors">
-                      {guide.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                      {guide.teaser}
-                    </p>
-                    <div className="pt-1">
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-                        Read guide <ArrowRight className="w-3 h-3" />
+                <Link
+                  key={i}
+                  href={(guide as unknown as Record<string, string>).slug
+                    ? `/explore/guide/${(guide as unknown as Record<string, string>).slug}`
+                    : `/library?q=${encodeURIComponent(guide.title)}`}
+                  className="group block rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-300 bg-card focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <article>
+                    {/* Cover image */}
+                    <div className="relative h-44 overflow-hidden">
+                      <Image
+                        src={guide.image}
+                        alt={guide.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      <span className="absolute bottom-3 left-3 text-xs px-2.5 py-1 rounded-full bg-white/90 text-gray-800 font-medium">
+                        {guide.tag}
                       </span>
                     </div>
-                  </div>
-                </article>
+
+                    {/* Content */}
+                    <div className="p-4 space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        {guide.readTime}
+                      </div>
+                      <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors">
+                        {guide.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                        {guide.teaser}
+                      </p>
+                      <div className="pt-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                          Read guide <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
               ))}
             </div>
           </section>

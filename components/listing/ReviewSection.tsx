@@ -33,7 +33,7 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
     reset,
     formState: { errors },
   } = useForm<ReviewFormData>({
-    resolver: zodResolver(reviewSchema) as any,
+    resolver: zodResolver(reviewSchema),
     defaultValues: {
       listing_id: listingId,
       booking_id: bookingId || '',

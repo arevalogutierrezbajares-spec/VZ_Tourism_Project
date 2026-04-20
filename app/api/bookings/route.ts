@@ -15,11 +15,11 @@ import { Resend } from 'resend';
 
 // Load scraped listings for price/capacity lookups
 let _listings: Record<string, unknown>[] | null = null;
-function getListings() {
+async function getListings(): Promise<Record<string, unknown>[]> {
   if (_listings) return _listings;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _listings = require('@/data/scraped-listings.json') as unknown as Record<string, unknown>[];
+    const mod = await import('@/data/scraped-listings.json');
+    _listings = (mod.default ?? mod) as unknown as Record<string, unknown>[];
   } catch {
     _listings = [];
   }
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
   const guest_count = parsed.data.guest_count ?? parsed.data.guests ?? 1;
 
-  const listings = getListings();
+  const listings = await getListings();
   const listing = listings.find(
     (l) =>
       l.id === listing_id ||
@@ -333,6 +333,23 @@ export async function POST(request: NextRequest) {
       ? 'Your booking is reserved. Pay on arrival and show your booking code to the provider.'
       : `Transfer ${payment_details?.amount} via ${payment_details?.method} using the details provided. Your booking will be confirmed once payment is verified.`;
 
+    // Look up provider email
+    let providerEmail: string | null = null;
+    if (provider_id && supabase) {
+      const { data: prov } = await supabase
+        .from('providers')
+        .select('contact_email, user_id')
+        .eq('id', provider_id)
+        .single();
+      if (prov?.contact_email) {
+        providerEmail = prov.contact_email;
+      } else if (prov?.user_id) {
+        // Fallback: get email from auth users table
+        const { data: authUser } = await supabase.auth.admin.getUserById(prov.user_id);
+        providerEmail = authUser?.user?.email ?? null;
+      }
+    }
+
     Promise.all([
       resend.emails.send({
         from: fromEmail,
@@ -368,6 +385,21 @@ export async function POST(request: NextRequest) {
           'Questions? Reply to this email or contact us on WhatsApp.',
         ].join('\n'),
       }),
+      ...(providerEmail ? [resend.emails.send({
+        from: fromEmail,
+        to: providerEmail,
+        subject: `New booking at your listing — ${confirmationCode}`,
+        text: [
+          `New booking received!`,
+          `Listing: ${listing_name}`,
+          `Guest: ${guest_name}`,
+          `Check-in: ${check_in}`,
+          `Check-out: ${check_out ?? check_in}`,
+          `Total: $${total_usd} USD`,
+          `Booking code: ${confirmationCode}`,
+          `Log in to your dashboard to confirm: ${appUrl}/dashboard/bookings`,
+        ].join('\n'),
+      })] : []),
     ]).catch((err) => console.error('Resend email error:', err));
   }
 
