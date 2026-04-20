@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 
 const PMS_API_URL = process.env.PMS_API_URL || 'http://localhost:3001';
-const PMS_BRIDGE_SECRET = process.env.PMS_BRIDGE_SECRET || 'vav-bridge-dev-secret-2026';
+const PMS_BRIDGE_SECRET = process.env.PMS_BRIDGE_SECRET;
 const PMS_TOKEN_COOKIE = 'pms_token';
 const PMS_PROPERTY_COOKIE = 'pms_property_id';
 
@@ -22,6 +22,10 @@ async function getPmsToken(supabaseUser: { id: string; email?: string; user_meta
 
   if (existingToken) {
     return { token: existingToken, propertyId: existingPropertyId || null, properties: [] };
+  }
+
+  if (!PMS_BRIDGE_SECRET) {
+    throw new Error('PMS_BRIDGE_SECRET environment variable is not set');
   }
 
   // Call PMS bridge endpoint to get a JWT
@@ -109,7 +113,13 @@ async function proxyToPms(
   }
 
   // Get PMS token
-  const pmsAuth = await getPmsToken(user);
+  let pmsAuth: Awaited<ReturnType<typeof getPmsToken>>;
+  try {
+    pmsAuth = await getPmsToken(user);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'PMS configuration error';
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
   if (!pmsAuth) {
     return NextResponse.json({ error: 'PMS authentication failed' }, { status: 502 });
   }
