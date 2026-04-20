@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Bot, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ export function TripSidePanel() {
     setActiveTab,
     days,
     current,
+    totalCost,
     lastAddedStopId,
     clearPeek,
     closePanel,
@@ -27,27 +28,48 @@ export function TripSidePanel() {
 
   const peekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const wasOpenBeforePeekRef = useRef(false);
+  const userInteractedRef = useRef(false);
 
-  // Auto-peek: when a stop is added and panel is closed, briefly open it
+  // Track user interaction to prevent auto-close after peek
+  useEffect(() => {
+    if (!lastAddedStopId) return;
+    userInteractedRef.current = false;
+
+    function markInteracted() {
+      userInteractedRef.current = true;
+    }
+
+    const panel = panelRef.current;
+    panel?.addEventListener('click', markInteracted, { once: true });
+    return () => { panel?.removeEventListener('click', markInteracted); };
+  }, [lastAddedStopId]);
+
+  // Auto-peek: when a stop is added and panel is closed, briefly open then auto-close
   useEffect(() => {
     if (!lastAddedStopId) return;
 
-    if (!isOpen) {
+    const wasAlreadyOpen = isOpen;
+    wasOpenBeforePeekRef.current = wasAlreadyOpen;
+
+    if (!wasAlreadyOpen) {
       openPanel();
       setActiveTab('stops');
-      peekTimeoutRef.current = setTimeout(() => {
-        // Only auto-close if user hasn't interacted
-        clearPeek();
-      }, 2500);
-    } else {
-      // Panel already open, just clear peek after highlight fades
-      peekTimeoutRef.current = setTimeout(clearPeek, 2000);
     }
+
+    peekTimeoutRef.current = setTimeout(() => {
+      if (!wasAlreadyOpen && !userInteractedRef.current) {
+        closePanel();
+      }
+      clearPeek();
+    }, wasAlreadyOpen ? 2000 : 2500);
 
     return () => {
       if (peekTimeoutRef.current) clearTimeout(peekTimeoutRef.current);
     };
-  }, [lastAddedStopId, isOpen, openPanel, setActiveTab, clearPeek]);
+    // Only re-run when a new stop is added (lastAddedStopId changes)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastAddedStopId]);
 
   // Close on Escape
   useEffect(() => {
@@ -89,6 +111,7 @@ export function TripSidePanel() {
           {/* Tab bar */}
           <div role="tablist" className="flex border-b border-border/50 px-5">
             <button
+              id="tab-stops"
               role="tab"
               aria-selected={activeTab === 'stops'}
               aria-controls="panel-stops"
@@ -115,6 +138,7 @@ export function TripSidePanel() {
               )}
             </button>
             <button
+              id="tab-ai"
               role="tab"
               aria-selected={activeTab === 'ai'}
               aria-controls="panel-ai"
@@ -194,9 +218,9 @@ export function TripSidePanel() {
               <ExternalLink className="w-3 h-3" />
               Open full planner
             </Link>
-            {stopCount > 0 && (
+            {totalCost > 0 && (
               <p className="text-xs font-medium tabular-nums">
-                Est. ${useItineraryStore.getState().totalCost.toLocaleString()}
+                Est. ${totalCost.toLocaleString()}
               </p>
             )}
           </div>

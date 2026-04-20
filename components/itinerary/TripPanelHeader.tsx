@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Minus } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useItineraryStore } from '@/stores/itinerary-store';
 
