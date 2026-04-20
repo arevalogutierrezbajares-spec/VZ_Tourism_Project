@@ -47,6 +47,11 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
     ...photos.map((p) => ({ url: p.url, alt: p.alt || listing.title })),
   ];
 
+  const scrollToBooking = () => {
+    const el = document.getElementById('booking-form-anchor');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
@@ -204,7 +209,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
         </div>
 
         {/* Sidebar - Booking form */}
-        <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-4 self-start">
+        <div id="booking-form-anchor" className="lg:col-span-1 lg:sticky lg:top-24 space-y-4 self-start">
           <BookingForm listing={listing} />
 
           {/* Add to itinerary */}
@@ -277,6 +282,23 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               <ExternalLink className="w-3 h-3 opacity-60" />
             </a>
           )}
+        </div>
+      </div>
+
+      {/* Sticky mobile booking CTA — hidden on lg+ where sidebar is visible */}
+      <div className="fixed bottom-16 left-0 right-0 z-30 lg:hidden px-4 pb-2">
+        <div className="bg-background border border-border rounded-xl shadow-lg flex items-center justify-between px-4 py-3">
+          <div>
+            <span className="text-lg font-bold text-foreground">${listing.price_usd.toFixed(2)}</span>
+            <span className="text-xs text-muted-foreground ml-1">/ person / night</span>
+          </div>
+          <button
+            type="button"
+            onClick={scrollToBooking}
+            className="bg-primary text-primary-foreground font-semibold text-sm px-5 py-2 rounded-lg hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            Reserve
+          </button>
         </div>
       </div>
     </div>

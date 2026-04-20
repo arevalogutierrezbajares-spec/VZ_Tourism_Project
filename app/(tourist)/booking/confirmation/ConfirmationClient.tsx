@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import {
   CheckCircle,
@@ -209,14 +210,18 @@ export function ConfirmationClient({ booking }: Props) {
                   <Calendar className="w-3.5 h-3.5" />
                   Check-in
                 </span>
-                <span className="font-medium">{booking.check_in}</span>
+                <span className="font-medium">
+                  {(() => { try { return format(parseISO(booking.check_in), 'EEE, MMM d, yyyy'); } catch { return booking.check_in; } })()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Calendar className="w-3.5 h-3.5" />
                   Check-out
                 </span>
-                <span className="font-medium">{booking.check_out}</span>
+                <span className="font-medium">
+                  {(() => { try { return format(parseISO(booking.check_out), 'EEE, MMM d, yyyy'); } catch { return booking.check_out; } })()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -314,6 +319,13 @@ export function ConfirmationClient({ booking }: Props) {
               </CardContent>
             </Card>
           )}
+
+        {/* Primary CTA — View My Trips */}
+        <Button asChild className="w-full">
+          <Link href="/trips">
+            View my trips
+          </Link>
+        </Button>
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">

@@ -18,6 +18,7 @@ export interface BookingFormData {
   guest_phone?: string;
   special_requests?: string;
   payment_method: PaymentMethod;
+  discount_code_id?: string;
 }
 
 export interface PaymentDetails {

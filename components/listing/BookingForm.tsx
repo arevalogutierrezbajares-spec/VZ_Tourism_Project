@@ -18,6 +18,8 @@ import {
   Copy,
   Zap,
   Send,
+  Tag,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -110,6 +112,7 @@ function PriceSummary({
   subtotal,
   fee,
   total,
+  discountAmount,
 }: {
   listing: Listing;
   nights: number;
@@ -117,7 +120,9 @@ function PriceSummary({
   subtotal: number;
   fee: number;
   total: number;
+  discountAmount?: number;
 }) {
+  const netTotal = discountAmount ? Math.max(0, total - discountAmount) : total;
   return (
     <div className="text-sm space-y-1.5 border rounded-lg p-3 bg-muted/30">
       <div className="flex justify-between text-muted-foreground">
@@ -131,9 +136,15 @@ function PriceSummary({
         <span>Service fee (12%)</span>
         <span>${fee.toFixed(2)}</span>
       </div>
+      {discountAmount && discountAmount > 0 && (
+        <div className="flex justify-between text-green-600 font-medium">
+          <span className="flex items-center gap-1"><Tag className="w-3 h-3" />Promo discount</span>
+          <span>−${discountAmount.toFixed(2)}</span>
+        </div>
+      )}
       <div className="flex justify-between font-bold text-base border-t pt-1.5 mt-1.5">
         <span>Total</span>
-        <span>${total.toFixed(2)} USD</span>
+        <span>${netTotal.toFixed(2)} USD</span>
       </div>
     </div>
   );
@@ -163,6 +174,45 @@ export function BookingForm({ listing }: BookingFormProps) {
   const [copied, setCopied] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Discount code state
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoSuccess, setPromoSuccess] = useState<{ discountAmount: number; codeId: string } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    setPromoSuccess(null);
+    try {
+      const res = await fetch('/api/discount-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim(), booking_total_usd: getTotal() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setPromoError(data.error ?? 'Invalid promo code');
+      } else {
+        setPromoSuccess({ discountAmount: data.discount_amount_usd, codeId: data.code_id });
+        updateFormData({ discount_code_id: data.code_id });
+      }
+    } catch {
+      setPromoError('Could not validate code. Please try again.');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoSuccess(null);
+    setPromoError(null);
+    setPromoCode('');
+    updateFormData({ discount_code_id: undefined });
+  };
 
   // Verified provider = instant book; otherwise = request to book
   const isInstantBook = listing.provider?.is_verified === true;
@@ -482,7 +532,67 @@ export function BookingForm({ listing }: BookingFormProps) {
               subtotal={getSubtotal()}
               fee={getServiceFee()}
               total={getTotal()}
+              discountAmount={promoSuccess?.discountAmount}
             />
+
+            {/* Promo code collapsible */}
+            <div className="border rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setPromoOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                aria-expanded={promoOpen}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5" />
+                  Have a promo code?
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${promoOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {promoOpen && (
+                <div className="px-3 pb-3 pt-2 border-t space-y-2">
+                  {promoSuccess ? (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-green-600 font-medium flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Code applied — −${promoSuccess.discountAmount.toFixed(2)} off
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="text-xs text-muted-foreground hover:text-destructive underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="PROMO CODE"
+                          value={promoCode}
+                          onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(null); }}
+                          className="h-8 text-sm font-mono uppercase"
+                          onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
+                          disabled={promoLoading}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyPromo}
+                          disabled={promoLoading || !promoCode.trim()}
+                          className="px-3 h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity shrink-0"
+                        >
+                          {promoLoading ? '...' : 'Apply'}
+                        </button>
+                      </div>
+                      {promoError && (
+                        <p className="text-xs text-destructive">{promoError}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             {listing.cancellation_policy && (
               <p className="text-xs text-muted-foreground">
@@ -639,6 +749,7 @@ export function BookingForm({ listing }: BookingFormProps) {
               subtotal={getSubtotal()}
               fee={getServiceFee()}
               total={getTotal()}
+              discountAmount={promoSuccess?.discountAmount}
             />
 
             <div className="flex gap-2">
@@ -652,7 +763,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                 {isLoading
                   ? 'Processing...'
                   : formData.payment_method === 'card'
-                  ? `Pay $${getTotal().toFixed(2)}`
+                  ? `Pay $${(promoSuccess ? Math.max(0, getTotal() - promoSuccess.discountAmount) : getTotal()).toFixed(2)}`
                   : formData.payment_method === 'arrival'
                   ? 'Confirm Reservation'
                   : "I've Sent the Payment"}

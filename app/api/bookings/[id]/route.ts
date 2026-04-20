@@ -107,18 +107,49 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (notes !== undefined) updates.notes = notes;
   if (special_requests !== undefined) updates.special_requests = special_requests;
 
-  // Try Supabase first — verify booking belongs to authenticated user before updating
+  // Determine user role for ownership checks
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+  const isProvider = userProfile?.role === 'provider';
+
+  // Try Supabase first — verify booking belongs to authenticated user (or provider owns listing) before updating
   try {
     // First verify ownership
     const { data: existing, error: fetchError } = await supabase
       .from('guest_bookings')
-      .select('guest_email')
+      .select('guest_email, listing_id')
       .eq('id', id)
       .single();
     if (fetchError?.code === 'PGRST116' || !existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
-    if ((existing as Record<string, unknown>).guest_email !== user.email) {
+
+    const existingRow = existing as Record<string, unknown>;
+    let authorized = existingRow.guest_email === user.email;
+
+    // Provider path: check that the authenticated provider owns the listing
+    if (!authorized && isProvider) {
+      const { data: providerRow } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      if (providerRow) {
+        const { data: listingRow } = await supabase
+          .from('listings')
+          .select('provider_id')
+          .eq('id', existingRow.listing_id as string)
+          .single();
+        if (listingRow && (listingRow as Record<string, unknown>).provider_id === providerRow.id) {
+          authorized = true;
+        }
+      }
+    }
+
+    if (!authorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

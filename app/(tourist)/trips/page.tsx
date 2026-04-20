@@ -47,12 +47,30 @@ type Tab = 'upcoming' | 'past' | 'itineraries' | 'saved';
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-100 text-green-800',
   pending: 'bg-yellow-100 text-yellow-800',
+  payment_submitted: 'bg-blue-100 text-blue-800',
   cancelled: 'bg-red-100 text-red-800',
   completed: 'bg-blue-100 text-blue-800',
+  refunded: 'bg-gray-100 text-gray-700',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  payment_submitted: 'Payment Sent',
+  confirmed: 'Confirmed',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
+  refunded: 'Refunded',
 };
 
 function daysUntil(dateStr: string) {
   return differenceInDays(parseISO(dateStr), new Date());
+}
+
+function getRefundEstimate(days: number, totalUsd: number) {
+  if (days >= 14) return { label: 'Full refund (90%)', amount: totalUsd * 0.9 };
+  if (days >= 7)  return { label: 'Partial refund (70%)', amount: totalUsd * 0.7 };
+  if (days >= 3)  return { label: 'Partial refund (30%)', amount: totalUsd * 0.3 };
+  return { label: 'No refund', amount: 0 };
 }
 
 function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; past?: boolean; onCancelled?: (id: string) => void }) {
@@ -91,7 +109,7 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="font-semibold text-base leading-tight">{booking.listing_name}</h3>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[booking.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                {booking.status}
+                {STATUS_LABELS[booking.status] ?? booking.status}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mb-2">Ref: {booking.confirmation_code}</p>
@@ -131,21 +149,31 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
                 </button>
               )}
               {canCancel && showConfirm && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-red-600 font-medium">Are you sure?</span>
-                  <button
-                    onClick={handleCancel}
-                    disabled={cancelling}
-                    className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                  >
-                    {cancelling ? 'Cancelling…' : 'Yes, cancel'}
-                  </button>
-                  <button
-                    onClick={() => setShowConfirm(false)}
-                    className="px-2.5 py-1 rounded-lg border hover:bg-muted transition-colors"
-                  >
-                    Keep
-                  </button>
+                <div className="flex flex-col gap-1.5 text-xs">
+                  <div className="text-red-600 font-medium">
+                    Are you sure?
+                    {days !== null && (() => {
+                      const refund = getRefundEstimate(days, booking.total_usd);
+                      return refund.amount > 0
+                        ? <span className="font-normal text-muted-foreground ml-1">Estimated refund: ${refund.amount.toFixed(2)} ({refund.label})</span>
+                        : <span className="font-normal text-muted-foreground ml-1">{refund.label} — no refund applies</span>;
+                    })()}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCancel}
+                      disabled={cancelling}
+                      className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                    >
+                      {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+                    </button>
+                    <button
+                      onClick={() => setShowConfirm(false)}
+                      className="px-2.5 py-1 rounded-lg border hover:bg-muted transition-colors"
+                    >
+                      Keep
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -247,7 +275,9 @@ export default function TripsPage() {
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'there';
 
   const upcoming = bookings.filter(
-    (b) => b.status === 'confirmed' && isFuture(parseISO(b.check_in))
+    (b) =>
+      (b.status === 'confirmed' || b.status === 'pending' || b.status === 'payment_submitted') &&
+      isFuture(parseISO(b.check_in))
   );
   const past = bookings.filter((b) => isPast(parseISO(b.check_out)));
 

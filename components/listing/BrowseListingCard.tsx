@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, Heart, PlusCircle, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -220,16 +221,24 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
           'bg-background rounded-2xl shadow-sm hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:transition-all duration-200 overflow-hidden border cursor-pointer',
           !isOnboarded && 'opacity-90'
         )}>
-          <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
-            <div className="absolute inset-0">
-              {listing.cover_image_url ? (
-                <img src={listing.cover_image_url} alt={listing.title} loading="lazy" className="w-full h-full object-cover" />
-              ) : (
-                <div className={cn('w-full h-full bg-gradient-to-br flex items-center justify-center', gradient)}>
-                  <span className="text-4xl">{catIcon}</span>
-                </div>
-              )}
-            </div>
+          <div className="relative w-full aspect-[16/10] overflow-hidden">
+            {listing.cover_image_url ? (
+              <Image
+                src={listing.cover_image_url}
+                alt={listing.title}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
+                }}
+              />
+            ) : (
+              <div className={cn('w-full h-full bg-gradient-to-br flex items-center justify-center', gradient)}>
+                <span className="text-4xl">{catIcon}</span>
+              </div>
+            )}
           </div>
           <div className="p-4">
             <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -266,19 +275,23 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
   return (
     <Link href={`/listing/${listing.slug}`} className="group block">
       <div className={cn(
-        'bg-background rounded-xl shadow-sm hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-all duration-200 overflow-hidden cursor-pointer',
+        'bg-background rounded-2xl border border-border shadow-sm hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-all duration-200 overflow-hidden cursor-pointer',
         borderAccent,
         !isOnboarded && 'opacity-90'
       )}>
         {/* Photo area — 16:10 */}
-        <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
-          <div className="absolute inset-0">
+        <div className="relative w-full aspect-[16/10] overflow-hidden">
             {listing.cover_image_url ? (
-              <img
+              <Image
                 src={listing.cover_image_url}
                 alt={listing.title}
-                loading="lazy"
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80';
+                }}
               />
             ) : (
               <div className={cn('w-full h-full bg-gradient-to-br flex flex-col items-center justify-center', gradient)}>
@@ -309,7 +322,6 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
               <Heart className={cn('w-5 h-5 transition-colors', isFavorited ? 'fill-rose-500 text-rose-500' : 'text-muted-foreground hover:text-rose-500')} aria-hidden="true" />
             </button>
           </div>
-        </div>
 
         {/* Content area */}
         <div className="p-4 space-y-2.5">
