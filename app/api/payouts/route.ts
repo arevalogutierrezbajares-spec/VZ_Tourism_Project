@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createPayout, getPayouts, type PayoutMethod } from '@/lib/payouts-store';
 import { getAllBookings } from '@/lib/bookings-store';
 import { requireAdminAuth } from '@/lib/admin-auth';
+import { createClient } from '@/lib/supabase/server';
 
 const INSTANT_PAYOUT_FEE_RATE = 0.015; // 1.5%
 
@@ -18,7 +19,22 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
-  const provider_id = searchParams.get('provider_id') || 'prov_001'; // TODO: derive from real session
+  let provider_id = searchParams.get('provider_id');
+
+  // If provider_id not supplied, derive from the authenticated Supabase session
+  if (!provider_id) {
+    const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data: provider } = await supabase
+      .from('providers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+    if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+    provider_id = provider.id as string;
+  }
 
   const payouts = getPayouts(provider_id);
   const sorted = [...payouts].sort(
