@@ -3,6 +3,7 @@ import { Inter, Fraunces, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/react';
 import { StoreHydration } from '@/components/common/StoreHydration';
+import { AuthInitializer } from '@/components/common/AuthInitializer';
 import { MotionProvider } from '@/components/common/MotionProvider';
 import './globals.css';
 
@@ -56,6 +57,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <StoreHydration />
+        <AuthInitializer />
         <MotionProvider>
           {children}
         </MotionProvider>

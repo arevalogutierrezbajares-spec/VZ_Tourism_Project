@@ -40,9 +40,10 @@ export default function RegisterPage() {
   const signUpWithGoogle = async () => {
     const supabase = createClient();
     if (!supabase) { toast.error('Authentication is not configured'); return; }
+    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/callback?next=/` },
+      options: { redirectTo: `${base}/callback?next=/` },
     });
   };
 
@@ -62,10 +63,12 @@ export default function RegisterPage() {
     try {
       const supabase = createClient();
       if (!supabase) throw new Error('Authentication is not configured');
+      const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
+          emailRedirectTo: `${base}/callback`,
           data: {
             full_name: data.full_name,
             phone: data.phone,

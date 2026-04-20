@@ -21,7 +21,7 @@ import { getInitials } from '@/lib/utils';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, profile, isAuthenticated, isProvider, isAdmin, signOut } = useAuth();
+  const { user, profile, isAuthenticated, isProvider, isAdmin, loading, signOut } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
@@ -97,7 +97,10 @@ export function Navbar() {
             <span className="hidden sm:block">Search</span>
           </button>
 
-          {isAuthenticated ? (
+          {loading ? (
+            /* Skeleton while session is being verified — prevents flash of "sign in" button */
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse" aria-hidden="true" />
+          ) : isAuthenticated ? (
             <>
               <Link
                 href="/trips"

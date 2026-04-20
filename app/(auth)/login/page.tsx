@@ -61,9 +61,29 @@ function LoginForm() {
 
       if (error) throw error;
 
+      // Populate auth store immediately so the next page renders as authenticated
+      // on the very first render — avoids flash of "sign in" button after navigation.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const authUser = session.user;
+        setUser({
+          id: authUser.id,
+          email: authUser.email ?? '',
+          full_name: authUser.user_metadata?.full_name ?? authUser.email ?? '',
+          avatar_url: authUser.user_metadata?.avatar_url ?? null,
+          role: 'tourist',
+          phone: null,
+          nationality: null,
+          preferred_language: 'en',
+          created_at: authUser.created_at,
+          updated_at: authUser.updated_at ?? authUser.created_at,
+        });
+        setLoading(false);
+        setInitialized(true);
+      }
+
       toast.success('Welcome back!');
       router.push(redirectTo);
-      router.refresh();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to sign in';
       toast.error(message);
@@ -75,9 +95,14 @@ function LoginForm() {
   const signInWithGoogle = async () => {
     const supabase = createClient();
     if (!supabase) { toast.error('Authentication is not configured'); return; }
+    // Use NEXT_PUBLIC_APP_URL so this always points to the correct domain.
+    // IMPORTANT: http://localhost:3000/** must be in your Supabase project's
+    // Authentication → URL Configuration → Redirect URLs list, otherwise
+    // Supabase will redirect to its Site URL (the Vercel preview) instead.
+    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/callback?next=${redirectTo}` },
+      options: { redirectTo: `${base}/callback?next=${redirectTo}` },
     });
   };
 
@@ -204,7 +229,8 @@ function LoginForm() {
                 if (!emailValue) { toast.error('Enter your email first'); return; }
                 const supabase = createClient();
                 if (!supabase) { toast.error('Authentication is not configured'); return; }
-                await supabase.auth.resend({ type: 'signup', email: emailValue });
+                const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+                await supabase.auth.resend({ type: 'signup', email: emailValue, options: { emailRedirectTo: `${base}/callback` } });
                 toast.success('Confirmation email resent — check your inbox');
               }}
             >

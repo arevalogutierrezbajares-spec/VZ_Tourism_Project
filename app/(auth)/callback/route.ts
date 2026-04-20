@@ -8,6 +8,12 @@ export async function GET(request: Request) {
   const rawNext = searchParams.get('next') ?? '/';
   const next = rawNext.startsWith('/') ? rawNext : `/${rawNext}`;
 
+  // Prefer NEXT_PUBLIC_APP_URL so that after OAuth the browser lands on the
+  // correct host (e.g. localhost:3000 in dev, production URL in prod).
+  // This matters when the Supabase Site URL differs from where the dev server
+  // runs — without this the redirect can land on the wrong deployment.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? origin;
+
   if (code) {
     const supabase = await createClient();
     if (!supabase) {
@@ -33,11 +39,11 @@ export async function GET(request: Request) {
           },
           { onConflict: 'id', ignoreDuplicates: true }
         );
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(`${appUrl}${next}`);
       }
       console.error('[Auth] exchangeCodeForSession failed:', error?.message, error);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
+  return NextResponse.redirect(`${appUrl}/login?error=auth_callback_failed`);
 }
