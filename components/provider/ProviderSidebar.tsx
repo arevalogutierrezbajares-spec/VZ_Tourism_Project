@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Brain,
   Bot,
+  Hotel,
   Menu,
   X,
 } from 'lucide-react';
@@ -69,6 +70,12 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/revenue', icon: DollarSign, label: 'Revenue' },
       { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
       { href: '/dashboard/guests', icon: Users, label: 'Guests' },
+    ],
+  },
+  {
+    title: 'Property (PMS)',
+    items: [
+      { href: '/dashboard/pms', icon: Hotel, label: 'Posada PMS' },
     ],
   },
   {

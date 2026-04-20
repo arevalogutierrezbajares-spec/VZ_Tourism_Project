@@ -1,6 +1,6 @@
 # Session Summary — 2026-04-20
 
-> Full QA pass, 15 bug fixes, PMS local setup, platform rebrand decision.
+> Full QA pass, 15 bug fixes, PMS local setup, platform rebrand decision, **PMS integration into VAV shipped**.
 
 ---
 
@@ -110,6 +110,50 @@ Reviewed and tested the `/demo/whatsapp` demo from the frontend. Found and fixed
 - `app/demo/whatsapp/brain/page.tsx` (sidebar layout, localStorage fallback)
 - `app/demo/whatsapp/settings/page.tsx` (sidebar layout)
 
+### 9. PMS Integration into VAV (Shipped)
+
+**Goal:** Embed the Posada PMS inside the VAV provider dashboard so providers manage their property without a separate login.
+
+**Architecture decision:** Microservice + API proxy (not monolith).
+
+- PMS NestJS API stays at port 3001 as an independent service
+- VAV proxies all requests and bridges auth (Supabase → PMS JWT) transparently
+- Separate databases with user linkage via `supabase_user_id`
+
+**What was built:**
+
+**PMS API changes (posada-pms repo):**
+- Added `supabase_user_id` column to `users` table + migration (`0002_add_supabase_user_id.sql`)
+- Added `POST /auth/bridge` endpoint — accepts service secret + Supabase user details, creates/links PMS user, returns PMS JWT
+- Env var: `PMS_BRIDGE_SECRET`
+
+**VAV infrastructure:**
+- `app/api/pms/[...path]/route.ts` — Catch-all proxy that authenticates via Supabase, exchanges for PMS JWT via bridge, forwards to NestJS. Caches PMS JWT in httpOnly cookie (6-day TTL).
+- `lib/pms/api.ts` — Client-side API wrapper calling through `/api/pms/*`
+- `lib/pms/types.ts` — Full TypeScript types for all PMS domain objects (reservations, payments, guests, folios, etc.)
+- `lib/pms/context.tsx` — `PmsProvider` + `usePms()` hook for property/user state
+- Env vars: `PMS_API_URL`, `PMS_BRIDGE_SECRET`
+
+**10 new routes under `/dashboard/pms/`:**
+
+| Route | Feature |
+|-------|---------|
+| `/dashboard/pms` | Interactive calendar grid with reservation pills, 7/14/30-day views, state-colored pills with tooltips |
+| `/dashboard/pms/reservations` | Filterable/searchable reservations table with state badges and channel labels |
+| `/dashboard/pms/reservations/new` | New reservation form: guest search (debounced), unit type select, date range, availability check, cost estimate |
+| `/dashboard/pms/reservations/[id]` | Reservation detail: state transitions (confirm, check-in, check-out, cancel), folio with charges/payments/balance |
+| `/dashboard/pms/payments` | Two-tab view: pending payments with AI match candidates (confidence %), payment history table |
+| `/dashboard/pms/guests` | Searchable guest directory with tags, stay counts |
+| `/dashboard/pms/guests/[id]` | Guest detail: contact info, tags, reservation history |
+| `/dashboard/pms/settings` | Three tabs: General (property info), Fiscal (IGTF toggle), Team (staff roles) |
+| `/dashboard/pms/onboarding` | 4-step wizard: property details → unit types → rooms → completion |
+
+**Navigation:** Added "Property (PMS)" section to `ProviderSidebar` with Hotel icon.
+
+**Build:** TypeScript clean, Next.js build passes, PMS DB migration applied.
+
+---
+
 ### Backlog
 
 From [[QA-Fix-Plan-2026-04-20]]:
@@ -121,6 +165,13 @@ From remaining TODOs:
 - Photo migration to Supabase Storage (P2)
 - 8 UX polish items (P2)
 - Match quality improvements (P2)
+
+### PMS Integration Follow-ups
+- End-to-end test with PMS API running (start both services, register as provider, access PMS)
+- WhatsApp inbox page (PMS conversations) — not yet ported
+- Rate calendar management page — not yet ported
+- Notifications page — not yet ported
+- Production deployment: configure `PMS_API_URL` and `PMS_BRIDGE_SECRET` in Vercel env
 
 ### Rebrand Tasks (future)
 - Update root layout title template from "VZ Explorer" to "Vamos A Venezuela"
