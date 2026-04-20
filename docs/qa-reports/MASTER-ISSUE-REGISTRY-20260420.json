@@ -1,0 +1,1312 @@
+[
+  {
+    "id": "P0-SEC-001",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "Admin SHA-256 password hash hardcoded in client JS bundle — UI bypass trivial",
+    "file": "app/(admin)/admin/layout.tsx:29",
+    "agents": ["F2", "F3", "D5", "D7", "A1"],
+    "agent_count": 5,
+    "fix": "Remove ADMIN_HASH from client bundle; move admin auth to Next.js middleware or a server component that validates process.env.ADMIN_PASSWORD server-side."
+  },
+  {
+    "id": "P0-SEC-002",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "Hardcoded PMS bridge secret fallback 'vav-bridge-dev-secret-2026' committed to source",
+    "file": "app/api/pms/[...path]/route.ts:6",
+    "agents": ["F3", "D5"],
+    "agent_count": 2,
+    "fix": "Remove the || 'vav-bridge-dev-secret-2026' fallback; throw an error at startup if PMS_BRIDGE_SECRET is not set."
+  },
+  {
+    "id": "P0-SEC-003",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "POST /api/bookings has no auth guard — anonymous users can create unlimited bookings and trigger confirmation emails to arbitrary addresses",
+    "file": "app/api/bookings/route.ts:79",
+    "agents": ["F2", "F3", "A2"],
+    "agent_count": 3,
+    "fix": "Add createClient() + getUser() auth check at the start of the POST handler, matching the GET handler pattern at line 43–52."
+  },
+  {
+    "id": "P0-SEC-004",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "POST /api/stripe/checkout accepts any bookingId without verifying caller ownership",
+    "file": "app/api/stripe/checkout/route.ts:24",
+    "agents": ["F2", "F3"],
+    "agent_count": 2,
+    "fix": "Add auth check; verify booking.guest_email === user.email before creating the Stripe checkout session."
+  },
+  {
+    "id": "P0-SEC-005",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "Live API keys (Anthropic, Groq, WhatsApp, Supabase service-role) present in .env.local — verify not committed to git",
+    "file": ".env.local",
+    "agents": ["F1", "F3"],
+    "agent_count": 2,
+    "fix": "Confirm .env.local is in .gitignore; check git history for accidental commits; rotate all four keys if any doubt exists."
+  },
+  {
+    "id": "P0-SEC-006",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "Hardcoded prov_001 provider ID in live payout and settings routes — financial data of prov_001 exposed to any admin-cookie holder",
+    "file": "app/api/payouts/route.ts:21, app/api/provider-settings/route.ts:43,60, app/(provider)/dashboard/payouts/page.tsx:37",
+    "agents": ["F4", "A2"],
+    "agent_count": 2,
+    "fix": "Derive providerId from the authenticated Supabase session (getUser() + providers table lookup) in all three files; remove the TODO fallback."
+  },
+  {
+    "id": "P0-SEC-007",
+    "priority": "P0",
+    "domain": "SECURITY",
+    "title": "No middleware.ts — protected routes have no global auth enforcement; new routes default to public",
+    "file": "middleware.ts (missing)",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Create middleware.ts using @supabase/ssr to enforce session checks for /(provider)/*, /(admin)/*, /(ruta)/* route groups and redirect to /login on failure."
+  },
+  {
+    "id": "P0-BOK-001",
+    "priority": "P0",
+    "domain": "BOOKING",
+    "title": "guest_bookings vs bookings table split — tourist bookings NEVER appear in provider dashboard (zero bookings, zero revenue visible to all providers)",
+    "file": "app/api/bookings/route.ts, app/(provider)/dashboard/page.tsx",
+    "agents": ["A1", "A2"],
+    "agent_count": 2,
+    "fix": "Add a Supabase trigger syncing guest_bookings inserts into bookings, or unify to one table, or update all provider dashboard queries to read from guest_bookings."
+  },
+  {
+    "id": "P0-BOK-002",
+    "priority": "P0",
+    "domain": "BOOKING",
+    "title": "Discount code UI does not exist in the tourist-facing booking form — entire creator referral economy is non-functional",
+    "file": "components/listing/BookingForm.tsx, app/api/discount-codes/validate/route.ts",
+    "agents": ["D2", "D7", "A3"],
+    "agent_count": 3,
+    "fix": "Add a collapsible 'Have a promo code?' input at the Review or Payment step; POST to /api/discount-codes/validate; pass discount_code_id in booking POST body and Stripe session metadata."
+  },
+  {
+    "id": "P0-BOK-003",
+    "priority": "P0",
+    "domain": "BOOKING",
+    "title": "Provider dashboard shows ALL guest bookings (no scoping) — any authenticated provider sees all guests' PII (name, email, phone, confirmation codes)",
+    "file": "app/(provider)/dashboard/bookings/page.tsx:97",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Replace getAllBookings() with a scoped query that filters bookings where listing.provider_id = authenticated_provider.id."
+  },
+  {
+    "id": "P0-BOK-004",
+    "priority": "P0",
+    "domain": "BOOKING",
+    "title": "Provider booking PATCH ownership check is inverted — guest_email !== user.email blocks providers from confirming/cancelling any booking; all provider actions silently 401",
+    "file": "app/api/bookings/[id]/route.ts:121",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Add a separate provider-auth path that checks listing.provider_id === authenticated_provider.id when the caller role is provider."
+  },
+  {
+    "id": "P0-BOK-005",
+    "priority": "P0",
+    "domain": "BOOKING",
+    "title": "Provider Calendar calls two non-existent API routes — all providers see only 'Demo Listing' placeholder",
+    "file": "app/(provider)/dashboard/calendar/page.tsx",
+    "agents": ["D7", "A1"],
+    "agent_count": 2,
+    "fix": "Create app/api/provider/listings/route.ts and app/api/provider/bookings/route.ts scoped to authenticated provider session."
+  },
+  {
+    "id": "P0-TRS-001",
+    "priority": "P0",
+    "domain": "TOURIST",
+    "title": "All scraped listing images broken — old Google Places API format with exposed API key; every scraped listing shows 'Image unavailable' placeholder",
+    "file": "data/scraped-listings.json, components/common/ImageGallery.tsx",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Migrate photo references to the new Places v1 format and route through /api/places/photo proxy; rotate the exposed AIzaSy... key in data/scraped-listings.json."
+  },
+  {
+    "id": "P0-TRS-002",
+    "priority": "P0",
+    "domain": "TOURIST",
+    "title": "Review write form is never shown — canReview prop hardwired to undefined for all listings; no tourist can write a review",
+    "file": "app/(tourist)/listing/[slug]/page.tsx, components/listing/ListingDetail.tsx:197",
+    "agents": ["A1", "A3"],
+    "agent_count": 2,
+    "fix": "In the listing server component, query guest_bookings for {guest_email, listing_id, status: 'completed'}; pass canReview={true} and bookingId when found."
+  },
+  {
+    "id": "P0-PRV-001",
+    "priority": "P0",
+    "domain": "PROVIDER",
+    "title": "Provider listing edit — Select components do not show existing category/region values; saving without touching them clears the fields",
+    "file": "app/(provider)/dashboard/listings/[id]/edit/page.tsx:149-162",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Use controlled Select with defaultValue populated from reset(json.data), or switch to controlled value prop tied to form state."
+  },
+  {
+    "id": "P0-PRV-002",
+    "priority": "P0",
+    "domain": "PROVIDER",
+    "title": "No photo upload UI anywhere in listing create or edit workflow — all listings are photo-less",
+    "file": "app/(provider)/dashboard/listings/new/page.tsx:31, edit/page.tsx",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Add a photo upload section using the existing /api/upload route with file picker, drag-and-drop, and preview; wire to the existing photos: [] field."
+  },
+  {
+    "id": "P0-PRV-003",
+    "priority": "P0",
+    "domain": "PROVIDER",
+    "title": "window.location.reload() in ProviderBookingActions on every confirm/cancel action — catastrophic UX, full page flash and scroll reset",
+    "file": "components/provider/ProviderBookingActions.tsx:49",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Replace window.location.reload() with router.refresh() (Next.js App Router) or optimistic state update."
+  },
+  {
+    "id": "P0-INF-001",
+    "priority": "P0",
+    "domain": "INFRA",
+    "title": "Test suite broken — 57 failures across 10 suites; createServiceClient is not a function in all integration tests; coverage unmeasurable",
+    "file": "__tests__/integration/api/, __tests__/unit/api/discount-codes.test.ts",
+    "agents": ["F1"],
+    "agent_count": 1,
+    "fix": "Fix the Jest mock for lib/supabase/server.ts to correctly export createServiceClient as a named function; verify mock is applied globally in jest.config.ts."
+  },
+  {
+    "id": "P0-INF-002",
+    "priority": "P0",
+    "domain": "INFRA",
+    "title": "Dual BookingStatus type — 'payment_submitted' (file store) vs 'refunded' (DB type) creates silent type mismatches across the platform",
+    "file": "types/database.ts:3, lib/bookings-store.ts:4, types/api.ts",
+    "agents": ["F4", "A2"],
+    "agent_count": 2,
+    "fix": "Reconcile into one canonical BookingStatus type; add 'payment_submitted' to types/database.ts and remove the divergent definition in bookings-store.ts."
+  },
+  {
+    "id": "P0-ADM-001",
+    "priority": "P0",
+    "domain": "ADMIN",
+    "title": "Admin 'Add Listing' button in header has no onClick handler — primary admin CTA is non-functional",
+    "file": "app/(admin)/admin/listings/page.tsx:1381",
+    "agents": ["D5", "D7"],
+    "agent_count": 2,
+    "fix": "Add onClick handler that opens the existing listing creation modal or navigates to the create form."
+  },
+  {
+    "id": "P0-RTA-001",
+    "priority": "P0",
+    "domain": "RUTA",
+    "title": "RUTA dispatch uses window.alert() for error states — blocks UI thread, inaccessible, unprofessional in ops dashboard",
+    "file": "app/(ruta)/ruta/dispatch/page.tsx:85,99",
+    "agents": ["D5"],
+    "agent_count": 1,
+    "fix": "Replace all alert() / confirm() calls with in-context toast notifications or confirmation dialogs using shadcn AlertDialog."
+  },
+  {
+    "id": "P0-RTA-002",
+    "priority": "P0",
+    "domain": "RUTA",
+    "title": "RUTA dispatch has no real-time updates — dispatchers act on stale data; no polling, WebSocket, or refresh button",
+    "file": "app/(ruta)/ruta/dispatch/page.tsx",
+    "agents": ["D5"],
+    "agent_count": 1,
+    "fix": "Add Supabase realtime subscription on the ruta_rides table, or implement 30-second polling with a visible 'Last updated' indicator."
+  },
+  {
+    "id": "P1-SEC-001",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "In-memory rate limiters are per-serverless-instance and reset on cold start — effective rate limit is zero in production",
+    "file": "lib/api/rate-limit.ts, app/api/whatsapp/webhook/route.ts:39-51",
+    "agents": ["F2", "F3", "D6b"],
+    "agent_count": 3,
+    "fix": "Replace module-level Map-based rate limiting with an Upstash/Redis-backed rate limiter keyed on IP + endpoint."
+  },
+  {
+    "id": "P1-SEC-002",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "/api/places/autocomplete and /api/ruta/geocode proxy Google Places API with no rate limiting — cost exposure",
+    "file": "app/api/places/autocomplete/route.ts, app/api/ruta/geocode/route.ts",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Apply rateLimit(getClientIp(request), 30) from lib/api/rate-limit; hardcode country = 'VE' in geocode to prevent quota abuse."
+  },
+  {
+    "id": "P1-SEC-003",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "/api/whatsapp/send has no rate limiting — compromised provider account can spam guests at unlimited rate",
+    "file": "app/api/whatsapp/send/route.ts",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Apply per-provider rate limit (e.g., 60 messages/hour) using the same rate-limit library."
+  },
+  {
+    "id": "P1-SEC-004",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "Upload endpoint accepts arbitrary Supabase bucket names from user input",
+    "file": "app/api/upload/route.ts:13",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Whitelist allowed buckets: const ALLOWED_BUCKETS = ['listings', 'avatars', 'itineraries']; const bucket = ALLOWED_BUCKETS.includes(requested) ? requested : 'listings';"
+  },
+  {
+    "id": "P1-SEC-005",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "No HTTP security headers — no X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy, or Permissions-Policy",
+    "file": "next.config.ts (missing headers() config)",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add async headers() to next.config.ts with standard security headers for all routes."
+  },
+  {
+    "id": "P1-SEC-006",
+    "priority": "P1",
+    "domain": "SECURITY",
+    "title": "STRIPE_WEBHOOK_SECRET used with ! non-null assertion — missing env var causes unhandled runtime exception instead of graceful 503",
+    "file": "lib/stripe/server.ts:77",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Add an explicit check if (!process.env.STRIPE_WEBHOOK_SECRET) return NextResponse.json({error:'Not configured'}, {status:503}) before use."
+  },
+  {
+    "id": "P1-BOK-001",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "Mobile booking CTA buried below the fold on all mobile devices — no sticky bottom bar",
+    "file": "components/listing/ListingDetail.tsx:207",
+    "agents": ["D2", "A1"],
+    "agent_count": 2,
+    "fix": "Add a fixed bottom-16 left-0 right-0 z-30 booking bar on mobile showing price + 'Reserve' button; use lg:hidden to hide on desktop."
+  },
+  {
+    "id": "P1-BOK-002",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "Pending and payment_submitted bookings invisible in My Trips 'Upcoming' tab",
+    "file": "app/(tourist)/trips/page.tsx:249-251",
+    "agents": ["D2", "D7"],
+    "agent_count": 2,
+    "fix": "Change upcoming filter to include status === 'pending' and status === 'payment_submitted' in addition to 'confirmed'."
+  },
+  {
+    "id": "P1-BOK-003",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "No 'View my trips' CTA on booking confirmation page — users abandoned after payment",
+    "file": "app/(tourist)/booking/confirmation/ConfirmationClient.tsx",
+    "agents": ["D2", "A3"],
+    "agent_count": 2,
+    "fix": "Add <Button asChild><Link href='/trips'>View my trips</Link></Button> as the primary post-booking CTA alongside 'Explore more'."
+  },
+  {
+    "id": "P1-BOK-004",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "No availability check before booking creation — two guests can double-book the same listing for overlapping dates",
+    "file": "app/api/bookings/route.ts (entire POST handler)",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Before inserting, query guest_bookings for overlapping confirmed bookings on the same listing_id and date range; return 409 Conflict if found."
+  },
+  {
+    "id": "P1-BOK-005",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "Provider cancels confirmed booking — no Stripe refund initiated and no email sent to guest",
+    "file": "components/provider/ProviderBookingActions.tsx",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "In the provider cancel handler, call stripe.refunds.create({payment_intent: booking.payment_intent_id}) and send a cancellation email via Resend before updating status."
+  },
+  {
+    "id": "P1-BOK-006",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "Stripe checkout fallback path only reads from file-store — Supabase-stored bookings return 404 on payment retry; user permanently stuck",
+    "file": "app/api/stripe/checkout/route.ts",
+    "agents": ["A1", "A2"],
+    "agent_count": 2,
+    "fix": "When getBooking() returns null, fall through to a Supabase guest_bookings query by ID before returning 404."
+  },
+  {
+    "id": "P1-BOK-007",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "$0 checkout via 100% discount code crashes Stripe session creation with unhandled error",
+    "file": "app/api/stripe/checkout/route.ts:47",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Check if (chargeAmount === 0) and either create a free order without Stripe, or return a dedicated 200 response marking the booking as confirmed without payment."
+  },
+  {
+    "id": "P1-BOK-008",
+    "priority": "P1",
+    "domain": "BOOKING",
+    "title": "No idempotency key on booking POST — failed mid-flight creates orphaned pending bookings; retry creates duplicate bookings",
+    "file": "app/api/bookings/route.ts",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Accept an idempotency_key in the booking POST body; check for existing bookings with the same key before creating a new record."
+  },
+  {
+    "id": "P1-AUT-001",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "No password reset flow — 'Forgot password?' fires a toast; users permanently locked out",
+    "file": "app/(auth)/login/page.tsx:165",
+    "agents": ["D3", "A1"],
+    "agent_count": 2,
+    "fix": "Create app/(auth)/forgot-password/page.tsx that calls supabase.auth.resetPasswordForEmail(email, { redirectTo }) and shows a 'Check your email' confirmation screen."
+  },
+  {
+    "id": "P1-AUT-002",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "No post-registration email verification UX — UI immediately redirects to / after signUp() claiming success; users expect to be logged in but aren't verified",
+    "file": "app/(auth)/register/page.tsx:70-72",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "After signUp() succeeds, show a success screen: 'Check your email — click the verification link to activate your account.' Do not router.push('/') immediately."
+  },
+  {
+    "id": "P1-AUT-003",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "Provider DB insert failure silently swallowed — auth account created, providers row missing, success toast shown; data corruption",
+    "file": "app/(auth)/provider-register/page.tsx:65-79",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Check if (providerError) and show an inline error state with a 'Retry' button rather than logging and proceeding; roll back the auth user if provider insert fails."
+  },
+  {
+    "id": "P1-AUT-004",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "Demo persona name is 'Tomas Demo' — developer's real first name visible to all production users who try the demo",
+    "file": "app/(auth)/login/page.tsx:23, components/common/AuthModal.tsx:21",
+    "agents": ["D3", "D7", "A1"],
+    "agent_count": 3,
+    "fix": "Replace full_name: 'Tomas Demo' with a neutral persona: 'Demo Traveler' or 'Alex Demo'."
+  },
+  {
+    "id": "P1-AUT-005",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "Messages page — null provider_phone produces invalid WhatsApp URL https://wa.me/?text=...",
+    "file": "app/(tourist)/messages/page.tsx:29-30",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Disable (or hide) the 'Message Host' button when provider_phone is null; show a 'Host contact not available' state."
+  },
+  {
+    "id": "P1-AUT-006",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "Messages page — unauthenticated user causes fetching spinner to show forever (state deadlock)",
+    "file": "app/(tourist)/messages/page.tsx:39-45",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "In the if (!isAuthenticated) return; early return, also call setFetching(false) to release the spinner state."
+  },
+  {
+    "id": "P1-AUT-007",
+    "priority": "P1",
+    "domain": "AUTH",
+    "title": "No password change option in Account Settings — users who signed up with email/password have no self-service path",
+    "file": "app/(tourist)/account/page.tsx",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Add a 'Change password' section that calls supabase.auth.updateUser({ password }) after re-authentication."
+  },
+  {
+    "id": "P1-TRS-001",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Map page outside tourist layout — no mobile navigation bar; mobile users are stranded with no nav",
+    "file": "app/map/page.tsx (outside (tourist) layout group)",
+    "agents": ["D1", "A3"],
+    "agent_count": 2,
+    "fix": "Move /map inside the (tourist) layout group, or duplicate the MobileTabBar and Navbar into the map page."
+  },
+  {
+    "id": "P1-TRS-002",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Discover 'Add to Trip' button permanently invisible on touch/mobile — opacity: hovered ? 1 : 0 with no touch affordance",
+    "file": "app/(tourist)/discover/DiscoverGrid.tsx:193",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Show the 'Add to Trip' button unconditionally on touch devices using @media (hover: none) or by detecting touch capability; use focus-visible to show on keyboard focus."
+  },
+  {
+    "id": "P1-TRS-003",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Guide article 'Read guide' links are dead ends — ArrowRight icon but no href or Link wrapper",
+    "file": "app/(tourist)/explore/category/[slug]/page.tsx:186-220",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Wrap guide cards in <Link href='/library/[slug]'> or the appropriate route; create the guide detail routes if they don't exist."
+  },
+  {
+    "id": "P1-TRS-004",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Price sort options ('Price: low to high' / 'Price: high to low') shown in UI but return no-op — non-functional UI controls",
+    "file": "app/(tourist)/explore/ExploreClient.tsx:73-74,180",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Remove the non-functional sort options from the select menu until reliable price data is available, or implement the sort against price_usd for onboarded listings."
+  },
+  {
+    "id": "P1-TRS-005",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "FilterOverlay region badges not keyboard-activatable — Badge renders as span, not interactive",
+    "file": "app/(tourist)/explore/FilterOverlay.tsx:83",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Replace <Badge onClick> with <button> or <Badge asChild><button>."
+  },
+  {
+    "id": "P1-TRS-006",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "FilterOverlay safety level filter uses color only for active state — WCAG 1.4.1 violation",
+    "file": "app/(tourist)/explore/FilterOverlay.tsx:131",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Add an icon (e.g., CheckCircle) alongside the color change for the active state per DESIGN.md rule."
+  },
+  {
+    "id": "P1-TRS-007",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Missing sitemap.ts and robots.txt — 1,170+ listing pages uncrawlable; admin/dashboard routes being indexed",
+    "file": "app/sitemap.ts (missing), app/robots.ts (missing)",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Create app/sitemap.ts generating listing + category + region URLs dynamically; create app/robots.ts disallowing /admin, /dashboard, /demo, /api."
+  },
+  {
+    "id": "P1-TRS-008",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "No JSON-LD structured data on listing pages — zero rich results (star ratings, price) in Google search",
+    "file": "app/(tourist)/listing/[slug]/page.tsx",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add LodgingBusiness or TouristAttraction JSON-LD <script> tag in generateMetadata/page head using listing data."
+  },
+  {
+    "id": "P1-TRS-009",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "skip to content <a href='#main'> in root layout has no matching id='main' target — keyboard/screen reader shortcut broken",
+    "file": "app/layout.tsx:52",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add id='main' to the main content wrapper in app/(tourist)/layout.tsx, app/(provider)/dashboard/layout.tsx, and root layout."
+  },
+  {
+    "id": "P1-TRS-010",
+    "priority": "P1",
+    "domain": "TOURIST",
+    "title": "Map pin touch target is 16px (visual diameter) — fails 44px WCAG minimum; pins untappable on mobile",
+    "file": "components/map/MapContainer.tsx:177",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Add a transparent hit-area circle layer on top: circle-radius: 22, circle-opacity: 0 to expand the tap target without changing visual appearance."
+  },
+  {
+    "id": "P1-PRV-001",
+    "priority": "P1",
+    "domain": "PROVIDER",
+    "title": "Analytics 'estimated views' = bookings.length * 4.2 displayed as real data — fabricated metric misleads providers",
+    "file": "app/(provider)/dashboard/analytics/page.tsx:81",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Remove the fabricated metric entirely, or label it explicitly 'Estimated (based on booking volume)' with a tooltip explaining the formula; wire Vercel Analytics to collect real view data."
+  },
+  {
+    "id": "P1-PRV-002",
+    "priority": "P1",
+    "domain": "PROVIDER",
+    "title": "No loading.tsx per sub-route in provider dashboard — 9 sub-pages show blank white screen during data fetch",
+    "file": "app/(provider)/dashboard/ (missing loading.tsx in bookings, analytics, revenue, payouts, guests, marketing, settings, listings, calendar)",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Create a shared app/(provider)/dashboard/loading.tsx skeleton that matches the general layout; or add per-page loading states."
+  },
+  {
+    "id": "P1-PRV-003",
+    "priority": "P1",
+    "domain": "PROVIDER",
+    "title": "useRealtimeNotifications and useRealtimeBookings hooks exist but are consumed by zero components — providers never notified of new bookings",
+    "file": "hooks/use-realtime.ts (exports unused)",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Wire useRealtimeBookings in the provider dashboard layout to show a badge on the Bookings nav item; add notification bell with useRealtimeNotifications."
+  },
+  {
+    "id": "P1-PRV-004",
+    "priority": "P1",
+    "domain": "PROVIDER",
+    "title": "AI Brain sections — collapsing an edited section without saving silently discards all changes (no dirty flag, no unsaved-changes warning)",
+    "file": "app/(provider)/dashboard/messages/brain/page.tsx",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Add an isDirty flag per section; show a 'You have unsaved changes' warning before collapse; or implement auto-save on accordion close."
+  },
+  {
+    "id": "P1-INF-001",
+    "priority": "P1",
+    "domain": "INFRA",
+    "title": "loadDrivers/loadVehicles called before declaration in RUTA dispatch — react-hooks/immutability error; potential React Compiler breakage",
+    "file": "app/(ruta)/ruta/dispatch/drivers/page.tsx:31, vehicles/page.tsx:29",
+    "agents": ["F1", "F4"],
+    "agent_count": 2,
+    "fix": "Convert to useCallback and move declarations above the useEffect that calls them."
+  },
+  {
+    "id": "P1-INF-002",
+    "priority": "P1",
+    "domain": "INFRA",
+    "title": "Missing not-found.tsx — invalid URLs return HTTP 200 with error UI; damages SEO (soft 404s indexed by Google)",
+    "file": "app/not-found.tsx (missing)",
+    "agents": ["F4"],
+    "agent_count": 1,
+    "fix": "Create app/not-found.tsx with a friendly 'Page not found' UI, navigation back to explore, and correct HTTP 404 status."
+  },
+  {
+    "id": "P1-INF-003",
+    "priority": "P1",
+    "domain": "INFRA",
+    "title": "No Privacy Policy, Terms of Service, or Cookie Consent — Stripe merchant requirement; GDPR/data law exposure; registration form ToS links are dead href='#'",
+    "file": "app/(auth)/register/page.tsx:205,207, app/(auth)/provider-register/page.tsx:207,209",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Create app/legal/privacy/page.tsx and app/legal/terms/page.tsx with at minimum placeholder content; add a cookie consent banner; update all href='#' links."
+  },
+  {
+    "id": "P1-INF-004",
+    "priority": "P1",
+    "domain": "INFRA",
+    "title": "No OG image configured — all social share previews are imageless (text only)",
+    "file": "app/layout.tsx (missing openGraph.image)",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Create app/opengraph-image.tsx with branded default; include listing.cover_image_url in generateMetadata for listing pages."
+  },
+  {
+    "id": "P1-WAS-001",
+    "priority": "P1",
+    "domain": "WHATSAPP",
+    "title": "No confirmation before closing a conversation or resuming AI mode — accidental destructive mode changes in production",
+    "file": "components/whatsapp/BookingPipeline.tsx:99-104",
+    "agents": ["D6b"],
+    "agent_count": 1,
+    "fix": "Add AlertDialog confirmation for the closed mode button and for switching back to ai mode when current status is human."
+  },
+  {
+    "id": "P1-WAS-002",
+    "priority": "P1",
+    "domain": "WHATSAPP",
+    "title": "WhatsApp demo page mobile layout completely broken — three fixed-width columns with no responsive breakpoints overflow horizontally",
+    "file": "app/demo/whatsapp/page.tsx:108-137",
+    "agents": ["D6b"],
+    "agent_count": 1,
+    "fix": "Implement responsive column collapse: mobile shows ConversationList, tap opens thread view, BookingPipeline becomes a bottom sheet."
+  },
+  {
+    "id": "P1-WAS-003",
+    "priority": "P1",
+    "domain": "WHATSAPP",
+    "title": "Groq timeout → guest receives no reply and no fallback message; processInbound catch only logs",
+    "file": "lib/whatsapp-ai.ts:197-218, app/api/whatsapp/webhook/route.ts",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "In the processInbound catch block, send a fallback message to the guest before escalating: 'We're experiencing a brief delay. A team member will respond shortly.'"
+  },
+  {
+    "id": "P1-RTA-001",
+    "priority": "P1",
+    "domain": "RUTA",
+    "title": "RUTA lang attribute not updated on locale change — screen readers mispronounce all non-English content when language is switched",
+    "file": "lib/ruta/i18n.tsx",
+    "agents": ["D5"],
+    "agent_count": 1,
+    "fix": "Add document.documentElement.lang = locale in the locale change handler."
+  },
+  {
+    "id": "P1-RTA-002",
+    "priority": "P1",
+    "domain": "RUTA",
+    "title": "Selected pickup/dropoff location shows raw lat/lng coordinates (10.6035, -66.9736) instead of resolved address",
+    "file": "components/ruta/BookingForm.tsx",
+    "agents": ["D5"],
+    "agent_count": 1,
+    "fix": "Store and display the address string from the geocode response alongside the coordinates; show the address string in the confirmation UI."
+  },
+  {
+    "id": "P2-SEC-001",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "successUrl/cancelUrl in /api/stripe/checkout accepted from client — potential open redirect",
+    "file": "app/api/stripe/checkout/route.ts:13-17",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Build redirect URLs server-side from bookingId and NEXT_PUBLIC_APP_URL; do not accept caller-supplied redirect URLs."
+  },
+  {
+    "id": "P2-SEC-002",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "Plaintext WhatsApp access token stored as DB fallback when Vault is unavailable — live Meta token in access_token column",
+    "file": "lib/whatsapp/token.ts, app/api/whatsapp/config/route.ts:104-128",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Add a warning log and operator-visible alert in the Connection tab when Vault write fails and plaintext fallback is used."
+  },
+  {
+    "id": "P2-SEC-003",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "PMS proxy (/api/pms/[...path]) forwards path segments without sanitization — potential path traversal to PMS microservice",
+    "file": "app/api/pms/[...path]/route.ts:131-132",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Validate path segments against an allowlist of known PMS routes, or sanitize .. segments before constructing the proxy URL."
+  },
+  {
+    "id": "P2-SEC-004",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "Demo WhatsApp knowledge API (/api/demo/whatsapp/knowledge) has no auth — publicly writable via PUT with service client",
+    "file": "app/api/demo/whatsapp/knowledge/route.ts",
+    "agents": ["F2"],
+    "agent_count": 1,
+    "fix": "Add a DEMO_SECRET env var check, or restrict to NODE_ENV === 'development'."
+  },
+  {
+    "id": "P2-SEC-005",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "Email delivery may silently fail — RESEND_FROM_EMAIL not configured; fallback domain bookings@vz-tourism.com likely has no SPF/DKIM",
+    "file": "app/api/bookings/route.ts, .env.local",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Configure RESEND_FROM_EMAIL and RESEND_NOTIFY_EMAIL in all environments; verify SPF/DKIM for sending domain in Resend dashboard."
+  },
+  {
+    "id": "P2-SEC-006",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "Booking confirmation page has no auth gate — anyone with a booking ID can view another guest's PII (name, email, total, phone)",
+    "file": "app/(tourist)/booking/confirmation/page.tsx",
+    "agents": ["A1", "A2"],
+    "agent_count": 2,
+    "fix": "Add session check in the confirmation server component; verify booking.guest_email === user.email before rendering."
+  },
+  {
+    "id": "P2-SEC-007",
+    "priority": "P2",
+    "domain": "SECURITY",
+    "title": "custom_instructions injected verbatim into WhatsApp AI system prompt — prompt injection risk from compromised provider",
+    "file": "lib/whatsapp-ai.ts:127-129",
+    "agents": ["D6b"],
+    "agent_count": 1,
+    "fix": "Strip [NEEDS_HUMAN: patterns, role-override sequences, and ## markers from custom_instructions; enforce server-side max 2,000 char limit in the config PUT route."
+  },
+  {
+    "id": "P2-BOK-001",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "Raw booking status strings rendered in My Trips (e.g. 'payment_submitted') — no human-readable label mapping",
+    "file": "app/(tourist)/trips/page.tsx:94",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Map booking.status to human labels matching the STATUS_CONFIG in bookings/[id]/page.tsx (e.g., 'Payment Sent', 'Confirmed', 'Cancelled')."
+  },
+  {
+    "id": "P2-BOK-002",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "No refund estimate shown in trips-list inline cancel flow — users cancel blind",
+    "file": "app/(tourist)/trips/page.tsx:64-80",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Call getRefundEstimate(booking) (already exists in bookings/[id]/page.tsx) and display the estimated refund amount in the 'Are you sure?' confirmation."
+  },
+  {
+    "id": "P2-BOK-003",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "Booking confirmation dates displayed as raw ISO strings (2026-08-05) not formatted",
+    "file": "app/(tourist)/booking/confirmation/ConfirmationClient.tsx:212-219",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Apply format(parseISO(booking.check_in), 'EEE, MMM d, yyyy') using date-fns."
+  },
+  {
+    "id": "P2-BOK-004",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "No booking confirmation email sent to provider — providers only learn of bookings by checking the dashboard",
+    "file": "app/api/bookings/route.ts",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add a Resend email to the listing provider's email address alongside the guest confirmation and ops team notification."
+  },
+  {
+    "id": "P2-BOK-005",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "Stripe webhook checkout.session.completed has no idempotency guard for discount code use — Stripe retry increments times_used twice",
+    "file": "app/api/stripe/webhooks/route.ts:55-61",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Add a unique constraint on discount_code_uses(booking_id) or check for existing use record before incrementing."
+  },
+  {
+    "id": "P2-BOK-006",
+    "priority": "P2",
+    "domain": "BOOKING",
+    "title": "Discount code race condition on max_uses = 1 — two concurrent users can both pass validation and both use the code",
+    "file": "app/api/discount-codes/validate/route.ts:64-69",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Use a database-level SELECT FOR UPDATE or an atomic increment RPC for validation to prevent concurrent overuse."
+  },
+  {
+    "id": "P2-AUT-001",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "Auth layout uses hardcoded bg-sky-50 to-blue-100 gradient — not DESIGN.md OKLCH tokens",
+    "file": "app/(auth)/layout.tsx:6",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Replace with from-background to-muted or the warm OKLCH palette from DESIGN.md."
+  },
+  {
+    "id": "P2-AUT-002",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "Account Settings uses raw <input> with hardcoded focus:ring-sky-500 — not shadcn <Input> component; visual inconsistency",
+    "file": "app/(tourist)/account/page.tsx:164-310 (8 instances)",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Replace all raw <input> elements with the shadcn <Input> component; replace bg-sky-500 save button with <Button variant='default'>."
+  },
+  {
+    "id": "P2-AUT-003",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "Password/confirm fields in 2-column grid with no responsive breakpoint — ~160px wide on mobile; show/hide eye button overlaps content",
+    "file": "app/(auth)/register/page.tsx:120, provider-register/page.tsx:156",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Change grid-cols-2 to grid-cols-1 sm:grid-cols-2 for the password pair and all other 2-col field pairs."
+  },
+  {
+    "id": "P2-AUT-004",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "No Google OAuth on registration page — inconsistency with login page's primary CTA",
+    "file": "app/(auth)/register/page.tsx",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Add 'Continue with Google' as the first option on the registration page, same as the login page."
+  },
+  {
+    "id": "P2-AUT-005",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "Notifications system (GET/PATCH API complete) has no frontend UI — notification bell/badge/drawer entirely absent",
+    "file": "app/api/notifications/route.ts (backend), all layout files (missing bell)",
+    "agents": ["D3"],
+    "agent_count": 1,
+    "fix": "Add a notification bell icon to the Navbar and ProviderSidebar that shows unread count and opens a notification drawer consuming /api/notifications."
+  },
+  {
+    "id": "P2-AUT-006",
+    "priority": "P2",
+    "domain": "AUTH",
+    "title": "No account deletion option — GDPR right to erasure; also required for Stripe merchant compliance",
+    "file": "app/(tourist)/account/page.tsx, app/(provider)/dashboard/settings/page.tsx",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add 'Delete my account' to account settings; call supabase.auth.admin.deleteUser() and purge PII from all tables."
+  },
+  {
+    "id": "P2-PRV-001",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Duplicate STATUS_CONFIG object defined identically in 5 files — all use hardcoded Tailwind; drift will occur",
+    "file": "app/(provider)/dashboard/messages/page.tsx, components/whatsapp/ConversationList.tsx, components/whatsapp/MessageThread.tsx, app/(provider)/dashboard/bookings/page.tsx, components/provider/BookingInboxItem.tsx",
+    "agents": ["D4", "A1"],
+    "agent_count": 2,
+    "fix": "Extract to lib/status-config.ts using DESIGN.md OKLCH status tokens; import in all five files."
+  },
+  {
+    "id": "P2-PRV-002",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Provider payouts page and settings page provider_id hardcoded to prov_001 — financial data leakage (also P0-SEC-006; this entry tracks the UX fix)",
+    "file": "app/(provider)/dashboard/payouts/page.tsx:37, app/(provider)/dashboard/settings/page.tsx",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "After P0-SEC-006 security fix, update UI to show a loading/error state when providerId is not yet resolved."
+  },
+  {
+    "id": "P2-PRV-003",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Overview page 'Edit' listing action uses Eye icon — misleading (eye = view, not edit)",
+    "file": "app/(provider)/dashboard/page.tsx:195",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Replace Eye icon with Pencil or Edit2 from Lucide."
+  },
+  {
+    "id": "P2-PRV-004",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Provider dashboard queries bookings table; tourist booking flow inserts to guest_bookings — mismatch (related to P0-BOK-001; P2 tracks remaining provider pages beyond overview)",
+    "file": "app/(provider)/dashboard/revenue/page.tsx, analytics/page.tsx, guests/page.tsx",
+    "agents": ["D4", "D7"],
+    "agent_count": 2,
+    "fix": "After P0-BOK-001 is resolved (table sync), update these pages to read from the unified table."
+  },
+  {
+    "id": "P2-PRV-005",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Calendar — no touch support for date range drag-select; mouse events only; calendar unusable on mobile",
+    "file": "app/(provider)/dashboard/calendar/page.tsx",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Add onTouchStart/onTouchMove/onTouchEnd handlers mirroring the mouse drag-select logic."
+  },
+  {
+    "id": "P2-PRV-006",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "TooltipTrigger render={<Link>} API mismatch in collapsed sidebar 'Back to app' link — link unreachable when sidebar is collapsed",
+    "file": "components/provider/ProviderSidebar.tsx:302",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Use the asChild prop pattern: <TooltipTrigger asChild><Link ...>...</Link></TooltipTrigger>."
+  },
+  {
+    "id": "P2-PRV-007",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "AI Brain page shows 'Saved — Sofía will use this in her next reply' even when API fails and only localStorage was written — misleading success",
+    "file": "app/demo/whatsapp/brain/page.tsx:268-275",
+    "agents": ["D4", "D6b"],
+    "agent_count": 2,
+    "fix": "Distinguish local-only saves with a different flash message: 'Saved locally — changes will sync when connection is restored'."
+  },
+  {
+    "id": "P2-PRV-008",
+    "priority": "P2",
+    "domain": "PROVIDER",
+    "title": "Analytics not configured — all 'estimated' metrics are fabricated numbers presented as real business data",
+    "file": "app/layout.tsx (missing Vercel Analytics), app/(provider)/dashboard/analytics/page.tsx",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add <Analytics /> from @vercel/analytics/react to app/layout.tsx to begin collecting real pageview data immediately."
+  },
+  {
+    "id": "P2-TRS-001",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "BrowseListingCard (main explore grid card) uses rounded-xl not rounded-2xl and missing border class — DESIGN.md violation",
+    "file": "components/listing/BrowseListingCard.tsx:269",
+    "agents": ["D1", "D6"],
+    "agent_count": 2,
+    "fix": "Change rounded-xl to rounded-2xl; add border border-border to the card container."
+  },
+  {
+    "id": "P2-TRS-002",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "BrowseListingCard uses raw <img> tag — no WebP conversion, no LCP optimization, no blur placeholder on highest-traffic page",
+    "file": "components/listing/BrowseListingCard.tsx:226,284",
+    "agents": ["D1", "D2", "F2"],
+    "agent_count": 3,
+    "fix": "Replace with <Image fill sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw' /> from next/image."
+  },
+  {
+    "id": "P2-TRS-003",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "font-display (Fraunces) / font-body (Plus Jakarta Sans) not applied in any tourist, provider, or admin route — entire design system font identity missing from product",
+    "file": "All 37+ files under app/(tourist)/, app/(provider)/, app/(admin)/",
+    "agents": ["D1", "D6"],
+    "agent_count": 2,
+    "fix": "Apply font-display to all h1/h2 elements on category/region/discover pages; apply font-body to body copy paragraphs. Fonts are loaded but never applied."
+  },
+  {
+    "id": "P2-TRS-004",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "Discover hero uses hardcoded dark hex gradients and decorative gradient orbs — violates DESIGN.md 'photography-forward' + 'no decorative blobs'",
+    "file": "app/(tourist)/discover/DiscoverGrid.tsx:299-320",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Replace gradient hero with a photography-based hero image; remove the two radial gradient div 'orbs'."
+  },
+  {
+    "id": "P2-TRS-005",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "Homepage category strip and editorial picks link to deprecated /library/... routes — will 404 or route incorrectly",
+    "file": "app/page.tsx:69,47",
+    "agents": ["A3"],
+    "agent_count": 1,
+    "fix": "Update all /library/category/... links to /explore/category/... and /library/region/... to /explore/region/..."
+  },
+  {
+    "id": "P2-TRS-006",
+    "priority": "P2",
+    "domain": "TOURIST",
+    "title": "My Trips Itineraries tab reads wrong localStorage key (vz-itineraries) — itineraries built in /plan use a different Zustand persist key and are invisible",
+    "file": "app/(tourist)/trips/page.tsx:219",
+    "agents": ["D7"],
+    "agent_count": 1,
+    "fix": "Align the localStorage key with the Zustand store's persist key, or read directly from the store via useItineraryStore."
+  },
+  {
+    "id": "P2-DSN-001",
+    "priority": "P2",
+    "domain": "DESIGN",
+    "title": "Status color tokens (bg-status-confirmed, bg-status-pending, etc.) defined in globals.css but used in only 2 files; 25+ files use raw bg-green-*/bg-yellow-*/bg-red-* — breaks dark mode",
+    "file": "app/(tourist)/trips/page.tsx, app/(provider)/dashboard/ (multiple files), components/whatsapp/ (multiple files)",
+    "agents": ["D6", "D1", "D2", "D4"],
+    "agent_count": 4,
+    "fix": "Global find-and-replace of common status color patterns to use semantic tokens from DESIGN.md; prioritize tourist-facing and provider dashboard files."
+  },
+  {
+    "id": "P2-DSN-002",
+    "priority": "P2",
+    "domain": "DESIGN",
+    "title": "Entire app/(admin)/ section uses bg-white with no dark: variant — admin panel becomes white-on-white or invisible in dark mode",
+    "file": "All 10 files under app/(admin)/admin/",
+    "agents": ["D6"],
+    "agent_count": 1,
+    "fix": "Replace bg-white with bg-background; replace text-gray-* with text-foreground/text-muted-foreground; replace border-gray-* with border-border throughout all admin files."
+  },
+  {
+    "id": "P2-DSN-003",
+    "priority": "P2",
+    "domain": "DESIGN",
+    "title": "app/(admin)/admin/listings/page.tsx uses zero shadcn/ui components, has 10+ raw hex style={{}} props, and 60+ hardcoded Tailwind classes — worst design-system compliance in codebase",
+    "file": "app/(admin)/admin/listings/page.tsx",
+    "agents": ["D6"],
+    "agent_count": 1,
+    "fix": "Systematic pass replacing inline hex styles and raw <button>/<input> elements with Button, Input, Badge from shadcn/ui; replace hardcoded hex with OKLCH tokens."
+  },
+  {
+    "id": "P2-DSN-004",
+    "priority": "P2",
+    "domain": "DESIGN",
+    "title": "text-[10px]/text-[9px] sub-scale sizes in 40+ locations across 15 files — below documented 12px minimum",
+    "file": "app/(admin)/admin/outreach/page.tsx, app/(admin)/admin/listings/page.tsx, components/whatsapp/AiSettingsPanel.tsx, components/whatsapp/BookingPipeline.tsx, components/whatsapp/MessageThread.tsx (and 10 more)",
+    "agents": ["D6"],
+    "agent_count": 1,
+    "fix": "Define a text-2xs: 10px token in globals.css if 10px is intentional; replace all text-[10px] arbitrary values with the named token; enforce text-xs (12px) minimum for user-facing content."
+  },
+  {
+    "id": "P2-INF-001",
+    "priority": "P2",
+    "domain": "INFRA",
+    "title": "30 of 81 API routes have no top-level try/catch — unhandled Supabase or network errors return unstructured 500s",
+    "file": "app/api/itineraries/route.ts, app/api/profile/route.ts, app/api/upload/route.ts, app/api/notifications/route.ts, app/api/providers/ routes, app/api/listings/[id]/route.ts (and 25 others)",
+    "agents": ["F2", "F3"],
+    "agent_count": 2,
+    "fix": "Wrap all API route handlers in a top-level try/catch that returns NextResponse.json({error: 'Internal error'}, {status: 500}) with the error logged server-side."
+  },
+  {
+    "id": "P2-INF-002",
+    "priority": "P2",
+    "domain": "INFRA",
+    "title": "zodResolver(schema) as any cast in all 9 form files — TypeScript cannot verify form field names match schema keys; field name typos silently accepted",
+    "file": "app/(auth)/login/page.tsx, register/page.tsx, provider-register/page.tsx, dashboard/listings/[id]/edit/page.tsx, listings/new/page.tsx, settings/page.tsx, components/provider/ListingWizard.tsx, components/admin/AdminSafetyZoneForm.tsx, components/listing/ReviewSection.tsx",
+    "agents": ["F4"],
+    "agent_count": 1,
+    "fix": "Add proper generic typing: useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) }) in all 9 files to remove the cast."
+  },
+  {
+    "id": "P2-INF-003",
+    "priority": "P2",
+    "domain": "INFRA",
+    "title": "Math.random() called during render in OnboardingWizard — causes visual flicker on every re-render",
+    "file": "app/onboard/[slug]/OnboardingWizard.tsx:1548-1553",
+    "agents": ["F1"],
+    "agent_count": 1,
+    "fix": "Pre-compute the random values in useMemo or useState so they are stable between re-renders."
+  },
+  {
+    "id": "P2-INF-004",
+    "priority": "P2",
+    "domain": "INFRA",
+    "title": "Supabase realtime subscription in provider messages page has no reconnect logic — silent message freeze on dropped connection",
+    "file": "hooks/use-realtime.ts",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Add channel.on('system', {event: 'error'}, () => { reconnect() }) handler; implement exponential-backoff reconnect."
+  },
+  {
+    "id": "P2-INF-005",
+    "priority": "P2",
+    "domain": "INFRA",
+    "title": "shadcn CLI tool listed as runtime production dependency — inflates bundle",
+    "file": "package.json:41",
+    "agents": ["F4"],
+    "agent_count": 1,
+    "fix": "Move shadcn from dependencies to devDependencies."
+  },
+  {
+    "id": "P3-SEC-001",
+    "priority": "P3",
+    "domain": "SECURITY",
+    "title": "Cron endpoint /api/ruta/cron/expire-zelle passes auth check when CRON_SECRET is unset (falsy && short-circuit)",
+    "file": "app/api/ruta/cron/expire-zelle/route.ts:9-13",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Explicitly check if (!process.env.CRON_SECRET || header !== process.env.CRON_SECRET) to fail closed when env var is unset."
+  },
+  {
+    "id": "P3-SEC-002",
+    "priority": "P3",
+    "domain": "SECURITY",
+    "title": "NEXT_PUBLIC_MAPBOX_TOKEN must be restricted by domain in Mapbox dashboard to prevent quota theft",
+    "file": "Mapbox dashboard configuration (not a code change)",
+    "agents": ["F3"],
+    "agent_count": 1,
+    "fix": "Log into Mapbox dashboard, edit the public token, add URL restriction to *.vzexplorer.com (or production domain)."
+  },
+  {
+    "id": "P3-SEC-003",
+    "priority": "P3",
+    "domain": "SECURITY",
+    "title": "RUTA quote price validation bypassed if both Mapbox and DB are unavailable — catch block accepts any submitted price unconditionally",
+    "file": "app/api/ruta/checkout/route.ts:56-59",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "In the catch block, return a 503 error rather than silently accepting the submitted price."
+  },
+  {
+    "id": "P3-BOK-001",
+    "priority": "P3",
+    "domain": "BOOKING",
+    "title": "completed status on confirmation page uses blue (info) color — should be green (confirmed) for positive state",
+    "file": "app/(tourist)/booking/confirmation/ConfirmationClient.tsx:56-59",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Map 'completed' to bg-status-confirmed text-status-confirmed in STATUS_CONFIG."
+  },
+  {
+    "id": "P3-BOK-002",
+    "priority": "P3",
+    "domain": "BOOKING",
+    "title": "Guest count +/- buttons in BookingForm are h-8 w-8 (32px) — below 44px mobile touch target minimum",
+    "file": "components/listing/BookingForm.tsx:281-313",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Increase to h-11 w-11 or add min-h-[44px] min-w-[44px]."
+  },
+  {
+    "id": "P3-BOK-003",
+    "priority": "P3",
+    "domain": "BOOKING",
+    "title": "Cancel booking in booking detail page uses native alert() for failure — should use toast or inline error",
+    "file": "app/(tourist)/bookings/[id]/page.tsx:126",
+    "agents": ["D2"],
+    "agent_count": 1,
+    "fix": "Replace alert('Failed to cancel...') with toast.error(...)."
+  },
+  {
+    "id": "P3-BOK-004",
+    "priority": "P3",
+    "domain": "BOOKING",
+    "title": "Zelle confirmation in RUTA accepts any verified_amount_usd without comparing to quoted price — dispatcher can confirm partial payments",
+    "file": "app/api/ruta/zelle-confirm/route.ts:10-11",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Compare verified_amount_usd against ride.price_quoted_usd; reject if delta exceeds 5%."
+  },
+  {
+    "id": "P3-BOK-005",
+    "priority": "P3",
+    "domain": "BOOKING",
+    "title": "Unconfirmed email accounts — no resend-confirmation-email flow; accounts stuck in limbo if link expires",
+    "file": "app/(auth)/login/page.tsx (no resend link)",
+    "agents": ["A2"],
+    "agent_count": 1,
+    "fix": "Add 'Resend confirmation email' link on the login page calling supabase.auth.resend()."
+  },
+  {
+    "id": "P3-TRS-001",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "BrowseListingCard tier badge emojis not aria-hidden — screen reader reads 'trophy Founding Partner'",
+    "file": "components/listing/BrowseListingCard.tsx:127,134",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Wrap emoji in <span aria-hidden='true'>...</span>."
+  },
+  {
+    "id": "P3-TRS-002",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "Safety Hub has no link to the map page for zone visualization; no breadcrumb",
+    "file": "app/(tourist)/safety/page.tsx",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Add a 'View on Map' link pointing to /map; add a breadcrumb component."
+  },
+  {
+    "id": "P3-TRS-003",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "Date formatting is US-centric throughout — confusing for Venezuelan users (MM/DD vs DD/MM)",
+    "file": "Multiple date-display locations across tourist and provider pages",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Use date-fns/locale/es locale where displaying dates to users; add a tooltip noting dates are in Venezuela time (VET, UTC-4) for booking-related date displays."
+  },
+  {
+    "id": "P3-TRS-004",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "No OG image alt-language support — <html lang='en'> static; Spanish content mispronounced by screen readers",
+    "file": "app/layout.tsx:49",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Once i18n is scaffolded, update <html lang> dynamically based on the detected/selected locale."
+  },
+  {
+    "id": "P3-TRS-005",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "Discover Featured badge overlaps category badge — both at top-3 same vertical position on short-caption cards",
+    "file": "app/(tourist)/discover/DiscoverGrid.tsx:237",
+    "agents": ["D1"],
+    "agent_count": 1,
+    "fix": "Offset the Featured badge position or place Featured badge on the opposite corner."
+  },
+  {
+    "id": "P3-TRS-006",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "Fabricated viewer statistics shown as real data — provider join page Math.max(round(review_count * 1.8), 240) displayed as 'travelers viewed your area this month'",
+    "file": "app/join/[slug]/page.tsx",
+    "agents": ["A1"],
+    "agent_count": 1,
+    "fix": "Remove the fabricated metric or label it 'Estimated' with a footnote explaining the methodology."
+  },
+  {
+    "id": "P3-TRS-007",
+    "priority": "P3",
+    "domain": "TOURIST",
+    "title": "Photo lightbox has no swipe gesture support — arrow buttons only; mobile photo UX feels non-native",
+    "file": "components/common/ImageGallery.tsx",
+    "agents": ["A3"],
+    "agent_count": 1,
+    "fix": "Add onTouchStart/onTouchEnd delta handler: if delta > 50px call onPrev() or onNext()."
+  },
+  {
+    "id": "P3-PRV-001",
+    "priority": "P3",
+    "domain": "PROVIDER",
+    "title": "console.log in app/api/ruta/cron/expire-zelle/route.ts — should not be in production",
+    "file": "app/api/ruta/cron/expire-zelle/route.ts",
+    "agents": ["D4"],
+    "agent_count": 1,
+    "fix": "Remove console.log; use console.error for actual errors only."
+  },
+  {
+    "id": "P3-PRV-002",
+    "priority": "P3",
+    "domain": "PROVIDER",
+    "title": "Admin listings page fetches all 9,999+ listings on page load — performance risk as dataset grows",
+    "file": "app/(admin)/admin/listings/page.tsx (fetch('/api/admin/listings?limit=9999'))",
+    "agents": ["D5"],
+    "agent_count": 1,
+    "fix": "Implement server-side cursor pagination; load 50 rows at a time with 'Load more' or virtual scroll."
+  },
+  {
+    "id": "P3-INF-001",
+    "priority": "P3",
+    "domain": "INFRA",
+    "title": "require() CommonJS dynamic imports inside ESM App Router API routes — bypasses bundler tree-shaking",
+    "file": "app/api/bookings/route.ts:22, mine/route.ts:10, [id]/route.ts:11, lib/admin-store.ts:75",
+    "agents": ["F4"],
+    "agent_count": 1,
+    "fix": "Replace require() calls with import() dynamic imports or direct await import(path)."
+  },
+  {
+    "id": "P3-INF-002",
+    "priority": "P3",
+    "domain": "INFRA",
+    "title": "@types/uuid v10 in devDependencies with uuid v13 runtime — type definitions three major versions behind",
+    "file": "package.json",
+    "agents": ["F4"],
+    "agent_count": 1,
+    "fix": "Update @types/uuid to ^13.0.0 or migrate generateId() in lib/utils.ts to crypto.randomUUID() and remove the uuid dependency."
+  },
+  {
+    "id": "P3-INF-003",
+    "priority": "P3",
+    "domain": "INFRA",
+    "title": "itinerary-store.ts uses Zustand devtools middleware unconditionally in production",
+    "file": "stores/itinerary-store.ts:38",
+    "agents": ["F2"],
+    "agent_count": 1,
+    "fix": "Gate devtools: process.env.NODE_ENV === 'development' ? devtools(store) : store."
+  },
+  {
+    "id": "P3-INF-004",
+    "priority": "P3",
+    "domain": "INFRA",
+    "title": "ESLint scans frontend/.next/ build artifacts — pollutes output with thousands of irrelevant violations",
+    "file": ".eslintignore or eslint.config.js (missing frontend/.next ignore pattern)",
+    "agents": ["F1"],
+    "agent_count": 1,
+    "fix": "Add frontend/.next and frontend/node_modules to .eslintignore."
+  },
+  {
+    "id": "P3-WAS-001",
+    "priority": "P3",
+    "domain": "WHATSAPP",
+    "title": "ConversationList 'Refresh' button has no onClick handler — clicking does nothing",
+    "file": "components/whatsapp/ConversationList.tsx:141",
+    "agents": ["D6b"],
+    "agent_count": 1,
+    "fix": "Wire to a no-op with toast('Live refresh not available in demo') or implement a real re-fetch."
+  },
+  {
+    "id": "P3-WAS-002",
+    "priority": "P3",
+    "domain": "WHATSAPP",
+    "title": "groupedMessages() useCallback result called inline — memoization wasted, groups recomputed every render",
+    "file": "components/whatsapp/MessageThread.tsx:153",
+    "agents": ["D6b"],
+    "agent_count": 1,
+    "fix": "Convert to useMemo: const groups = useMemo(() => groupedMessages(), [messages])."
+  }
+]
