@@ -10,7 +10,9 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
-  const bucket = (formData.get('bucket') as string) || 'listings';
+  const requestedBucket = (formData.get('bucket') as string) || 'listings';
+  const ALLOWED_BUCKETS = ['listings', 'avatars', 'itineraries'];
+  const bucket = ALLOWED_BUCKETS.includes(requestedBucket) ? requestedBucket : 'listings';
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
