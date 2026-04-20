@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { itinerarySchema } from '@/lib/validators';
 
 export async function GET(request: NextRequest) {
+  try {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
   const { searchParams } = new URL(request.url);
@@ -75,24 +76,33 @@ export async function GET(request: NextRequest) {
   }));
 
   return NextResponse.json({ data: enriched, count });
+  } catch (err) {
+    console.error('[GET /api/itineraries]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const supabase = await createClient();
+    if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await request.json();
-  const parsed = itinerarySchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    const body = await request.json();
+    const parsed = itinerarySchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  const { data, error } = await supabase
-    .from('itineraries')
-    .insert({ ...parsed.data, user_id: user.id })
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from('itineraries')
+      .insert({ ...parsed.data, user_id: user.id })
+      .select()
+      .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data }, { status: 201 });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ data }, { status: 201 });
+  } catch (err) {
+    console.error('[POST /api/itineraries]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

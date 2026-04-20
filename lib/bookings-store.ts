@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import type { BookingStatus } from '@/types/database';
 
-export type { BookingStatus };
+// BookingStatus for local/in-memory store operations.
+// 'payment_submitted' is a local-only state used before Stripe confirmation.
+// The canonical DB type in types/database.ts also includes 'refunded'.
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'payment_submitted';
 export type PaymentMethod = 'card' | 'zelle' | 'usdt' | 'arrival';
 
 export interface LocalBooking {
