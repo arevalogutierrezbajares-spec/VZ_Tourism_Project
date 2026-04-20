@@ -45,11 +45,17 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as {
           id?: string;
-          metadata?: { bookingId?: string; booking_id?: string; discount_code_id?: string };
+          metadata?: {
+            bookingId?: string;
+            booking_id?: string;
+            discount_code_id?: string;
+            referral_id?: string;
+          };
           payment_intent?: string;
         };
         const bookingId = session.metadata?.bookingId || session.metadata?.booking_id;
         const discountCodeId = session.metadata?.discount_code_id;
+        const referralId = session.metadata?.referral_id;
         const extra = { payment_intent_id: session.payment_intent as string | undefined };
 
         if (bookingId) {
@@ -85,6 +91,46 @@ export async function POST(request: NextRequest) {
                 p_revenue: discountAmount,
               }),
             ]);
+          }
+        }
+
+        // Populate referral commission when a referral_id is in the session metadata
+        if (supabase && referralId && bookingId) {
+          // Fetch guest_booking total and referral's creator_id in parallel
+          const [{ data: guestBooking }, { data: referral }] = await Promise.all([
+            supabase
+              .from('guest_bookings')
+              .select('total_usd')
+              .eq('id', bookingId)
+              .single(),
+            supabase
+              .from('itinerary_referrals')
+              .select('id, creator_id, commission_amount_usd')
+              .eq('id', referralId)
+              .single(),
+          ]);
+
+          // Skip if already populated (idempotency) or data missing
+          if (guestBooking?.total_usd && referral && !referral.commission_amount_usd) {
+            // Fetch per-creator commission rate (default 8%)
+            const { data: creatorProfile } = await supabase
+              .from('creator_profiles')
+              .select('commission_rate')
+              .eq('id', referral.creator_id)
+              .single();
+
+            const rate = creatorProfile?.commission_rate ?? 0.08;
+            const commissionAmount = Math.round(guestBooking.total_usd * rate * 100) / 100;
+
+            await supabase
+              .from('itinerary_referrals')
+              .update({
+                guest_booking_id: bookingId,
+                converted_at: new Date().toISOString(),
+                commission_rate: rate,
+                commission_amount_usd: commissionAmount,
+              })
+              .eq('id', referralId);
           }
         }
         break;

@@ -114,9 +114,9 @@ export default async function CreatorPage({ params }: Props) {
                 {creator.instagram_handle}
               </a>
             )}
-            {creator.website && (
+            {creator.website_url && (
               <a
-                href={creator.website}
+                href={creator.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-foreground transition-[color] duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"

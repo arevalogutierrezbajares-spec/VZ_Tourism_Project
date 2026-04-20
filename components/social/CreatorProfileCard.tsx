@@ -20,7 +20,7 @@ export function CreatorProfileCard({ creator, compact = false }: CreatorProfileC
         <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 active:scale-[0.96] transition-[background-color,transform] duration-200 cursor-pointer">
           <Avatar className="w-10 h-10 outline outline-1 -outline-offset-1 outline-black/10 rounded-full">
             <AvatarImage src={creator.avatar_url || undefined} alt={`${creator.username}'s avatar`} />
-            <AvatarFallback>{creator.username[0].toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{(creator.username ?? '?')[0].toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-1">
@@ -46,7 +46,7 @@ export function CreatorProfileCard({ creator, compact = false }: CreatorProfileC
       <div className="flex items-end gap-4 px-2 -mt-8">
         <Avatar className="w-16 h-16 border-4 border-background shadow-[0_2px_8px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.06)] outline outline-1 -outline-offset-1 outline-black/10 rounded-full">
           <AvatarImage src={creator.avatar_url || undefined} alt={`${creator.username}'s avatar`} />
-          <AvatarFallback className="text-xl">{creator.username[0].toUpperCase()}</AvatarFallback>
+          <AvatarFallback className="text-xl">{(creator.username ?? '?')[0].toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 pb-1">
           <div className="flex items-center gap-2">

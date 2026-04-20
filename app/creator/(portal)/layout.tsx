@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Compass, LayoutDashboard, PlusCircle, Tag, BarChart2, ChevronRight, LogOut } from 'lucide-react';
+import { Compass, LayoutDashboard, PlusCircle, Tag, DollarSign, ChevronRight, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -11,7 +11,7 @@ const navItems = [
   { href: '/creator/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/creator/itineraries/new', label: 'New Itinerary', icon: PlusCircle },
   { href: '/creator/codes', label: 'Discount Codes', icon: Tag },
-  { href: '/creator/analytics', label: 'Analytics', icon: BarChart2 },
+  { href: '/creator/earnings', label: 'Earnings', icon: DollarSign },
 ];
 
 export default function CreatorPortalLayout({ children }: { children: React.ReactNode }) {
@@ -24,14 +24,14 @@ export default function CreatorPortalLayout({ children }: { children: React.Reac
     if (!supabase) {
       const zustandUser = useAuthStore.getState().user;
       if (zustandUser) { setChecking(false); return; }
-      router.replace('/login?next=' + encodeURIComponent(pathname));
+      router.replace('/auth/login?next=' + encodeURIComponent(pathname));
       return;
     }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
         const zustandUser = useAuthStore.getState().user;
         if (zustandUser) { setChecking(false); return; }
-        router.replace('/login?next=' + encodeURIComponent(pathname));
+        router.replace('/auth/login?next=' + encodeURIComponent(pathname));
       } else {
         setChecking(false);
       }
@@ -71,7 +71,7 @@ export default function CreatorPortalLayout({ children }: { children: React.Reac
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                   active
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent'

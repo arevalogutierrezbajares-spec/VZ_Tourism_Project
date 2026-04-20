@@ -181,10 +181,12 @@ export interface ItineraryReferral {
   referral_code: string;
   ip_hash: string;
   booking_id: string | null;
+  guest_booking_id: string | null;
   clicked_at: string;
   converted_at: string | null;
   commission_rate: number;
   commission_amount_usd: number | null;
+  paid_at: string | null;
 }
 
 export type StopSourceType = 'social_import' | 'document_import' | 'ai_suggested' | 'manual' | 'google_places';
@@ -555,8 +557,11 @@ export interface WaEscalation {
 export interface CreatorProfile {
   id: string;
   user_id: string;
-  username: string;
+  username: string | null;
+  display_name: string | null;
   bio: string;
+  location: string | null;
+  niche_tags: string[];
   avatar_url: string | null;
   cover_image_url: string | null;
   instagram_handle: string | null;
@@ -564,13 +569,28 @@ export interface CreatorProfile {
   tiktok_handle: string | null;
   website_url: string | null;
   followers: number;
+  followers_count: number;
   following: number;
   total_itineraries: number;
+  total_likes: number;
   is_verified: boolean;
   discount_codes_enabled?: boolean;
+  commission_rate: number;
   created_at: string;
   updated_at: string;
   user?: User;
+}
+
+export interface CreatorInvite {
+  id: string;
+  token: string;
+  email: string | null;
+  invited_name: string | null;
+  invited_by: string | null;
+  claimed_at: string | null;
+  claimed_by: string | null;
+  expires_at: string;
+  created_at: string;
 }
 
 // ─── Discount Codes ───────────────────────────────────────────────────────────
@@ -595,7 +615,7 @@ export interface DiscountCode {
 export interface DiscountCodeUse {
   id: string;
   code_id: string;
-  guest_booking_id: string | null;
+  guest_booking_id: string | null; // UUID (was TEXT in migration 015, fixed in 020)
   discount_amount_usd: number;
   used_at: string;
 }
