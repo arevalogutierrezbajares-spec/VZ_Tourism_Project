@@ -24,9 +24,11 @@ const TEMPLATES = [
   { label: 'Early arrival', message: 'Can I arrive early?' },
 ];
 
-function waLink(booking: GuestBooking, message: string): string {
+function waLink(booking: GuestBooking, message: string): string | null {
+  if (!booking.provider_phone) return null;
   const full = `${message}\n\n(Booking ${booking.confirmation_code} at ${booking.listing_name}, ${format(parseISO(booking.check_in), 'MMM d')}–${format(parseISO(booking.check_out), 'MMM d, yyyy')})`;
-  const number = booking.provider_phone ? booking.provider_phone.replace(/\D/g, '') : '';
+  const number = booking.provider_phone.replace(/\D/g, '');
+  if (!number) return null;
   return `https://wa.me/${number}?text=${encodeURIComponent(full)}`;
 }
 
@@ -36,7 +38,10 @@ export default function MessagesPage() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setFetching(false);
+      return;
+    }
     fetch('/api/bookings/mine')
       .then((r) => r.json())
       .then((d) => setBookings((d.bookings ?? []).filter((b: GuestBooking) => b.status !== 'cancelled')))
@@ -102,30 +107,41 @@ export default function MessagesPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">Ref: {booking.confirmation_code}</p>
                   </div>
-                  <a
-                    href={waLink(booking, 'Hello!')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 transition-colors whitespace-nowrap flex-shrink-0"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    Message Host
-                  </a>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {TEMPLATES.map(({ label, message }) => (
+                  {waLink(booking, 'Hello!') ? (
                     <a
-                      key={label}
-                      href={waLink(booking, message)}
+                      href={waLink(booking, 'Hello!')!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs px-3 py-1.5 rounded-full border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 transition-colors whitespace-nowrap flex-shrink-0"
                     >
-                      {label}
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      Message Host
                     </a>
-                  ))}
+                  ) : (
+                    <span className="text-xs text-muted-foreground px-3 py-1.5 rounded-lg border border-border whitespace-nowrap flex-shrink-0">
+                      Host contact not available
+                    </span>
+                  )}
                 </div>
+
+                {booking.provider_phone && (
+                  <div className="flex flex-wrap gap-2">
+                    {TEMPLATES.map(({ label, message }) => {
+                      const link = waLink(booking, message);
+                      return link ? (
+                        <a
+                          key={label}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs px-3 py-1.5 rounded-full border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 transition-colors"
+                        >
+                          {label}
+                        </a>
+                      ) : null;
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

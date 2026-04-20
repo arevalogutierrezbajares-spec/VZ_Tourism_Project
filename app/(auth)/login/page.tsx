@@ -19,8 +19,8 @@ import toast from 'react-hot-toast';
 const DEMO_USER = {
   id: 'demo-user-001',
   email: 'demo@vzexplorer.com',
-  full_name: 'Tomas Demo',
-  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tomas',
+  full_name: 'Alex Demo',
+  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alexdemo',
   role: 'tourist' as const,
   phone: null,
   nationality: 'Venezuela',
@@ -83,7 +83,7 @@ function LoginForm() {
     setProfile(DEMO_USER);
     setLoading(false);
     setInitialized(true);
-    toast.success('Signed in as Tomas Demo!');
+    toast.success('Signed in as Alex Demo!');
     router.push(redirectTo);
   };
 
@@ -159,13 +159,9 @@ function LoginForm() {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="password">Password</Label>
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={() => toast('Password reset coming soon. Contact support for help.', { icon: 'ℹ️' })}
-              >
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                 Forgot password?
-              </button>
+              </Link>
             </div>
             <div className="relative">
               <Input

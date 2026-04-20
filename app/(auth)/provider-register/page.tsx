@@ -29,6 +29,9 @@ export default function ProviderRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [providerInsertError, setProviderInsertError] = useState<string | null>(null);
+  const [pendingData, setPendingData] = useState<ProviderRegisterFormData | null>(null);
+  const [createdUserId, setCreatedUserId] = useState<string | null>(null);
 
   const {
     register,
@@ -41,8 +44,26 @@ export default function ProviderRegisterPage() {
     defaultValues: { acceptTerms: false },
   });
 
+  const insertProviderRecord = async (userId: string, data: ProviderRegisterFormData) => {
+    const supabase = createClient();
+    if (!supabase) throw new Error('Authentication is not configured');
+
+    const { error: providerError } = await supabase.from('providers').insert({
+      user_id: userId,
+      business_name: data.business_name,
+      description: data.description,
+      region: data.region,
+      rif: data.rif,
+      instagram_handle: data.instagram_handle,
+      website_url: data.website_url || null,
+    });
+
+    return providerError;
+  };
+
   const onSubmit = async (data: ProviderRegisterFormData) => {
     setIsLoading(true);
+    setProviderInsertError(null);
     try {
       const supabase = createClient();
       if (!supabase) throw new Error('Authentication is not configured');
@@ -62,24 +83,48 @@ export default function ProviderRegisterPage() {
 
       // Create provider record
       if (authData.user) {
-        const { error: providerError } = await supabase.from('providers').insert({
-          user_id: authData.user.id,
-          business_name: data.business_name,
-          description: data.description,
-          region: data.region,
-          rif: data.rif,
-          instagram_handle: data.instagram_handle,
-          website_url: data.website_url || null,
-        });
+        const providerError = await insertProviderRecord(authData.user.id, data);
 
-        if (providerError) console.error('Provider creation error:', providerError);
+        if (providerError) {
+          // Auth user was created but provider row failed — store state so user can retry
+          setCreatedUserId(authData.user.id);
+          setPendingData(data);
+          setProviderInsertError(
+            providerError.message ||
+              'Your account was created but we could not save your provider profile. Please use the Retry button below.'
+          );
+          // Sign out the partially-created auth user to avoid a broken session
+          await supabase.auth.signOut();
+          return;
+        }
       }
 
-      toast.success('Provider account created! We\'ll review your application shortly.');
+      toast.success("Provider account created! We'll review your application shortly.");
       router.push('/dashboard');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Registration failed';
       toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!createdUserId || !pendingData) return;
+    setIsLoading(true);
+    setProviderInsertError(null);
+    try {
+      const providerError = await insertProviderRecord(createdUserId, pendingData);
+      if (providerError) {
+        setProviderInsertError(
+          providerError.message || 'Retry failed. Please contact support if this persists.'
+        );
+        return;
+      }
+      toast.success("Provider account created! We'll review your application shortly.");
+      router.push('/dashboard');
+    } catch {
+      setProviderInsertError('Retry failed. Please contact support if this persists.');
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +198,7 @@ export default function ProviderRegisterPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="prov-password">Password *</Label>
               <div className="relative">
@@ -211,7 +256,21 @@ export default function ProviderRegisterPage() {
             </label>
           </div>
 
-          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
+          {providerInsertError && (
+            <div className="rounded-md bg-red-50 border border-red-200 p-3 space-y-2" role="alert">
+              <p className="text-sm text-red-700">{providerInsertError}</p>
+              <button
+                type="button"
+                onClick={handleRetry}
+                disabled={isLoading}
+                className="text-sm font-medium text-red-700 underline hover:no-underline disabled:opacity-50"
+              >
+                {isLoading ? 'Retrying…' : 'Retry saving profile'}
+              </button>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading || !!providerInsertError}>
             {isLoading ? 'Creating account...' : 'Apply as provider'}
           </Button>
         </form>

@@ -5,6 +5,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
 import { getInitials } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
@@ -54,6 +58,14 @@ export default function AccountPage() {
   const [form, setForm] = useState<UserProfile>(EMPTY_PROFILE);
   const [saving, setSaving] = useState(false);
   const [serviceAvailable, setServiceAvailable] = useState(true);
+
+  // Password change state
+  const [pwForm, setPwForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+
+  // Delete account dialog state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -109,10 +121,52 @@ export default function AccountPage() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (pwForm.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters.');
+      return;
+    }
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+    setPwSaving(true);
+    try {
+      const supabase = createClient();
+      if (!supabase) throw new Error('Authentication is not configured');
+      const { error } = await supabase.auth.updateUser({ password: pwForm.newPassword });
+      if (error) throw error;
+      toast.success('Password updated successfully!');
+      setPwForm({ newPassword: '', confirmPassword: '' });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update password.');
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' }),
+      });
+      if (!res.ok) throw new Error('Deletion request failed');
+      toast.success('Account deletion request submitted. You will be signed out shortly.');
+      setShowDeleteConfirm(false);
+    } catch {
+      toast.error('Could not process deletion request. Please contact support.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -160,20 +214,19 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Personal Info</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label htmlFor="acct-display-name" className="block text-sm font-medium mb-1">Display Name</label>
-              <input
+              <Label htmlFor="acct-display-name" className="block text-sm font-medium mb-1">Display Name</Label>
+              <Input
                 id="acct-display-name"
                 type="text"
                 value={form.display_name}
                 onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
                 placeholder={profile?.full_name ?? 'Your name'}
                 autoComplete="name"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label htmlFor="acct-phone" className="block text-sm font-medium mb-1">Phone / WhatsApp</label>
-              <input
+              <Label htmlFor="acct-phone" className="block text-sm font-medium mb-1">Phone / WhatsApp</Label>
+              <Input
                 id="acct-phone"
                 type="tel"
                 inputMode="tel"
@@ -181,17 +234,16 @@ export default function AccountPage() {
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="+1 555 000 0000"
                 autoComplete="tel"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label htmlFor="acct-country" className="block text-sm font-medium mb-1">Country</label>
+              <Label htmlFor="acct-country" className="block text-sm font-medium mb-1">Country</Label>
               <select
                 id="acct-country"
                 value={form.country}
                 onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
                 autoComplete="country-name"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Select country...</option>
                 {COUNTRIES.map((c) => (
@@ -200,7 +252,7 @@ export default function AccountPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Language</label>
+              <Label className="block text-sm font-medium mb-2">Language</Label>
               <div className="flex gap-2">
                 {(['en', 'es'] as const).map((lang) => (
                   <button
@@ -209,8 +261,8 @@ export default function AccountPage() {
                     onClick={() => setForm((f) => ({ ...f, language: lang }))}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                       form.language === lang
-                        ? 'bg-sky-500 text-white border-sky-500'
-                        : 'bg-white text-muted-foreground border-border hover:border-sky-400'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-muted-foreground border-border hover:border-primary/60'
                     }`}
                   >
                     {lang === 'en' ? 'English' : 'Español'}
@@ -249,20 +301,19 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Emergency Contact</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label htmlFor="acct-emerg-name" className="block text-sm font-medium mb-1">Contact Name</label>
-              <input
+              <Label htmlFor="acct-emerg-name" className="block text-sm font-medium mb-1">Contact Name</Label>
+              <Input
                 id="acct-emerg-name"
                 type="text"
                 value={form.emergency_contact_name}
                 onChange={(e) => setForm((f) => ({ ...f, emergency_contact_name: e.target.value }))}
                 placeholder="Full name"
                 autoComplete="off"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label htmlFor="acct-emerg-phone" className="block text-sm font-medium mb-1">Contact Phone</label>
-              <input
+              <Label htmlFor="acct-emerg-phone" className="block text-sm font-medium mb-1">Contact Phone</Label>
+              <Input
                 id="acct-emerg-phone"
                 type="tel"
                 inputMode="tel"
@@ -270,7 +321,6 @@ export default function AccountPage() {
                 onChange={(e) => setForm((f) => ({ ...f, emergency_contact_phone: e.target.value }))}
                 placeholder="+1 555 000 0000"
                 autoComplete="off"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
           </CardContent>
@@ -281,8 +331,8 @@ export default function AccountPage() {
           <CardHeader><CardTitle className="text-base">Payment Methods</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label htmlFor="acct-zelle" className="block text-sm font-medium mb-1">Zelle Email</label>
-              <input
+              <Label htmlFor="acct-zelle" className="block text-sm font-medium mb-1">Zelle Email</Label>
+              <Input
                 id="acct-zelle"
                 type="email"
                 inputMode="email"
@@ -290,32 +340,124 @@ export default function AccountPage() {
                 onChange={(e) => setForm((f) => ({ ...f, payment_zelle_email: e.target.value }))}
                 placeholder="email@example.com"
                 autoComplete="email"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label htmlFor="acct-usdt" className="block text-sm font-medium mb-1">USDT Wallet Address (TRC-20)</label>
-              <input
+              <Label htmlFor="acct-usdt" className="block text-sm font-medium mb-1">USDT Wallet Address (TRC-20)</Label>
+              <Input
                 id="acct-usdt"
                 type="text"
                 value={form.payment_usdt_address}
                 onChange={(e) => setForm((f) => ({ ...f, payment_usdt_address: e.target.value }))}
                 placeholder="T..."
                 autoComplete="off"
-                className="w-full rounded-lg border px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="font-mono"
               />
             </div>
           </CardContent>
         </Card>
 
-        <button
+        <Button
           type="button"
           onClick={handleSave}
           disabled={saving || !serviceAvailable}
-          className="w-full rounded-xl bg-sky-500 text-white py-3 text-sm font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full"
+          size="lg"
         >
           {saving ? 'Saving…' : !serviceAvailable ? 'Service unavailable' : 'Save changes'}
-        </button>
+        </Button>
+
+        {/* Change Password */}
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader><CardTitle className="text-base">Change Password</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="acct-new-password" className="block text-sm font-medium mb-1">
+                New Password
+              </Label>
+              <Input
+                id="acct-new-password"
+                type="password"
+                placeholder="Min. 8 characters"
+                autoComplete="new-password"
+                value={pwForm.newPassword}
+                onChange={(e) => setPwForm((f) => ({ ...f, newPassword: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="acct-confirm-password" className="block text-sm font-medium mb-1">
+                Confirm New Password
+              </Label>
+              <Input
+                id="acct-confirm-password"
+                type="password"
+                placeholder="Repeat new password"
+                autoComplete="new-password"
+                value={pwForm.confirmPassword}
+                onChange={(e) => setPwForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+              />
+            </div>
+            <Button
+              type="button"
+              onClick={handlePasswordChange}
+              disabled={pwSaving || !pwForm.newPassword}
+              className="w-full"
+            >
+              {pwSaving ? 'Updating…' : 'Update password'}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Delete Account */}
+        <Card className="rounded-xl shadow-sm border-destructive/30">
+          <CardHeader>
+            <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {showDeleteConfirm ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete your account? This action cannot be undone.
+                  All your data, bookings, and preferences will be permanently removed.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={handleDeleteAccount}
+                    disabled={deleteLoading}
+                  >
+                    {deleteLoading ? 'Processing…' : 'Yes, delete my account'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleteLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all associated data.
+                </p>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete my account
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Logo } from '@/components/common/Logo';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-sky-50 to-blue-100 dark:from-gray-950 dark:to-gray-900 p-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Link href="/" className="mb-8" aria-label="VZ Explorer home">
         <Logo size="lg" />
       </Link>

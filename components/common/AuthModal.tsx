@@ -18,8 +18,8 @@ import type { User } from '@/types/database';
 const DEMO_USER: User = {
   id: 'demo-user-001',
   email: 'demo@vzexplorer.com',
-  full_name: 'Tomas Demo',
-  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tomas',
+  full_name: 'Alex Demo',
+  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alexdemo',
   role: 'tourist',
   phone: null,
   nationality: 'Venezuela',
