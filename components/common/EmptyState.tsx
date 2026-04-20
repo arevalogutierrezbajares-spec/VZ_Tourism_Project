@@ -36,8 +36,8 @@ export function EmptyState({
         </div>
       )}
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        {description && <p className="text-sm text-muted-foreground max-w-sm">{description}</p>}
+        <h3 className="text-lg font-semibold text-balance">{title}</h3>
+        {description && <p className="text-sm text-muted-foreground max-w-sm text-pretty">{description}</p>}
       </div>
       {actionLabel && (onAction || actionHref) && (
         actionHref ? (

@@ -214,7 +214,8 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
         <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
           {/* Loading state */}
           {isSearching && (
-            <div className="text-center py-8 text-sm text-muted-foreground">
+            <div className="text-center py-8 text-sm text-muted-foreground flex items-center justify-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Searching...
             </div>
           )}
@@ -232,7 +233,7 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
               {results.map((listing) => (
                 <div
                   key={listing.id}
-                  className="cursor-pointer hover:bg-muted/50 rounded-xl transition-colors"
+                  className="cursor-pointer hover:bg-muted/50 rounded-lg transition-[background-color]"
                   onClick={() => handleAddListing(listing)}
                 >
                   <ListingCard listing={listing} compact />
@@ -244,7 +245,7 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
                 <button
                   type="button"
                   onClick={() => setShowGooglePlaces(true)}
-                  className="w-full flex items-center gap-2 p-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors"
+                  className="w-full flex items-center gap-2 p-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-[background-color,color] min-h-[44px]"
                 >
                   <MapPin className="w-4 h-4" />
                   Can&apos;t find it? Search Google Places
@@ -299,7 +300,7 @@ export function AddStopModal({ isOpen, day, onClose }: AddStopModalProps) {
                   type="button"
                   disabled={resolvingPlaceId === place.place_id}
                   onClick={() => handleSelectPlace(place)}
-                  className="w-full flex items-start gap-3 p-3 rounded-xl text-left hover:bg-muted/50 transition-colors disabled:opacity-60"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg text-left hover:bg-muted/50 transition-[background-color] disabled:opacity-60 min-h-[44px]"
                 >
                   <div className="mt-0.5 p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
                     {resolvingPlaceId === place.place_id ? (

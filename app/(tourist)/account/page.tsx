@@ -174,11 +174,11 @@ export default function AccountPage() {
   if (!isAuthenticated) {
     return (
       <div className="container px-4 py-16 max-w-md mx-auto text-center">
-        <p className="text-lg font-medium mb-2">Sign in to manage your account</p>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-lg font-medium mb-2 text-balance">Sign in to manage your account</p>
+        <p className="text-sm text-muted-foreground mb-6 text-pretty">
           Your profile, preferences, and settings are available after signing in.
         </p>
-        <a href="/login?next=/account" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+        <a href="/login?next=/account" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-[opacity] active:scale-[0.96]">
           Sign in
         </a>
       </div>
@@ -189,14 +189,14 @@ export default function AccountPage() {
     <div className="container px-4 py-8 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Avatar className="w-16 h-16 shadow-md">
+        <Avatar className="w-16 h-16 shadow-md outline outline-1 -outline-offset-1 outline-black/10">
           <AvatarImage src={profile?.avatar_url || undefined} />
           <AvatarFallback className="text-xl bg-sky-500 text-white">
             {getInitials(profile?.full_name || 'U')}
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {firstName}!</h1>
+          <h1 className="text-2xl font-bold text-balance">Welcome back, {firstName}!</h1>
           <p className="text-muted-foreground text-sm">{profile?.email}</p>
         </div>
         <Badge variant="secondary" className="ml-auto capitalize">{profile?.role}</Badge>
@@ -259,7 +259,7 @@ export default function AccountPage() {
                     key={lang}
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, language: lang }))}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-[color,background-color,border-color] ${
                       form.language === lang
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:border-primary/60'
@@ -361,10 +361,10 @@ export default function AccountPage() {
           type="button"
           onClick={handleSave}
           disabled={saving || !serviceAvailable}
-          className="w-full"
+          className="w-full active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out"
           size="lg"
         >
-          {saving ? 'Saving…' : !serviceAvailable ? 'Service unavailable' : 'Save changes'}
+          {saving ? 'Saving...' : !serviceAvailable ? 'Service unavailable' : 'Save changes'}
         </Button>
 
         {/* Change Password */}
@@ -401,9 +401,9 @@ export default function AccountPage() {
               type="button"
               onClick={handlePasswordChange}
               disabled={pwSaving || !pwForm.newPassword}
-              className="w-full"
+              className="w-full active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out"
             >
-              {pwSaving ? 'Updating…' : 'Update password'}
+              {pwSaving ? 'Updating...' : 'Update password'}
             </Button>
           </CardContent>
         </Card>
@@ -416,7 +416,7 @@ export default function AccountPage() {
           <CardContent>
             {showDeleteConfirm ? (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground text-pretty">
                   Are you sure you want to delete your account? This action cannot be undone.
                   All your data, bookings, and preferences will be permanently removed.
                 </p>
@@ -424,16 +424,16 @@ export default function AccountPage() {
                   <Button
                     type="button"
                     variant="destructive"
-                    className="flex-1"
+                    className="flex-1 active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out"
                     onClick={handleDeleteAccount}
                     disabled={deleteLoading}
                   >
-                    {deleteLoading ? 'Processing…' : 'Yes, delete my account'}
+                    {deleteLoading ? 'Processing...' : 'Yes, delete my account'}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={deleteLoading}
                   >
@@ -443,13 +443,13 @@ export default function AccountPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground text-pretty">
                   Permanently delete your account and all associated data.
                 </p>
                 <Button
                   type="button"
                   variant="destructive"
-                  className="w-full"
+                  className="w-full active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out"
                   onClick={() => setShowDeleteConfirm(true)}
                 >
                   Delete my account

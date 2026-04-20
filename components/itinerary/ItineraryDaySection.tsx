@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryStopCard } from './ItineraryStopCard';
@@ -110,11 +111,11 @@ export function ItineraryDaySection({
       {/* Day header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">
+          <div className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold tabular-nums">
             {day}
           </div>
           <h4 className="font-semibold text-sm">{title}</h4>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {stops.length} stop{stops.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -153,9 +154,14 @@ export function ItineraryDaySection({
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, stops.length)}
       >
+        <AnimatePresence initial={false}>
         {stops.map((stop, idx) => (
-          <div
+          <motion.div
             key={stop.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.0, 0.0, 0.2, 1], delay: idx * 0.05 } }}
+            exit={{ opacity: 0, y: -12, transition: { duration: 0.15, ease: [0.4, 0.0, 1, 1] } }}
+            layout
             draggable
             onDragStart={() => handleDragStart(stop.id, day)}
             onDrop={(e) => {
@@ -169,8 +175,9 @@ export function ItineraryDaySection({
               onRemove={onRemoveStop}
               isDraggable
             />
-          </div>
+          </motion.div>
         ))}
+        </AnimatePresence>
 
         {stops.length === 0 && !suggestions.length && (
           <div
@@ -205,7 +212,7 @@ export function ItineraryDaySection({
                 key={idx}
                 type="button"
                 onClick={() => handleAcceptSuggestion(suggestion)}
-                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group cursor-pointer"
+                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-[background-color] duration-150 group cursor-pointer"
                 aria-label={`Add ${suggestion.title} to Day ${day}`}
               >
                 <div className="flex items-start gap-2">
@@ -224,7 +231,7 @@ export function ItineraryDaySection({
                         <span>{suggestion.location_name}</span>
                       )}
                       {suggestion.cost_usd > 0 && (
-                        <span>${suggestion.cost_usd}</span>
+                        <span className="tabular-nums">${suggestion.cost_usd}</span>
                       )}
                       {suggestion.duration_hours && (
                         <span>{suggestion.duration_hours}h</span>

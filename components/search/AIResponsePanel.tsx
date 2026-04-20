@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Bot, User, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,7 +47,7 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
           )}
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" className="w-8 h-8" onClick={onClose} aria-label="Close AI panel">
+          <Button variant="ghost" size="icon" className="w-10 h-10" onClick={onClose} aria-label="Close AI panel">
             <X className="w-4 h-4" />
           </Button>
         )}
@@ -56,9 +57,12 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
         <div className="p-4 space-y-4">
           {/* Conversation history */}
           {conversationHistory.map((msg, i) => (
-            <div
+            <motion.div
               key={i}
               className={cn('flex gap-3', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
+              initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.3, delay: i * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <div
                 className={cn(
@@ -82,9 +86,9 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
                     : 'bg-muted text-foreground rounded-tl-sm'
                 )}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                <p className="whitespace-pre-wrap text-pretty">{msg.content}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
 
           {/* Streaming response */}
@@ -94,7 +98,7 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
                 <Bot className="w-3.5 h-3.5" />
               </div>
               <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm bg-muted max-w-[85%]">
-                <p className="whitespace-pre-wrap">{streamingText}</p>
+                <p className="whitespace-pre-wrap text-pretty">{streamingText}</p>
                 <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
               </div>
             </div>
@@ -103,7 +107,7 @@ export function AIResponsePanel({ onSearch, onClose, className }: AIResponsePane
           {/* Listing results */}
           {results.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide tabular-nums">
                 {results.length} experience{results.length !== 1 ? 's' : ''} found
               </p>
               <div className="space-y-2">

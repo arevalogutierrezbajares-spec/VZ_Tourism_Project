@@ -61,7 +61,7 @@ export function SearchBar({ onSearch, isLoading, className, placeholder }: Searc
             'bg-background border border-border',
             'shadow-lg text-sm placeholder:text-muted-foreground',
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
-            'transition-all duration-200'
+            'transition-[box-shadow,border-color] duration-200'
           )}
           disabled={isLoading}
           aria-describedby={isLoading ? 'search-loading' : undefined}
@@ -69,7 +69,7 @@ export function SearchBar({ onSearch, isLoading, className, placeholder }: Searc
         {isLoading && <span id="search-loading" className="sr-only">Searching...</span>}
         <button
           type="button"
-          className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
+          className="absolute right-4 text-muted-foreground hover:text-foreground transition-[color] duration-150 p-1 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-full active:scale-[0.96]"
           aria-label="Voice search"
         >
           <Mic className="w-4 h-4" />

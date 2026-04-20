@@ -25,7 +25,7 @@ export function SafetyBadge({ level, showIcon = true, className, size = 'md' }: 
   return (
     <Badge
       variant="outline"
-      className={cn(config.className, size === 'sm' && 'text-xs px-1.5 py-0', className)}
+      className={cn(config.className, 'transition-[background-color,color,border-color] duration-150 ease-out', size === 'sm' && 'text-xs px-1.5 py-0', className)}
     >
       {showIcon && <Shield className={cn('mr-1', size === 'sm' ? 'w-2.5 h-2.5' : 'w-3 h-3')} />}
       {config.label}

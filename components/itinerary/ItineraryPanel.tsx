@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Share2, Save, Map, Sparkles, Loader2, Link2, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,18 +43,23 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
     optimizeItinerary,
   } = useItinerary();
 
-  if (!isOpen || !current) return null;
-
-  const dayCostBreakdown = days.map((day) => ({
-    label: `Day ${day.day}`,
-    amount: day.stops.reduce((sum, s) => sum + (s.cost_usd || 0), 0),
-  }));
+  const dayCostBreakdown = isOpen && current
+    ? days.map((day) => ({
+        label: `Day ${day.day}`,
+        amount: day.stops.reduce((sum, s) => sum + (s.cost_usd || 0), 0),
+      }))
+    : [];
 
   const isEmpty = days.every((d) => d.stops.length === 0);
 
   return (
     <>
-      <div
+      <AnimatePresence initial={false}>
+      {isOpen && current && (
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.0, 0.0, 0.2, 1] } }}
+        exit={{ opacity: 0, x: 20, filter: 'blur(4px)', transition: { duration: 0.15, ease: [0.4, 0.0, 1, 1] } }}
         className={cn(
           'fixed right-0 top-0 h-full w-80 bg-background shadow-2xl border-l z-30',
           'flex flex-col',
@@ -157,7 +163,7 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
           <div className="p-4 space-y-5">
             {/* Empty state — creation options */}
             {isEmpty && (
-              <div className="rounded-xl border-2 border-dashed border-primary/20 bg-primary/5 p-5 text-center space-y-4">
+              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-5 text-center space-y-4">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                   <Sparkles className="w-5 h-5 text-primary" />
                 </div>
@@ -254,7 +260,9 @@ export function ItineraryPanel({ className }: ItineraryPanelProps) {
             </Button>
           </div>
         )}
-      </div>
+      </motion.div>
+      )}
+      </AnimatePresence>
 
       {addStopDay !== null && (
         <AddStopModal

@@ -32,11 +32,11 @@ export function MobileTabBar() {
               aria-current={active ? 'page' : undefined}
               aria-label={tab.label}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 flex-1 py-2 rounded-lg transition-colors',
+                'flex flex-col items-center justify-center gap-0.5 flex-1 py-2 rounded-lg transition-[color,transform] duration-150 ease-out',
                 'min-h-[44px] min-w-[44px]',
                 active
                   ? 'text-primary'
-                  : 'text-muted-foreground active:text-foreground'
+                  : 'text-muted-foreground active:text-foreground active:scale-[0.96]'
               )}
             >
               <tab.icon className={cn('w-5 h-5', active && 'stroke-[2.5]')} />

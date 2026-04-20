@@ -78,9 +78,9 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
       {localReviews.length > 0 && (
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <p className="text-4xl font-bold">{avgRating.toFixed(1)}</p>
+            <p className="text-4xl font-bold tabular-nums">{avgRating.toFixed(1)}</p>
             <StarRating rating={avgRating} size="sm" className="justify-center mt-1" />
-            <p className="text-sm text-muted-foreground mt-1">{localReviews.length} reviews</p>
+            <p className="text-sm text-muted-foreground mt-1 tabular-nums">{localReviews.length} reviews</p>
           </div>
         </div>
       )}
@@ -122,7 +122,7 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
             )}
           </div>
           <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting} size="sm">
+            <Button type="submit" disabled={isSubmitting} size="sm" className="active:scale-[0.96] transition-transform duration-150 ease-out">
               {isSubmitting ? 'Submitting...' : 'Submit Review'}
             </Button>
             <Button
@@ -152,16 +152,16 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-sm">{review.tourist?.full_name || 'Anonymous'}</p>
                   <StarRating rating={review.rating} size="sm" />
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {formatRelativeDate(review.created_at)}
                   </span>
                 </div>
                 {review.title && <p className="font-medium text-sm mt-0.5">{review.title}</p>}
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{review.body}</p>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed text-pretty">{review.body}</p>
                 {review.photos.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {review.photos.slice(0, 3).map((url, i) => (
-                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden">
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)]">
                         <Image src={url} alt={`Review photo ${i + 1}`} fill sizes="64px" className="object-cover" />
                       </div>
                     ))}

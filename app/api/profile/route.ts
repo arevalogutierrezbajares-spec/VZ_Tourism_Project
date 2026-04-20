@@ -44,7 +44,8 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ profile: data ? toProfileResponse(data) : null });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return NextResponse.json({ profile: data ? toProfileResponse(data as any) : null });
   } catch (err) {
     console.error('[GET /api/profile]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -87,7 +88,8 @@ export async function POST(request: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ profile: toProfileResponse(data) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return NextResponse.json({ profile: toProfileResponse(data as any) });
   } catch (err) {
     console.error('[POST /api/profile]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

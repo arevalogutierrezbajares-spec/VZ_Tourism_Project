@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useMapStore } from '@/stores/map-store';
 import { PinPreviewCard } from './PinPreviewCard';
 import { MapLegend } from './MapLegend';
@@ -495,7 +496,7 @@ export function MapContainer({
             <p className="text-sm text-muted-foreground max-w-xs">{mapError}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="mt-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Retry
             </button>
@@ -531,17 +532,19 @@ export function MapContainer({
       )}
 
       {/* Pin preview card */}
-      {selectedPin && (
-        <div className="absolute bottom-24 right-4 z-10">
-          <PinPreviewCard
-            pin={selectedPin}
-            onClose={() => {
-              setSelectedPin(null);
-              storeSetSelectedPin(null);
-            }}
-          />
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {selectedPin && (
+          <div className="absolute bottom-24 right-4 z-10">
+            <PinPreviewCard
+              pin={selectedPin}
+              onClose={() => {
+                setSelectedPin(null);
+                storeSetSelectedPin(null);
+              }}
+            />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

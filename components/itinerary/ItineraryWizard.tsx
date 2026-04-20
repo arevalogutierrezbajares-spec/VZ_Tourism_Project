@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight, ChevronLeft, MapPin, Calendar, Minus, Plus, Sparkles } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import type { Itinerary } from '@/types/database';
 
@@ -72,15 +73,27 @@ function WizardContent({ onClose }: WizardProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 24, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -12, transition: { duration: 0.15, ease: 'easeIn' } }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        className="relative bg-background rounded-xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3),0_4px_16px_-4px_rgba(0,0,0,0.2)] w-full max-w-md overflow-hidden"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="font-semibold text-sm">New Itinerary</span>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-[background-color] min-w-[40px] min-h-[40px] flex items-center justify-center">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
@@ -90,7 +103,7 @@ function WizardContent({ onClose }: WizardProps) {
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`flex-1 h-1 rounded-full transition-colors ${
+              className={`flex-1 h-1 rounded-full transition-[background-color] duration-300 ${
                 s <= step ? 'bg-primary' : 'bg-muted'
               }`}
             />
@@ -98,12 +111,20 @@ function WizardContent({ onClose }: WizardProps) {
         </div>
 
         <div className="px-6 py-5 space-y-5">
+          <AnimatePresence mode="wait" initial={false}>
           {/* ─── Step 1: Name + Destination + Date ─── */}
           {step === 1 && (
-            <div className="space-y-4">
+            <motion.div
+              key="step-1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20, transition: { duration: 0.15, ease: 'easeIn' } }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+              className="space-y-4"
+            >
               <div>
-                <h2 className="text-lg font-bold mb-0.5">Plan your trip</h2>
-                <p className="text-sm text-muted-foreground">Give your itinerary a name and pick where you're headed.</p>
+                <h2 className="text-lg font-bold mb-0.5 text-balance">Plan your trip</h2>
+                <p className="text-sm text-muted-foreground text-pretty">Give your itinerary a name and pick where you&apos;re headed.</p>
               </div>
 
               <div className="space-y-1">
@@ -113,7 +134,7 @@ function WizardContent({ onClose }: WizardProps) {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={titlePlaceholder}
-                  className="w-full px-3 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-[box-shadow,border-color]"
                 />
               </div>
 
@@ -123,11 +144,12 @@ function WizardContent({ onClose }: WizardProps) {
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {DESTINATIONS.map((d) => (
-                    <button
+                    <motion.button
                       key={d.id}
                       type="button"
+                      whileTap={{ scale: 0.96 }}
                       onClick={() => setDestination(destination === d.id ? '' : d.id)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-center transition-colors ${
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-center transition-[border-color,background-color,color] min-h-[40px] ${
                         destination === d.id
                           ? 'border-primary bg-primary/5 text-primary'
                           : 'border-border hover:border-primary/40'
@@ -135,7 +157,7 @@ function WizardContent({ onClose }: WizardProps) {
                     >
                       <span className="text-xl">{d.emoji}</span>
                       <span className="text-[10px] font-medium leading-tight">{d.id}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
@@ -149,70 +171,92 @@ function WizardContent({ onClose }: WizardProps) {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-[box-shadow,border-color]"
                 />
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* ─── Step 2: Duration ─── */}
           {step === 2 && (
-            <div className="space-y-4">
+            <motion.div
+              key="step-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20, transition: { duration: 0.15, ease: 'easeIn' } }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+              className="space-y-4"
+            >
               <div>
-                <h2 className="text-lg font-bold mb-0.5">How many days?</h2>
-                <p className="text-sm text-muted-foreground">You can always add or remove days later.</p>
+                <h2 className="text-lg font-bold mb-0.5 text-balance">How many days?</h2>
+                <p className="text-sm text-muted-foreground text-pretty">You can always add or remove days later.</p>
               </div>
 
               <div className="flex items-center justify-center gap-6 py-6">
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setDays(Math.max(1, days - 1))}
                   disabled={days <= 1}
-                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
+                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center hover:bg-muted transition-[background-color] disabled:opacity-30"
                 >
                   <Minus className="w-5 h-5" />
-                </button>
+                </motion.button>
                 <div className="text-center">
                   <span className="text-6xl font-bold tabular-nums">{days}</span>
                   <p className="text-sm text-muted-foreground mt-1">{days === 1 ? 'day' : 'days'}</p>
                 </div>
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setDays(Math.min(21, days + 1))}
                   disabled={days >= 21}
-                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
+                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center hover:bg-muted transition-[background-color] disabled:opacity-30"
                 >
                   <Plus className="w-5 h-5" />
-                </button>
+                </motion.button>
               </div>
 
               {/* Quick-pick presets */}
               <div className="flex gap-2 justify-center">
                 {[3, 5, 7, 10, 14].map((d) => (
-                  <button
+                  <motion.button
                     key={d}
                     type="button"
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => setDays(d)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-[border-color,background-color,color] min-w-[40px] min-h-[40px] flex items-center justify-center tabular-nums ${
                       days === d ? 'bg-primary text-white border-primary' : 'border-border hover:border-primary/40'
                     }`}
                   >
                     {d}d
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* ─── Step 3: Confirm ─── */}
           {step === 3 && (
-            <div className="space-y-4">
+            <motion.div
+              key="step-3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20, transition: { duration: 0.15, ease: 'easeIn' } }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+              className="space-y-4"
+            >
               <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <motion.div
+                  initial={{ scale: 0.25, opacity: 0, filter: 'blur(4px)' }}
+                  animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                  transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+                  className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3"
+                >
                   <Sparkles className="w-8 h-8 text-primary" />
-                </div>
-                <h2 className="text-xl font-bold">{title.trim() || titlePlaceholder}</h2>
-                <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground mt-2">
+                </motion.div>
+                <h2 className="text-xl font-bold text-balance">{title.trim() || titlePlaceholder}</h2>
+                <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground mt-2 tabular-nums">
                   {destination && (
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" /> {destination}
@@ -222,44 +266,49 @@ function WizardContent({ onClose }: WizardProps) {
                   {startDate && <span>{startDate}</span>}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-sm text-muted-foreground text-center text-pretty">
                 Your itinerary is ready. Start adding stops from any listing page, or use the map.
               </p>
-            </div>
+            </motion.div>
           )}
+
+          </AnimatePresence>
 
           {/* Navigation buttons */}
           <div className="flex gap-2 pt-1">
             {step > 1 && (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
-                className="flex items-center gap-1 px-4 py-2.5 rounded-xl border text-sm font-medium hover:bg-muted transition-colors"
+                className="flex items-center gap-1 px-4 py-2.5 rounded-lg border text-sm font-medium hover:bg-muted transition-[background-color] min-h-[44px]"
               >
                 <ChevronLeft className="w-4 h-4" /> Back
-              </button>
+              </motion.button>
             )}
             {step < 3 && (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3)}
-                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-[background-color] min-h-[44px]"
               >
                 Continue <ChevronRight className="w-4 h-4" />
-              </button>
+              </motion.button>
             )}
             {step === 3 && (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
                 onClick={handleCreate}
-                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-[background-color] min-h-[44px]"
               >
                 Start Planning <ChevronRight className="w-4 h-4" />
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

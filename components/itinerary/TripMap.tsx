@@ -132,8 +132,8 @@ export function TripMap({ onStopClick, className }: TripMapProps) {
         <div className="w-full h-full bg-muted/20 flex items-center justify-center" role="status">
           <div className="flex flex-col items-center gap-2 text-muted-foreground">
             <Map className="w-8 h-8 opacity-40" aria-hidden="true" />
-            <p className="text-sm">Your trip will appear here</p>
-            <p className="text-xs text-muted-foreground/60">Add stops to see them on the map</p>
+            <p className="text-sm text-balance">Your trip will appear here</p>
+            <p className="text-xs text-muted-foreground/60 text-pretty">Add stops to see them on the map</p>
           </div>
         </div>
       )}

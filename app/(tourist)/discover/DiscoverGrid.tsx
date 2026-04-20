@@ -76,7 +76,7 @@ function InstagramCard({ item }: { item: DiscoverItem }) {
   return (
     <div className="relative w-full" style={{ aspectRatio: '1 / 1.25' }}>
       {item.url ? (
-        <img src={item.url} alt={item.caption} className="w-full h-full object-cover" loading="lazy" />
+        <img src={item.url} alt={item.caption} className="w-full h-full object-cover outline outline-1 -outline-offset-1 outline-black/10" loading="lazy" />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
           <Instagram className="w-12 h-12 text-purple-300" />
@@ -129,7 +129,7 @@ function PhotoCard({
           src={item.url}
           alt={item.caption}
           loading="lazy"
-          className="w-full h-auto block"
+          className="w-full h-auto block outline outline-1 -outline-offset-1 outline-black/10"
           style={{ display: 'block' }}
         />
       )}
@@ -315,13 +315,13 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
             <span aria-hidden="true">✦</span>
             <span>Visual Discovery</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold font-display text-white mb-4 tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-bold font-display text-white mb-4 tracking-tight text-balance">
             Discover{' '}
             <span style={{ background: 'linear-gradient(135deg, #60a5fa, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Venezuela
             </span>
           </h1>
-          <p className="text-lg text-blue-100/80 max-w-xl mx-auto">
+          <p className="text-lg text-blue-100/80 max-w-xl mx-auto text-pretty">
             Let the beauty inspire your next adventure
           </p>
         </div>
@@ -337,7 +337,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
                 onClick={() => setActiveCategory(id)}
                 role="tab"
                 aria-selected={activeCategory === id}
-                className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${
+                className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-[color,background-color,border-color,box-shadow] duration-200 flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${
                   activeCategory === id
                     ? 'bg-primary text-primary-foreground shadow-md'
                     : 'bg-background text-muted-foreground border border-border hover:text-foreground hover:border-foreground/30'
@@ -353,7 +353,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
 
       {/* Results count */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
           {filtered.length} photo{filtered.length !== 1 ? 's' : ''}
           {activeCategory !== 'all' && ` in ${CATEGORIES.find((c) => c.id === activeCategory)?.label}`}
         </p>
@@ -379,8 +379,8 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
         {filtered.length === 0 && (
           <div className="text-center py-24">
             <Compass className="w-10 h-10 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No photos found</h3>
-            <p className="text-muted-foreground">Try a different category.</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2 text-balance">No photos found</h3>
+            <p className="text-muted-foreground text-pretty">Try a different category.</p>
           </div>
         )}
       </div>

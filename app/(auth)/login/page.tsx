@@ -116,10 +116,10 @@ function LoginForm() {
   };
 
   return (
-    <Card className="shadow-xl border-0">
+    <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your VZ Explorer account</CardDescription>
+        <CardTitle className="text-2xl text-balance">Welcome back</CardTitle>
+        <CardDescription className="text-pretty">Sign in to your VZ Explorer account</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -134,7 +134,7 @@ function LoginForm() {
         <Button
           type="button"
           variant="outline"
-          className="w-full min-h-[44px]"
+          className="w-full min-h-[44px] active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
           onClick={signInWithGoogle}
           disabled={isLoading}
           aria-label="Continue with Google"
@@ -151,7 +151,7 @@ function LoginForm() {
         <Button
           type="button"
           variant="secondary"
-          className="w-full min-h-[44px] bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900"
+          className="w-full min-h-[44px] bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
           onClick={signInAsDemo}
           disabled={isLoading}
         >
@@ -205,7 +205,7 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-[color] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -216,7 +216,7 @@ function LoginForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px] active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
 

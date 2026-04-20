@@ -68,7 +68,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
         {images.length === 1 ? (
           <button
             type="button"
-            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             onClick={() => openLightbox(0)}
             aria-label={`View photo: ${images[0].alt || 'Gallery image'}`}
           >
@@ -85,7 +85,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer col-span-1 row-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer col-span-1 row-span-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               onClick={() => openLightbox(0)}
               aria-label={`View photo: ${images[0].alt || 'Gallery image 1'}`}
             >
@@ -103,7 +103,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 <button
                   type="button"
                   key={i}
-                  className="relative aspect-square rounded-xl overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  className="relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   onClick={() => openLightbox(i + 1)}
                   aria-label={`View photo: ${img.alt || `Gallery image ${i + 2}`}`}
                 >
@@ -117,7 +117,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   />
                   {i === 1 && images.length > 3 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center" aria-hidden="true">
-                      <span className="text-white font-bold text-xl">+{images.length - 3}</span>
+                      <span className="text-white font-bold text-xl tabular-nums">+{images.length - 3}</span>
                     </div>
                   )}
                 </button>

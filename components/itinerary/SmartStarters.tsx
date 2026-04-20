@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
   Waves,
@@ -32,6 +33,16 @@ const DURATIONS = [
   { days: 10, label: '10 days' },
 ] as const;
 
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.0, 0.0, 0.2, 1] as [number, number, number, number] } },
+};
+
 export function SmartStarters({ onSend, className }: SmartStartersProps) {
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState<number | null>(null);
@@ -62,17 +73,23 @@ export function SmartStarters({ onSend, className }: SmartStartersProps) {
       <p className="text-sm text-muted-foreground">What kind of trip?</p>
 
       {/* Vibe cards */}
-      <div className="grid grid-cols-3 gap-2">
+      <motion.div
+        className="grid grid-cols-3 gap-2"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {VIBES.map((vibe) => {
           const Icon = vibe.icon;
           const isSelected = selectedVibe === vibe.id;
           return (
-            <button
+            <motion.button
               key={vibe.id}
               type="button"
+              variants={staggerItem}
               onClick={() => handleVibeClick(vibe.id, vibe.prompt)}
               className={cn(
-                'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-[border-color,background-color,color] duration-150 text-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.96]',
                 isSelected
                   ? 'border-primary bg-primary/5 text-primary'
                   : 'border-border hover:border-primary/40 hover:bg-muted/50 text-muted-foreground hover:text-foreground'
@@ -80,10 +97,10 @@ export function SmartStarters({ onSend, className }: SmartStartersProps) {
             >
               <Icon className={cn('w-5 h-5', isSelected && 'text-primary')} />
               <span className="text-xs font-medium leading-tight">{vibe.label}</span>
-            </button>
+            </motion.button>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Duration chips */}
       <div className="space-y-2">
@@ -95,7 +112,7 @@ export function SmartStarters({ onSend, className }: SmartStartersProps) {
               type="button"
               onClick={() => handleDurationClick(d.days)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                'px-3 py-1.5 rounded-full text-xs font-medium border transition-[border-color,background-color,color] duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                 selectedDays === d.days
                   ? 'bg-primary text-white border-primary'
                   : 'border-border hover:border-primary/40 text-muted-foreground hover:text-foreground'

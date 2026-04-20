@@ -28,7 +28,7 @@ interface InfluencerCardProps {
 
 export function InfluencerCard({ creator, itinerary, className }: InfluencerCardProps) {
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow rounded-2xl ${className || ''}`}>
+    <Card className={`overflow-hidden hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.15),0_4px_12px_-4px_rgba(0,0,0,0.1)] transition-[box-shadow] rounded-2xl ${className || ''}`}>
       <CardContent className="p-5 space-y-4">
         {/* Creator header */}
         <div className="flex items-center gap-3">
@@ -49,23 +49,23 @@ export function InfluencerCard({ creator, itinerary, className }: InfluencerCard
                 {creator.instagram_handle}
               </p>
             )}
-            <p className="text-xs text-primary font-semibold">
+            <p className="text-xs text-primary font-semibold tabular-nums">
               {creator.followers.toLocaleString()} followers
             </p>
           </div>
         </div>
 
         {/* Featured itinerary mini-card */}
-        <div className="bg-muted/50 rounded-xl p-3 space-y-1.5">
+        <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
           <h4 className="font-semibold text-sm line-clamp-1">{itinerary.title}</h4>
-          <p className="text-xs text-muted-foreground">
-            {itinerary.regions.join(' → ')}
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {itinerary.regions.join(' \u2192 ')}
             {itinerary.estimated_cost_usd > 0 && (
               <> · {formatCurrency(itinerary.estimated_cost_usd)}/person</>
             )}
           </p>
           {(itinerary.saves + itinerary.likes) > 0 && (
-            <p className="text-xs text-primary font-semibold">
+            <p className="text-xs text-primary font-semibold tabular-nums">
               {(itinerary.saves + itinerary.likes).toLocaleString()} recommend
             </p>
           )}

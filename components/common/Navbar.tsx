@@ -27,7 +27,7 @@ export function Navbar() {
   return (
     <>
     <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="navigation" aria-label="Main navigation">
+    <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[background-color,backdrop-filter]" role="navigation" aria-label="Main navigation">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <Logo size="md" />
@@ -37,7 +37,7 @@ export function Navbar() {
           <Link
             href="/map"
             aria-current={pathname === '/map' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/map' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/map' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Map className="w-4 h-4" />
             Map
@@ -45,7 +45,7 @@ export function Navbar() {
           <Link
             href="/explore"
             aria-current={pathname.startsWith('/explore') ? 'page' : undefined}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <BookOpen className="w-4 h-4" />
             Explore
@@ -53,7 +53,7 @@ export function Navbar() {
           <Link
             href="/itineraries"
             aria-current={pathname === '/itineraries' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/itineraries' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/itineraries' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Route className="w-4 h-4" />
             Itineraries
@@ -61,7 +61,7 @@ export function Navbar() {
           <Link
             href="/discover"
             aria-current={pathname === '/discover' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/discover' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/discover' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Sparkles className="w-4 h-4" />
             Discover
@@ -69,7 +69,7 @@ export function Navbar() {
           <Link
             href="/safety"
             aria-current={pathname === '/safety' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/safety' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname === '/safety' ? 'text-primary' : 'text-muted-foreground'}`}
           >
             <Shield className="w-4 h-4" />
             Safety
@@ -78,7 +78,7 @@ export function Navbar() {
             <Link
               href="/dashboard"
               aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined}
-              className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded-md px-1 py-0.5 ${pathname.startsWith('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}
             >
               <LayoutDashboard className="w-4 h-4" />
               Dashboard
@@ -90,7 +90,7 @@ export function Navbar() {
           {/* AI Search trigger */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-[color,border-color] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -104,7 +104,7 @@ export function Navbar() {
             <>
               <Link
                 href="/trips"
-                className={`hidden md:flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/trips') ? 'text-primary' : 'text-muted-foreground'}`}
+                className={`hidden md:flex items-center gap-1.5 text-sm font-medium transition-[color] hover:text-primary ${pathname.startsWith('/trips') ? 'text-primary' : 'text-muted-foreground'}`}
               >
                 <Luggage className="w-4 h-4" />
                 My Trips
@@ -112,7 +112,7 @@ export function Navbar() {
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
-                  <Avatar className="w-8 h-8">
+                  <Avatar className="w-8 h-8 outline outline-1 -outline-offset-1 outline-black/10">
                     <AvatarImage src={profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {getInitials(profile?.full_name || 'U')}

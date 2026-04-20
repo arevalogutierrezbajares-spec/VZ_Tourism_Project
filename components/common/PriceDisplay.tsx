@@ -28,7 +28,7 @@ export function PriceDisplay({
   suffix,
 }: PriceDisplayProps) {
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div className={cn('flex flex-col tabular-nums', className)}>
       <span className={cn('text-foreground font-medium', sizeClasses[size])}>
         {formatCurrency(priceUsd, 'USD')}
         {suffix && <span className="text-muted-foreground font-normal text-sm ml-1">{suffix}</span>}

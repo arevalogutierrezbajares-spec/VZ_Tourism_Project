@@ -165,8 +165,8 @@ function MonthGrid({
                 onMouseEnter={() => onDayHover(dateStr)}
                 onMouseLeave={() => onDayHover(null)}
                 className={cn(
-                  'w-10 h-10 rounded-full text-sm flex flex-col items-center justify-center gap-0',
-                  'transition-colors duration-150',
+                  'w-10 h-10 rounded-full text-sm flex flex-col items-center justify-center gap-0 tabular-nums',
+                  'transition-colors duration-150 ease-out',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
                   unavailable && 'opacity-30 cursor-not-allowed line-through text-muted-foreground',
                   !unavailable && !isSelected && 'hover:bg-muted cursor-pointer',
@@ -377,7 +377,7 @@ export function AvailabilityCalendar({
           <div className="flex items-center justify-between gap-2">
             <span
               className={cn(
-                'text-sm transition-colors duration-200',
+                'text-sm tabular-nums transition-colors duration-200',
                 checkIn && checkOut ? 'font-medium text-primary' : 'text-muted-foreground'
               )}
             >
@@ -385,12 +385,12 @@ export function AvailabilityCalendar({
             </span>
             <div className="flex items-center gap-2">
               {instructionContent.showTotal && (
-                <span className="text-sm font-semibold">${total.toFixed(2)}</span>
+                <span className="text-sm font-semibold tabular-nums">${total.toFixed(2)}</span>
               )}
               {instructionContent.showClear && (
                 <button
                   onClick={clearSelection}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-100 ease-out p-0.5 rounded"
                   aria-label="Clear date selection"
                 >
                   <X className="w-3.5 h-3.5" />

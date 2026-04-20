@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,7 +49,11 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
   };
 
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow rounded-2xl ${className || ''}`}>
+    <motion.div
+      whileHover={{ y: -2 }}
+      transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+    >
+    <Card className={`overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.06)] transition-[box-shadow] duration-200 rounded-2xl ${className || ''}`}>
       {itinerary.cover_image_url && (
         <Link href={`/itinerary/${itinerary.id}`}>
           <div className="relative aspect-video overflow-hidden">
@@ -57,7 +62,7 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
               alt={`Cover photo for ${itinerary.title}`}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover motion-safe:hover:scale-105 transition-transform duration-500"
+              className="object-cover outline outline-1 -outline-offset-1 outline-black/10 motion-safe:hover:scale-105 transition-[transform] duration-500"
             />
             <span className="absolute top-2 left-2 bg-black/60 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
               {pluralize(itinerary.total_days, 'day')}
@@ -75,7 +80,7 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
         {/* Author */}
         {itinerary.user && (
           <div className="flex items-center gap-2">
-            <Avatar className="w-7 h-7">
+            <Avatar className="w-7 h-7 outline outline-1 -outline-offset-1 outline-black/10 rounded-full">
               <AvatarImage src={itinerary.user.avatar_url || undefined} alt={`${itinerary.user.full_name}'s avatar`} />
               <AvatarFallback className="text-xs">
                 {getInitials(itinerary.user.full_name)}
@@ -90,27 +95,27 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
 
         {/* Title and details */}
         <Link href={`/itinerary/${itinerary.id}`}>
-          <h3 className="font-bold text-base hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-bold text-base hover:text-primary transition-[color] duration-200 line-clamp-2 text-balance">
             {itinerary.title}
           </h3>
         </Link>
 
         {itinerary.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">{itinerary.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 text-pretty">{itinerary.description}</p>
         )}
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           {showActions && recommendCount > 0 && (
             <>
-              <span className="text-primary font-semibold">{recommendCount.toLocaleString()} recommend</span>
+              <span className="text-primary font-semibold tabular-nums">{recommendCount.toLocaleString()} recommend</span>
               <span>·</span>
             </>
           )}
-          <span>{pluralize(itinerary.total_days, 'day')}</span>
+          <span className="tabular-nums">{pluralize(itinerary.total_days, 'day')}</span>
           {itinerary.estimated_cost_usd > 0 && (
             <>
               <span>·</span>
-              <span>From {formatCurrency(itinerary.estimated_cost_usd)}</span>
+              <span className="tabular-nums">From {formatCurrency(itinerary.estimated_cost_usd)}</span>
             </>
           )}
           {!showActions && itinerary.start_date && (
@@ -133,7 +138,7 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
 
         {showActions ? (
           <div className="flex items-center justify-between pt-1">
-            <span className="text-base font-bold">
+            <span className="text-base font-bold tabular-nums">
               {itinerary.estimated_cost_usd > 0 && (
                 <>{formatCurrency(itinerary.estimated_cost_usd)} <span className="text-xs font-normal text-muted-foreground">/ person</span></>
               )}
@@ -144,13 +149,13 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
                 size="sm"
                 onClick={handleCustomize}
                 disabled={cloneState === 'loading'}
-                className="cursor-pointer"
+                className="cursor-pointer active:scale-[0.96] transition-[transform,opacity] duration-150"
               >
                 {cloneState === 'loading' && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
                 {cloneState === 'error' && <AlertCircle className="w-3 h-3 mr-1 text-destructive" />}
                 {cloneState === 'error' ? 'Failed' : 'Customize'}
               </Button>
-              <Button size="sm" asChild className="cursor-pointer">
+              <Button size="sm" asChild className="cursor-pointer active:scale-[0.96] transition-[transform,opacity] duration-150">
                 <Link href={`/itinerary/${itinerary.id}`}>Book This Trip</Link>
               </Button>
             </div>
@@ -164,5 +169,6 @@ export function ItineraryFeedCard({ itinerary, showActions = false, className }:
         )}
       </CardContent>
     </Card>
+    </motion.div>
   );
 }

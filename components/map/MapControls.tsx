@@ -34,7 +34,7 @@ export function MapControls() {
                 variant="secondary"
                 size="icon"
                 className={cn(
-                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 transition-[background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                   isDarkMode && 'ring-2 ring-primary'
                 )}
                 onClick={toggleDarkMode}
@@ -57,7 +57,7 @@ export function MapControls() {
                 variant="secondary"
                 size="icon"
                 className={cn(
-                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 transition-[background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                   is3DTerrain && 'ring-2 ring-primary'
                 )}
                 onClick={toggle3DTerrain}
@@ -80,7 +80,7 @@ export function MapControls() {
                 variant="secondary"
                 size="icon"
                 className={cn(
-                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                  'w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 transition-[background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                   showSafetyZones && 'ring-2 ring-primary'
                 )}
                 onClick={toggleSafetyZones}
@@ -102,7 +102,7 @@ export function MapControls() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="w-11 h-11 shadow-md bg-white dark:bg-gray-800 hover:bg-gray-50 transition-[background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={toggleFullscreen}
                 aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               >

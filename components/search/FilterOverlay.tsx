@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { X, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,10 +39,16 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Filters">
-      <div className="bg-background rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
+      <motion.div
+        className="bg-background rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl"
+        initial={{ opacity: 0, y: 24, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -12, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         {/* Header */}
         <div className="sticky top-0 bg-background flex items-center justify-between p-5 border-b z-10">
-          <h2 className="font-bold text-lg">Filters</h2>
+          <h2 className="font-bold text-lg text-balance">Filters</h2>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={resetFilters}>
               Clear all
@@ -62,7 +69,8 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                   key={cat.value}
                   onClick={() => handleCategoryToggle(cat.value)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.96]',
+                    'transition-[background-color,border-color,color,transform] duration-150',
                     filters.category === cat.value
                       ? 'border-primary bg-primary/10 text-primary font-medium'
                       : 'border-border hover:border-foreground/30'
@@ -102,9 +110,9 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
 
           {/* Price range */}
           <div>
-            <h3 className="font-semibold mb-3">
+            <h3 className="font-semibold mb-3 text-balance">
               Price Range
-              <span className="font-normal text-muted-foreground ml-2 text-sm">
+              <span className="font-normal text-muted-foreground ml-2 text-sm tabular-nums">
                 ${filters.minPrice || 0} - ${filters.maxPrice || 1000}+
               </span>
             </h3>
@@ -130,7 +138,8 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
                   key={level.value}
                   onClick={() => handleSafetyToggle(level.value)}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-sm border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
+                    'px-3 py-1.5 rounded-full text-sm border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.96]',
+                    'transition-[background-color,border-color,color,box-shadow,transform] duration-150',
                     filters.safetyLevel === level.value
                       ? 'border-current font-medium shadow-sm'
                       : 'border-border hover:border-foreground/30'
@@ -152,11 +161,11 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
         </div>
 
         <div className="sticky bottom-0 bg-background p-5 border-t">
-          <Button className="w-full" onClick={onClose}>
+          <Button className="w-full active:scale-[0.96] transition-[transform] duration-100" onClick={onClose}>
             Apply Filters
           </Button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

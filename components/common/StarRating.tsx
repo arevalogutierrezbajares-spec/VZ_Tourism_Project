@@ -64,7 +64,7 @@ export function StarRating({
             key={i}
             type="button"
             onClick={() => handleClick(value)}
-            className="cursor-pointer hover:scale-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 rounded-sm p-0.5"
+            className="cursor-pointer hover:scale-110 transition-[transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 rounded-sm p-0.5"
             aria-label={`Rate ${value} star${value !== 1 ? 's' : ''}`}
           >
             {starIcon}
@@ -72,7 +72,7 @@ export function StarRating({
         );
       })}
       {showValue && (
-        <span className="ml-1 text-sm text-muted-foreground">{rating.toFixed(1)}</span>
+        <span className="ml-1 text-sm text-muted-foreground tabular-nums">{rating.toFixed(1)}</span>
       )}
     </div>
   );

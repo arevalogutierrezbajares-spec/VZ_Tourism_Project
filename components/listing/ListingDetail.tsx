@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { MapPin, Clock, Users, Globe, CheckCircle, XCircle, Star, MessageCircle, ExternalLink } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -67,12 +68,12 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                 <Badge className="bg-accent text-accent-foreground">Featured</Badge>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">{listing.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-balance">{listing.title}</h1>
             <div className="flex items-center gap-2 text-muted-foreground text-sm flex-wrap">
               <span className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-accent text-accent" />
-                <strong className="text-foreground">{listing.rating.toFixed(1)}</strong>
-                <span>({pluralize(listing.total_reviews, 'review')})</span>
+                <strong className="text-foreground tabular-nums">{listing.rating.toFixed(1)}</strong>
+                <span className="tabular-nums">({pluralize(listing.total_reviews, 'review')})</span>
               </span>
               <span>·</span>
               <span className="flex items-center gap-1">
@@ -99,13 +100,13 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
             {listing.duration_hours && (
               <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30">
                 <Clock className="w-5 h-5 text-primary mb-1" />
-                <span className="font-medium text-sm">{formatDuration(listing.duration_hours)}</span>
+                <span className="font-medium text-sm tabular-nums">{formatDuration(listing.duration_hours)}</span>
                 <span className="text-xs text-muted-foreground">Duration</span>
               </div>
             )}
             <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30">
               <Users className="w-5 h-5 text-primary mb-1" />
-              <span className="font-medium text-sm">Up to {listing.max_guests}</span>
+              <span className="font-medium text-sm tabular-nums">Up to {listing.max_guests}</span>
               <span className="text-xs text-muted-foreground">Guests</span>
             </div>
             <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30">
@@ -120,7 +121,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
           {/* Description */}
           <div>
             <h2 className="text-xl font-bold mb-3">About this experience</h2>
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-pretty">
               {listing.description}
             </p>
           </div>
@@ -132,7 +133,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
             <div className="grid grid-cols-2 gap-6">
               {listing.includes.length > 0 && (
                 <div>
-                  <h3 className="font-semibold mb-3">What's included</h3>
+                  <h3 className="font-semibold mb-3">What&#39;s included</h3>
                   <ul className="space-y-2">
                     {listing.includes.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
@@ -179,11 +180,11 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                     </div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
                       <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-                      <span>{listing.provider.rating.toFixed(1)}</span>
+                      <span className="tabular-nums">{listing.provider.rating.toFixed(1)}</span>
                       <span>·</span>
-                      <span>{pluralize(listing.provider.total_reviews, 'review')}</span>
+                      <span className="tabular-nums">{pluralize(listing.provider.total_reviews, 'review')}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed text-pretty">
                       {listing.provider.description}
                     </p>
                   </div>
@@ -197,7 +198,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
           {/* Reviews */}
           <div>
             <h2 className="text-xl font-bold mb-4">
-              Reviews {reviews.length > 0 && `(${reviews.length})`}
+              Reviews {reviews.length > 0 && <span className="tabular-nums">({reviews.length})</span>}
             </h2>
             <ReviewSection
               listingId={listing.id}
@@ -241,7 +242,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               setAddedToItinerary(true);
               setTimeout(() => setAddedToItinerary(false), 2500);
             }}
-            className="w-full py-3 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="w-full py-3 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors duration-150 ease-out flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {addedToItinerary ? '✓ Added to itinerary' : '+ Add to itinerary'}
           </button>
@@ -265,7 +266,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
           {listing.cancellation_policy && (
             <div className="p-4 rounded-xl bg-muted/30 border text-sm">
               <p className="font-semibold mb-1">Cancellation policy</p>
-              <p className="text-muted-foreground leading-relaxed">{listing.cancellation_policy}</p>
+              <p className="text-muted-foreground leading-relaxed text-pretty">{listing.cancellation_policy}</p>
             </div>
           )}
 
@@ -275,7 +276,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               href={`https://wa.me/${listing.provider.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in "${listing.title}"`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition-colors duration-150 ease-out"
             >
               <MessageCircle className="w-4 h-4" />
               Message on WhatsApp
@@ -289,16 +290,17 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
       <div className="fixed bottom-16 left-0 right-0 z-30 lg:hidden px-4 pb-2">
         <div className="bg-background border border-border rounded-xl shadow-lg flex items-center justify-between px-4 py-3">
           <div>
-            <span className="text-lg font-bold text-foreground">${listing.price_usd.toFixed(2)}</span>
+            <span className="text-lg font-bold text-foreground tabular-nums">${listing.price_usd.toFixed(2)}</span>
             <span className="text-xs text-muted-foreground ml-1">/ person / night</span>
           </div>
-          <button
+          <motion.button
             type="button"
             onClick={scrollToBooking}
-            className="bg-primary text-primary-foreground font-semibold text-sm px-5 py-2 rounded-lg hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            whileTap={{ scale: 0.96 }}
+            className="bg-primary text-primary-foreground font-semibold text-sm px-5 py-2 rounded-lg hover:opacity-90 transition-opacity duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             Reserve
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

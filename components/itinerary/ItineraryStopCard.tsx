@@ -116,7 +116,7 @@ export function ItineraryStopCard({
   return (
     <div className={cn('space-y-1', className)}>
       <div className={cn(
-        'flex gap-3 p-3 bg-background rounded-xl border hover:shadow-sm transition-shadow group',
+        'flex gap-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-[box-shadow] duration-150 group',
         hasPhoto && 'p-0 overflow-hidden'
       )}>
         {/* Listing photo */}
@@ -135,7 +135,7 @@ export function ItineraryStopCard({
 
         {/* Photo fallback placeholder (only in showPhoto mode when no image) */}
         {showPhoto && !hasPhoto && (
-          <div className="w-20 h-20 shrink-0 bg-muted flex items-center justify-center rounded-l-xl">
+          <div className="w-20 h-20 shrink-0 bg-muted flex items-center justify-center rounded-l-lg">
             <ImageOff className="w-5 h-5 text-muted-foreground/40" />
           </div>
         )}
@@ -201,7 +201,7 @@ export function ItineraryStopCard({
               </Badge>
             )}
             {stop.cost_usd > 0 && (
-              <span className="text-xs font-medium text-primary flex items-center gap-0.5">
+              <span className="text-xs font-medium text-primary flex items-center gap-0.5 tabular-nums">
                 <DollarSign className="w-3 h-3" />
                 {stop.cost_usd.toFixed(0)}
               </span>
@@ -239,7 +239,7 @@ export function ItineraryStopCard({
               key={idx}
               type="button"
               onClick={() => handleSwap(alt)}
-              className="w-full text-left p-2 rounded-lg border border-dashed border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+              className="w-full text-left p-2 rounded-lg border border-dashed border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-[border-color,background-color] duration-150"
             >
               <p className="text-xs font-medium line-clamp-1">{alt.title}</p>
               <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
@@ -247,7 +247,7 @@ export function ItineraryStopCard({
               </p>
               <div className="flex gap-2 mt-0.5 text-[11px] text-muted-foreground">
                 {alt.location_name && <span>{alt.location_name}</span>}
-                {alt.cost_usd > 0 && <span>${alt.cost_usd}</span>}
+                {alt.cost_usd > 0 && <span className="tabular-nums">${alt.cost_usd}</span>}
               </div>
             </button>
           ))}

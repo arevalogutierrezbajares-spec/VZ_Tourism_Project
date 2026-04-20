@@ -29,15 +29,17 @@ export function TransportCard({
 
   return (
     <div className={cn('flex flex-col items-center py-2', className)}>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <ArrowDown className="w-3 h-3" />
-        <Icon className="w-3 h-3" />
-        <span>
-          {label || config.label}
-          {duration && ` · ${duration < 60 ? `${duration}min` : `${Math.round(duration / 60)}h`}`}
-          {distance && ` · ${distance.toFixed(1)}km`}
-        </span>
-        <ArrowDown className="w-3 h-3" />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground tabular-nums">
+        <ArrowDown className="w-3 h-3 opacity-40" />
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 border border-border/50">
+          <Icon className="w-3 h-3" />
+          <span>
+            {label || config.label}
+            {duration != null && ` · ${duration < 60 ? `${duration}min` : `${Math.round(duration / 60)}h`}`}
+            {distance != null && ` · ${distance.toFixed(1)}km`}
+          </span>
+        </div>
+        <ArrowDown className="w-3 h-3 opacity-40" />
       </div>
     </div>
   );

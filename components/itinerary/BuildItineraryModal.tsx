@@ -116,14 +116,14 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
                   <button
                     key={opt.id}
                     onClick={() => setSelected(opt.id)}
-                    className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none ${
+                    className={`w-full text-left flex items-start gap-4 p-4 rounded-lg border-2 transition-[border-color,background-color] duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none ${
                       isSelected
                         ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/20'
                         : 'border-border hover:border-border/80 hover:bg-muted/40'
                     }`}
                   >
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors duration-150 ${
+                      className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-[background-color,color] duration-150 ${
                         isSelected
                           ? 'bg-amber-400 text-amber-900'
                           : 'bg-muted text-muted-foreground'
@@ -154,7 +154,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
 
                     {/* Checkmark */}
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-150 ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-[background-color,transform,opacity] duration-150 ${
                         isSelected
                           ? 'bg-amber-400 scale-100 opacity-100'
                           : 'bg-muted scale-75 opacity-0'
@@ -172,7 +172,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
               <button
                 onClick={handleContinue}
                 disabled={!selected}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-bold text-sm transition-[box-shadow,transform,opacity] duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
               >
                 Continue
                 <ArrowRight className="w-4 h-4" />
@@ -186,7 +186,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
               <div className="flex items-center gap-3 mb-2">
                 <button
                   onClick={() => setStep('choose')}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1 rounded-lg hover:bg-muted"
+                  className="text-muted-foreground hover:text-foreground transition-[color] duration-150 p-1 -ml-1 rounded-lg hover:bg-muted"
                   aria-label="Go back"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -206,7 +206,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
                 value={pasteText}
                 onChange={(e) => setPasteText(e.target.value)}
                 placeholder={`e.g. "5 days in Venezuela — Day 1 Caracas: museums, El Ávila, Altamira. Day 2–3 Mérida: cable car, paragliding, waterfalls. Day 4–5 Los Roques: snorkeling, beach, seafood..."`}
-                className="w-full h-44 text-sm p-4 rounded-xl border-2 border-border bg-muted/30 resize-none focus:outline-none focus:border-amber-400/60 placeholder:text-muted-foreground/50 leading-relaxed transition-colors duration-150"
+                className="w-full h-44 text-sm p-4 rounded-md border-2 border-border bg-muted/30 resize-none focus:outline-none focus:border-amber-400/60 placeholder:text-muted-foreground/50 leading-relaxed transition-[border-color] duration-150"
                 autoFocus
               />
               <p className="text-xs text-muted-foreground mt-2">
@@ -221,7 +221,7 @@ export function BuildItineraryModal({ open, onClose }: BuildItineraryModalProps)
               <button
                 onClick={handleContinue}
                 disabled={!pasteText.trim()}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-bold text-sm transition-[box-shadow,transform,opacity] duration-200 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-300/50 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 outline-none"
               >
                 Build my itinerary
                 <Sparkles className="w-4 h-4" />

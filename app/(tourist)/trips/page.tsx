@@ -114,12 +114,12 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
             </div>
             <p className="text-xs text-muted-foreground mb-2">Ref: {booking.confirmation_code}</p>
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
-              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(parseISO(booking.check_in), 'MMM d')} – {format(parseISO(booking.check_out), 'MMM d, yyyy')}</span>
-              <span>{booking.guest_count} {booking.guest_count === 1 ? 'guest' : 'guests'}</span>
-              <span className="font-medium text-foreground">${booking.total_usd}</span>
+              <span className="flex items-center gap-1 tabular-nums"><Calendar className="w-3 h-3" />{format(parseISO(booking.check_in), 'MMM d')} – {format(parseISO(booking.check_out), 'MMM d, yyyy')}</span>
+              <span className="tabular-nums">{booking.guest_count} {booking.guest_count === 1 ? 'guest' : 'guests'}</span>
+              <span className="font-medium text-foreground tabular-nums">${booking.total_usd}</span>
             </div>
             {!past && days !== null && days >= 0 && (
-              <p className="text-xs font-semibold text-sky-600 mb-2">
+              <p className="text-xs font-semibold text-sky-600 mb-2 tabular-nums">
                 {days === 0 ? 'Today!' : days === 1 ? 'Tomorrow!' : `In ${days} days!`}
               </p>
             )}
@@ -131,19 +131,19 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
             <div className="flex gap-2 flex-wrap">
               <Link
                 href={`/bookings/${booking.id}`}
-                className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium hover:bg-sky-600 transition-[background-color] active:scale-[0.96]"
               >
                 View Booking
               </Link>
               {past && (
-                <button className="text-xs px-3 py-1.5 rounded-lg border text-muted-foreground hover:border-sky-400 hover:text-sky-600 transition-colors">
+                <button className="text-xs px-3 py-1.5 rounded-lg border text-muted-foreground hover:border-sky-400 hover:text-sky-600 transition-[color,border-color] active:scale-[0.96]">
                   <Star className="w-3 h-3 inline mr-1" />Leave Review
                 </button>
               )}
               {canCancel && !showConfirm && (
                 <button
                   onClick={() => setShowConfirm(true)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-[background-color] active:scale-[0.96]"
                 >
                   Cancel booking
                 </button>
@@ -155,7 +155,7 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
                     {days !== null && (() => {
                       const refund = getRefundEstimate(days, booking.total_usd);
                       return refund.amount > 0
-                        ? <span className="font-normal text-muted-foreground ml-1">Estimated refund: ${refund.amount.toFixed(2)} ({refund.label})</span>
+                        ? <span className="font-normal text-muted-foreground ml-1 tabular-nums">Estimated refund: ${refund.amount.toFixed(2)} ({refund.label})</span>
                         : <span className="font-normal text-muted-foreground ml-1">{refund.label} — no refund applies</span>;
                     })()}
                   </div>
@@ -163,13 +163,13 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
                     <button
                       onClick={handleCancel}
                       disabled={cancelling}
-                      className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                      className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-[background-color] disabled:opacity-50 active:scale-[0.96]"
                     >
-                      {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+                      {cancelling ? 'Cancelling...' : 'Yes, cancel'}
                     </button>
                     <button
                       onClick={() => setShowConfirm(false)}
-                      className="px-2.5 py-1 rounded-lg border hover:bg-muted transition-colors"
+                      className="px-2.5 py-1 rounded-lg border hover:bg-muted transition-[background-color]"
                     >
                       Keep
                     </button>
@@ -304,11 +304,11 @@ export default function TripsPage() {
   if (!isAuthenticated) {
     return (
       <div className="container px-4 py-16 max-w-md mx-auto text-center">
-        <p className="text-lg font-medium mb-2">Sign in to view your trips</p>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-lg font-medium mb-2 text-balance">Sign in to view your trips</p>
+        <p className="text-sm text-muted-foreground mb-6 text-pretty">
           Your bookings, saved places, and travel history are available after signing in.
         </p>
-        <a href="/login?next=/trips" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+        <a href="/login?next=/trips" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-[opacity] active:scale-[0.96]">
           Sign in
         </a>
       </div>
@@ -317,8 +317,8 @@ export default function TripsPage() {
 
   return (
     <div className="container px-4 py-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1">My Trips</h1>
-      <p className="text-muted-foreground text-sm mb-6">Welcome back, {firstName}! Here&apos;s your travel history.</p>
+      <h1 className="text-2xl font-bold mb-1 text-balance">My Trips</h1>
+      <p className="text-muted-foreground text-sm mb-6 text-pretty">Welcome back, {firstName}! Here&apos;s your travel history.</p>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b">
@@ -334,7 +334,7 @@ export default function TripsPage() {
           >
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className="ml-1.5 text-xs bg-sky-100 text-sky-700 rounded-full px-1.5 py-0.5">{t.count}</span>
+              <span className="ml-1.5 text-xs bg-sky-100 text-sky-700 rounded-full px-1.5 py-0.5 tabular-nums">{t.count}</span>
             )}
           </button>
         ))}
@@ -390,8 +390,8 @@ export default function TripsPage() {
                     )}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <Link href={`/itinerary/${it.id}`} className="text-xs px-3 py-1.5 rounded-lg border hover:border-sky-400 hover:text-sky-600 transition-colors">View</Link>
-                    <Link href={`/itinerary/${it.id}?edit=1`} className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white hover:bg-sky-600 transition-colors">
+                    <Link href={`/itinerary/${it.id}`} className="text-xs px-3 py-1.5 rounded-lg border hover:border-sky-400 hover:text-sky-600 transition-[color,border-color]">View</Link>
+                    <Link href={`/itinerary/${it.id}?edit=1`} className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white hover:bg-sky-600 transition-[background-color]">
                       <Pencil className="w-3 h-3 inline mr-1" />Edit
                     </Link>
                   </div>
@@ -413,12 +413,12 @@ export default function TripsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {savedPlaces.map((place) => (
               <Link key={place.id} href={place.slug ? `/listing/${place.slug}` : '#'}>
-                <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-[box-shadow]">
                   <CardContent className="p-0">
                     <div className="h-32 bg-gradient-to-br from-sky-100 to-amber-100 relative">
                       {place.cover_image_url && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={place.cover_image_url} alt={place.title} className="w-full h-full object-cover" />
+                        <img src={place.cover_image_url} alt={place.title} className="w-full h-full object-cover outline outline-1 -outline-offset-1 outline-black/10" />
                       )}
                     </div>
                     <div className="p-3">
@@ -429,7 +429,7 @@ export default function TripsPage() {
                         </p>
                       )}
                       {place.price_usd && (
-                        <p className="text-xs font-medium text-sky-600 mt-1">From ${place.price_usd}/person</p>
+                        <p className="text-xs font-medium text-sky-600 mt-1 tabular-nums">From ${place.price_usd}/person</p>
                       )}
                     </div>
                   </CardContent>
@@ -445,14 +445,14 @@ export default function TripsPage() {
       {/* Recently Viewed */}
       {recentlyViewed.length > 0 && (
         <div className="mt-10">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-balance">
             <Clock className="w-5 h-5 text-muted-foreground" />
             Recently Viewed
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {recentlyViewed.map((item) => (
               <Link key={item.id} href={`/listing/${item.slug}`}>
-                <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-[box-shadow]">
                   <CardContent className="p-0">
                     <div className="h-28 bg-gradient-to-br from-sky-100 to-amber-100 relative">
                       {item.cover_image_url && (
@@ -460,7 +460,7 @@ export default function TripsPage() {
                           src={item.cover_image_url}
                           alt={item.title}
                           fill
-                          className="object-cover"
+                          className="object-cover outline outline-1 -outline-offset-1 outline-black/10"
                         />
                       )}
                       <span className="absolute bottom-2 left-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full capitalize">
@@ -478,7 +478,7 @@ export default function TripsPage() {
                         </p>
                       </div>
                       {item.price_usd && (
-                        <p className="text-xs font-medium text-sky-600 mt-1">${item.price_usd} / person</p>
+                        <p className="text-xs font-medium text-sky-600 mt-1 tabular-nums">${item.price_usd} / person</p>
                       )}
                     </div>
                   </CardContent>

@@ -180,11 +180,11 @@ export function ExtractFromTextModal({ isOpen, onClose }: ExtractFromTextModalPr
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { handleReset(); onClose(); } }}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-balance">
             <FileText className="w-4 h-4 text-primary" />
             Import Trip Notes
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-pretty">
             Paste your trip notes, itinerary draft, or upload a text file.
             We&apos;ll extract the places and match them.
           </DialogDescription>
@@ -217,14 +217,14 @@ export function ExtractFromTextModal({ isOpen, onClose }: ExtractFromTextModalPr
             </div>
             <div>
               <p className="text-sm font-medium">Reading your notes...</p>
-              <p className="text-xs text-muted-foreground mt-1">Extracting places and matching against our database</p>
+              <p className="text-xs text-muted-foreground mt-1 text-pretty">Extracting places and matching against our database</p>
             </div>
           </div>
         )}
 
         {step === 'review' && (
           <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground tabular-nums">
               Found {totalSpots} spot{totalSpots !== 1 ? 's' : ''} across {days.length} day{days.length !== 1 ? 's' : ''}:
             </p>
             {days.map((day, dayIdx) => (
@@ -273,9 +273,9 @@ export function ExtractFromTextModal({ isOpen, onClose }: ExtractFromTextModalPr
         {step === 'review' && (
           <DialogFooter>
             <Button variant="outline" onClick={() => setStep('input')}>Back</Button>
-            <Button onClick={handleConfirmAll} disabled={includedCount === 0}>
+            <Button onClick={handleConfirmAll} disabled={includedCount === 0} className="active:scale-[0.96] transition-[transform,background-color]">
               <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Add {includedCount} Spots
+              <span className="tabular-nums">Add {includedCount} Spots</span>
             </Button>
           </DialogFooter>
         )}

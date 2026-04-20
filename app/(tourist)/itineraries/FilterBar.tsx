@@ -45,7 +45,7 @@ function Chip({
       aria-checked={active}
       aria-label={`Filter: ${label}`}
       className={cn(
-        'px-3.5 py-2 min-h-[44px] rounded-full text-sm font-medium border transition-all whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
+        'px-3.5 py-2 min-h-[44px] rounded-full text-sm font-medium border transition-[color,background-color,border-color] duration-150 whitespace-nowrap cursor-pointer active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
         active
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:border-primary/50'

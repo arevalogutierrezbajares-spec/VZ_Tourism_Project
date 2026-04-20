@@ -84,7 +84,7 @@ export function SpotReviewCard({
 
   return (
     <div
-      className={`${roundedness} border ${padding} space-y-1.5 transition-opacity ${
+      className={`${roundedness} border ${padding} space-y-1.5 transition-[opacity] duration-200 ${
         spot.included ? 'opacity-100' : 'opacity-40'
       }`}
     >
@@ -92,7 +92,7 @@ export function SpotReviewCard({
       <div className="flex items-start gap-3">
         {/* Thumbnail (social import only) */}
         {spot.thumbnail_url ? (
-          <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
+          <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative outline outline-1 -outline-offset-1 outline-black/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={spot.thumbnail_url} alt={spot.extracted_name || 'Location photo'} className="w-full h-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -145,7 +145,7 @@ export function SpotReviewCard({
           role="checkbox"
           aria-checked={spot.included}
           aria-label={`${spot.included ? 'Exclude' : 'Include'} ${spot.extracted_name}`}
-          className={`min-w-[44px] min-h-[44px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+          className={`min-w-[44px] min-h-[44px] rounded-full border-2 flex items-center justify-center shrink-0 active:scale-[0.96] transition-[color,background-color,border-color,transform] duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
             spot.included
               ? 'bg-primary border-primary text-white'
               : 'border-muted-foreground/30 text-transparent hover:border-muted-foreground/50'
@@ -206,7 +206,7 @@ export function SpotReviewCard({
                   type="button"
                   disabled={spot.resolving}
                   onClick={() => onResolveFromGoogle(place.place_id)}
-                  className="w-full flex items-center gap-2 p-1.5 rounded-md text-left hover:bg-muted/50 transition-colors text-xs disabled:opacity-50"
+                  className="w-full flex items-center gap-2 p-1.5 rounded-md text-left hover:bg-muted/50 active:scale-[0.98] transition-[background-color,transform] duration-150 text-xs disabled:opacity-50"
                 >
                   <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">

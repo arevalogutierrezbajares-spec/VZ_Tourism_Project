@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   CheckCircle,
   Clock,
@@ -151,18 +152,29 @@ export function ConfirmationClient({ booking }: Props) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-[color] duration-200"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to home
         </Link>
 
         {/* Status header */}
-        <Card className={`border-2 ${config.bg}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}
+        >
+        <Card className={`border-2 rounded-2xl ${config.bg}`}>
           <CardContent className="pt-6 pb-4 text-center space-y-2">
-            <StatusIcon className={`w-12 h-12 mx-auto ${config.color}`} />
-            <h1 className={`text-xl font-bold ${config.color}`}>{config.label}</h1>
-            <p className="text-sm text-muted-foreground">
+            <motion.div
+              initial={{ scale: 0.25, opacity: 0, filter: 'blur(4px)' }}
+              animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+              transition={{ type: 'spring', duration: 0.4, bounce: 0.15, delay: 0.2 }}
+            >
+              <StatusIcon className={`w-12 h-12 mx-auto ${config.color}`} />
+            </motion.div>
+            <h1 className={`text-xl font-bold text-balance ${config.color}`}>{config.label}</h1>
+            <p className="text-sm text-muted-foreground text-pretty">
               {booking.status === 'confirmed'
                 ? 'Your booking is confirmed. See you there!'
                 : booking.status === 'payment_submitted'
@@ -173,17 +185,23 @@ export function ConfirmationClient({ booking }: Props) {
             </p>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Confirmation code + QR */}
-        <Card>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}
+        >
+        <Card className="rounded-2xl">
           <CardContent className="pt-6 space-y-4">
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-1">Booking Reference</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-mono font-bold tracking-widest">
+                <span className="text-2xl font-mono font-bold tracking-widest tabular-nums">
                   {booking.confirmation_code}
                 </span>
-                <Button variant="ghost" size="sm" onClick={copyCode} className="h-7 px-2">
+                <Button variant="ghost" size="sm" onClick={copyCode} className="h-7 px-2 active:scale-[0.96] transition-[transform] duration-150">
                   {copied ? '✓ Copied' : 'Copy'}
                 </Button>
               </div>
@@ -193,9 +211,15 @@ export function ConfirmationClient({ booking }: Props) {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Booking details */}
-        <Card>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}
+        >
+        <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Booking Details</CardTitle>
           </CardHeader>
@@ -228,29 +252,29 @@ export function ConfirmationClient({ booking }: Props) {
                   <Users className="w-3.5 h-3.5" />
                   Guests
                 </span>
-                <span className="font-medium">{booking.guest_count}</span>
+                <span className="font-medium tabular-nums">{booking.guest_count}</span>
               </div>
             </div>
 
             <div className="border-t pt-3 space-y-1.5 text-sm">
               <div className="flex justify-between text-muted-foreground">
-                <span>
+                <span className="tabular-nums">
                   ${booking.base_price_usd.toFixed(2)} × {booking.guest_count} guest
                   {booking.guest_count > 1 ? 's' : ''} × {booking.nights} night
                   {booking.nights > 1 ? 's' : ''}
                 </span>
-                <span>${booking.subtotal_usd.toFixed(2)}</span>
+                <span className="tabular-nums">${booking.subtotal_usd.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Service fee (12%)</span>
-                <span>${booking.service_fee_usd.toFixed(2)}</span>
+                <span className="tabular-nums">${booking.service_fee_usd.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-bold text-base pt-1 border-t">
                 <span className="flex items-center gap-1">
                   <DollarSign className="w-4 h-4" />
                   Total
                 </span>
-                <span>${booking.total_usd.toFixed(2)} USD</span>
+                <span className="tabular-nums">${booking.total_usd.toFixed(2)} USD</span>
               </div>
             </div>
 
@@ -265,9 +289,15 @@ export function ConfirmationClient({ booking }: Props) {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Guest info */}
-        <Card>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}
+        >
+        <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Guest Information</CardTitle>
           </CardHeader>
@@ -292,11 +322,12 @@ export function ConfirmationClient({ booking }: Props) {
             {booking.special_requests && (
               <div className="pt-2 border-t">
                 <p className="text-muted-foreground text-xs mb-1">Special requests</p>
-                <p className="text-sm">{booking.special_requests}</p>
+                <p className="text-sm text-pretty">{booking.special_requests}</p>
               </div>
             )}
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Manual payment pending notice */}
         {(booking.payment_method === 'zelle' || booking.payment_method === 'usdt') &&
@@ -321,7 +352,7 @@ export function ConfirmationClient({ booking }: Props) {
           )}
 
         {/* Primary CTA — View My Trips */}
-        <Button asChild className="w-full">
+        <Button asChild className="w-full active:scale-[0.96] transition-[transform] duration-150">
           <Link href="/trips">
             View my trips
           </Link>
@@ -329,27 +360,27 @@ export function ConfirmationClient({ booking }: Props) {
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={() => downloadICS(booking)} className="flex-1">
+          <Button variant="outline" onClick={() => downloadICS(booking)} className="flex-1 active:scale-[0.96] transition-[transform,background-color] duration-150">
             <Download className="w-4 h-4 mr-1.5" />
             Add to Calendar
           </Button>
-          <Button variant="outline" onClick={() => shareWhatsApp(booking)} className="flex-1">
+          <Button variant="outline" onClick={() => shareWhatsApp(booking)} className="flex-1 active:scale-[0.96] transition-[transform,background-color] duration-150">
             <MessageCircle className="w-4 h-4 mr-1.5" />
             Share via WhatsApp
           </Button>
         </div>
 
         {/* Build a trip CTA */}
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 rounded-2xl">
           <CardContent className="pt-4 pb-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Map className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Build a trip around this</p>
-              <p className="text-xs text-muted-foreground">Add more stops, flights & activities</p>
+              <p className="text-xs text-muted-foreground text-pretty">Add more stops, flights & activities</p>
             </div>
-            <Button asChild size="sm" className="flex-shrink-0">
+            <Button asChild size="sm" className="flex-shrink-0 active:scale-[0.96] transition-[transform] duration-150">
               <Link href={`/itineraries?add=${booking.listing_id ?? ''}`}>
                 Plan
               </Link>
@@ -357,7 +388,7 @@ export function ConfirmationClient({ booking }: Props) {
           </CardContent>
         </Card>
 
-        <Button asChild variant="ghost" className="w-full">
+        <Button asChild variant="ghost" className="w-full active:scale-[0.96] transition-[transform] duration-150">
           <Link href="/">
             <Share2 className="w-4 h-4 mr-1.5" />
             Explore more experiences

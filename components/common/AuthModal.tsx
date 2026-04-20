@@ -175,7 +175,7 @@ function AuthModalContent({ onClose, onSuccess, title, subtitle }: Omit<AuthModa
       {/* Modal — respects prefers-reduced-motion */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-sm bg-background rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-200"
+        className="relative z-10 w-full max-w-sm bg-background rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-200 [&_button]:active:scale-[0.96] [&_button]:transition-[transform,background-color,color,border-color] [&_button]:duration-150 [&_button]:ease-out"
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-4">
@@ -283,7 +283,7 @@ function AuthModalContent({ onClose, onSuccess, title, subtitle }: Omit<AuthModa
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-[color] duration-150 ease-out rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

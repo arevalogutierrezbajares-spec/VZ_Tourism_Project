@@ -8,36 +8,36 @@ export function Footer({ className }: { className?: string }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="col-span-2 md:col-span-1">
             <Logo size="sm" />
-            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed text-pretty">
               Discover the incredible beauty of Venezuela with AI-powered travel planning.
             </p>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-3">Explore</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/explore" className="hover:text-foreground transition-colors">All Experiences</Link></li>
-              <li><Link href="/explore/category/beaches" className="hover:text-foreground transition-colors">Beaches</Link></li>
-              <li><Link href="/explore/category/mountains" className="hover:text-foreground transition-colors">Mountains</Link></li>
-              <li><Link href="/explore/category/eco-tours" className="hover:text-foreground transition-colors">Eco-Tours</Link></li>
-              <li><Link href="/discover" className="hover:text-foreground transition-colors">Inspiration</Link></li>
+              <li><Link href="/explore" className="hover:text-foreground transition-[color]">All Experiences</Link></li>
+              <li><Link href="/explore/category/beaches" className="hover:text-foreground transition-[color]">Beaches</Link></li>
+              <li><Link href="/explore/category/mountains" className="hover:text-foreground transition-[color]">Mountains</Link></li>
+              <li><Link href="/explore/category/eco-tours" className="hover:text-foreground transition-[color]">Eco-Tours</Link></li>
+              <li><Link href="/discover" className="hover:text-foreground transition-[color]">Inspiration</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-3">Destinations</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/explore/region/los-roques" className="hover:text-foreground transition-colors">Los Roques</Link></li>
-              <li><Link href="/explore/region/merida" className="hover:text-foreground transition-colors">Mérida</Link></li>
-              <li><Link href="/explore/region/margarita" className="hover:text-foreground transition-colors">Margarita Island</Link></li>
-              <li><Link href="/explore/region/canaima" className="hover:text-foreground transition-colors">Canaima</Link></li>
-              <li><Link href="/explore/region/gran-sabana" className="hover:text-foreground transition-colors">Gran Sabana</Link></li>
+              <li><Link href="/explore/region/los-roques" className="hover:text-foreground transition-[color]">Los Roques</Link></li>
+              <li><Link href="/explore/region/merida" className="hover:text-foreground transition-[color]">Merida</Link></li>
+              <li><Link href="/explore/region/margarita" className="hover:text-foreground transition-[color]">Margarita Island</Link></li>
+              <li><Link href="/explore/region/canaima" className="hover:text-foreground transition-[color]">Canaima</Link></li>
+              <li><Link href="/explore/region/gran-sabana" className="hover:text-foreground transition-[color]">Gran Sabana</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-3">For Providers</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/provider-register" className="hover:text-foreground transition-colors">List Your Experience</Link></li>
-              <li><Link href="/dashboard" className="hover:text-foreground transition-colors">Provider Dashboard</Link></li>
-              <li><Link href="/safety" className="hover:text-foreground transition-colors">Safety Guidelines</Link></li>
+              <li><Link href="/provider-register" className="hover:text-foreground transition-[color]">List Your Experience</Link></li>
+              <li><Link href="/dashboard" className="hover:text-foreground transition-[color]">Provider Dashboard</Link></li>
+              <li><Link href="/safety" className="hover:text-foreground transition-[color]">Safety Guidelines</Link></li>
             </ul>
           </div>
         </div>
@@ -46,9 +46,9 @@ export function Footer({ className }: { className?: string }) {
             &copy; {new Date().getFullYear()} VZ Explorer. Discover Venezuela.
           </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Privacy</Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Terms</Link>
-            <Link href="/contact" className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Contact</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-[color] focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-[color] focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Terms</Link>
+            <Link href="/contact" className="hover:text-foreground transition-[color] focus:outline-none focus:ring-2 focus:ring-primary rounded-sm">Contact</Link>
           </div>
         </div>
       </div>

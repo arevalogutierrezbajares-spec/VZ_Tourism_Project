@@ -52,9 +52,9 @@ export default async function ExplorePage({ searchParams }: Props) {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Browse Venezuela</h1>
-        <p className="text-muted-foreground mt-2">
-          {count.toLocaleString()} places to discover
+        <h1 className="text-3xl font-bold text-balance">Browse Venezuela</h1>
+        <p className="text-muted-foreground mt-2 text-pretty">
+          <span className="tabular-nums">{count.toLocaleString()}</span> places to discover
         </p>
       </div>
 
@@ -64,20 +64,20 @@ export default async function ExplorePage({ searchParams }: Props) {
           <Link
             key={cat.id}
             href={`/explore?category=${cat.id}`}
-            className="group relative h-[160px] rounded-2xl overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="group relative h-[160px] rounded-2xl overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.97] transition-transform duration-150 ease-out"
           >
             <Image
               src={cat.image}
               alt={`Browse ${cat.label} in Venezuela`}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-300 outline outline-1 -outline-offset-1 outline-black/10"
               sizes="(max-width: 640px) 100vw, 33vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 p-5">
               <div className="text-2xl mb-1" aria-hidden="true">{cat.emoji}</div>
-              <h3 className="text-white font-bold text-lg leading-tight">{cat.label}</h3>
-              <p className="text-white/70 text-sm mt-0.5">{cat.description}</p>
+              <h3 className="text-white font-bold text-lg leading-tight text-balance">{cat.label}</h3>
+              <p className="text-white/70 text-sm mt-0.5 text-pretty">{cat.description}</p>
             </div>
           </Link>
         ))}

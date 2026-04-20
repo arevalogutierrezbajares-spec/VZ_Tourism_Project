@@ -55,15 +55,15 @@ export default function ForgotPasswordPage() {
 
   if (submitted) {
     return (
-      <Card className="shadow-xl border-0">
+      <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl text-balance">Check your email</CardTitle>
+          <CardDescription className="text-pretty">
             Check your email — click the link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-pretty">
             If an account exists for that email, you&apos;ll receive a password reset link shortly.
             The link expires in 1 hour.
           </p>
@@ -76,10 +76,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="shadow-xl border-0">
+    <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl">Forgot password?</CardTitle>
-        <CardDescription>Enter your email and we&apos;ll send you a reset link.</CardDescription>
+        <CardTitle className="text-2xl text-balance">Forgot password?</CardTitle>
+        <CardDescription className="text-pretty">Enter your email and we&apos;ll send you a reset link.</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -103,8 +103,8 @@ export default function ForgotPasswordPage() {
             )}
           </div>
 
-          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
-            {isLoading ? 'Sending…' : 'Send reset link'}
+          <Button type="submit" className="w-full min-h-[44px] active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out" disabled={isLoading}>
+            {isLoading ? 'Sending...' : 'Send reset link'}
           </Button>
         </form>
 

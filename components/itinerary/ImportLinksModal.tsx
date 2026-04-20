@@ -187,11 +187,11 @@ export function ImportLinksModal({ isOpen, onClose }: ImportLinksModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { handleReset(); onClose(); } }}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-balance">
             <Link2 className="w-4 h-4 text-primary" />
             Import from Social Media
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-pretty">
             Paste TikTok, YouTube, or Instagram Reels links and we&apos;ll extract the places mentioned.
           </DialogDescription>
         </DialogHeader>
@@ -218,14 +218,14 @@ export function ImportLinksModal({ isOpen, onClose }: ImportLinksModalProps) {
             </div>
             <div>
               <p className="text-sm font-medium">Analyzing your videos...</p>
-              <p className="text-xs text-muted-foreground mt-1">Fetching metadata and identifying places mentioned</p>
+              <p className="text-xs text-muted-foreground mt-1 text-pretty">Fetching metadata and identifying places mentioned</p>
             </div>
           </div>
         )}
 
         {step === 'review' && (
           <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground tabular-nums">
               Found {spots.length} spot{spots.length !== 1 ? 's' : ''}. Confirm which ones to add:
             </p>
             {spots.map((spot, idx) => (
@@ -261,9 +261,9 @@ export function ImportLinksModal({ isOpen, onClose }: ImportLinksModalProps) {
         {step === 'review' && (
           <DialogFooter>
             <Button variant="outline" onClick={() => setStep('input')}>Back</Button>
-            <Button onClick={handleConfirmAll} disabled={spots.every((s) => !s.included)}>
+            <Button onClick={handleConfirmAll} disabled={spots.every((s) => !s.included)} className="active:scale-[0.96] transition-[transform,background-color]">
               <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Add {spots.filter((s) => s.included).length} Spots
+              <span className="tabular-nums">Add {spots.filter((s) => s.included).length} Spots</span>
             </Button>
           </DialogFooter>
         )}

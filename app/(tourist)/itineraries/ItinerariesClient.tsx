@@ -114,15 +114,15 @@ export function ItinerariesClient({
     <div className="space-y-8">
       {/* Hero */}
       <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl p-8 md:p-12 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Discover Venezuela Itineraries</h1>
-        <p className="text-white/90 text-base md:text-lg max-w-xl mx-auto mb-5">
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-balance">Discover Venezuela Itineraries</h1>
+        <p className="text-white/90 text-base md:text-lg max-w-xl mx-auto mb-5 text-pretty">
           Curated trip plans from travelers and creators who know Venezuela best
         </p>
         <Button
           onClick={() => setShowWizard(true)}
           variant="secondary"
           size="lg"
-          className="font-semibold"
+          className="font-semibold active:scale-[0.96] transition-[transform,background-color]"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Create My Itinerary
@@ -142,7 +142,7 @@ export function ItinerariesClient({
             role="radio"
             aria-checked={filters.sort === s}
             onClick={() => setFilters((f) => ({ ...f, sort: s }))}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-[background-color,color,box-shadow] cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
               filters.sort === s
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -221,8 +221,8 @@ export function ItinerariesClient({
             ) : (
               <div className="text-center py-16 bg-muted/30 rounded-2xl">
                 <Search className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground font-medium">No itineraries match these filters</p>
-                <p className="text-sm text-muted-foreground mt-1 mb-4">Try adjusting your filters or browse all itineraries</p>
+                <p className="text-muted-foreground font-medium text-balance">No itineraries match these filters</p>
+                <p className="text-sm text-muted-foreground mt-1 mb-4 text-pretty">Try adjusting your filters or browse all itineraries</p>
                 <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
               </div>
             )}
@@ -247,11 +247,11 @@ export function ItinerariesClient({
       {/* AI CTA */}
       <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-8 text-center text-white">
         <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-80" />
-        <h2 className="text-xl font-bold mb-2">Can't find the perfect itinerary?</h2>
-        <p className="text-white/90 text-sm mb-4 max-w-md mx-auto">
-          Tell our AI what kind of trip you want and we'll build one for you in seconds
+        <h2 className="text-xl font-bold mb-2 text-balance">Can&apos;t find the perfect itinerary?</h2>
+        <p className="text-white/90 text-sm mb-4 max-w-md mx-auto text-pretty">
+          Tell our AI what kind of trip you want and we&apos;ll build one for you in seconds
         </p>
-        <Button variant="secondary" size="lg" asChild>
+        <Button variant="secondary" size="lg" asChild className="active:scale-[0.96] transition-[transform,background-color]">
           <Link href="/map">Build My Itinerary with AI</Link>
         </Button>
       </div>

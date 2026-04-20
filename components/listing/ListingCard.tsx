@@ -30,7 +30,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
         )}>
           {listing.cover_image_url && (
             <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-              <Image src={listing.cover_image_url} alt={listing.title} fill sizes="64px" className="object-cover" />
+              <Image src={listing.cover_image_url} alt={listing.title} fill sizes="64px" className="object-cover outline outline-1 -outline-offset-1 outline-black/10" />
             </div>
           )}
           <div className="flex-1 min-w-0">
@@ -59,7 +59,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
 
   return (
     <Link href={`/listing/${listing.slug}`}>
-      <Card className={cn('group overflow-hidden hover:shadow-lg motion-safe:transition-all duration-300 border rounded-2xl shadow-sm cursor-pointer', className)}>
+      <Card className={cn('group overflow-hidden hover:shadow-lg motion-safe:transition-[box-shadow,transform] duration-300 border rounded-2xl shadow-sm cursor-pointer active:scale-[0.97]', className)}>
         <div className="relative aspect-[4/3] overflow-hidden">
           {listing.cover_image_url ? (
             <Image
@@ -67,7 +67,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               alt={listing.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover motion-safe:group-hover:scale-105 transition-transform duration-500"
+              className="object-cover motion-safe:group-hover:scale-105 transition-transform duration-500 outline outline-1 -outline-offset-1 outline-black/10"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
@@ -93,7 +93,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
         <CardContent className="p-4">
           <div className="space-y-2">
             <div>
-              <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-[color] duration-150 text-balance">
                 {listing.title}
               </h3>
               {listing.location_name && (
@@ -127,7 +127,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
                 {listing.rating != null ? (
                   <>
                     <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-                    <span className="text-xs font-medium">{listing.rating.toFixed(1)}</span>
+                    <span className="text-xs font-medium tabular-nums">{listing.rating.toFixed(1)}</span>
                     {(listing.total_reviews ?? 0) > 0 && (
                       <span className="text-xs text-muted-foreground">({listing.total_reviews})</span>
                     )}
@@ -139,7 +139,7 @@ export function ListingCard({ listing, compact = false, className }: ListingCard
               <div className="text-right">
                 {listing.price_usd != null ? (
                   <>
-                    <span className="text-base font-bold text-primary">
+                    <span className="text-base font-bold text-primary tabular-nums">
                       {formatCurrency(listing.price_usd, 'USD')}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">/ person</span>

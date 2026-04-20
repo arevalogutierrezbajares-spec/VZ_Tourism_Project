@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { format, parseISO } from 'date-fns';
 import { MessageCircle, Calendar } from 'lucide-react';
@@ -74,8 +75,8 @@ export default function MessagesPage() {
 
   return (
     <div className="container px-4 py-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1">Messages</h1>
-      <p className="text-muted-foreground text-sm mb-6">
+      <h1 className="text-2xl font-bold mb-1 text-balance">Messages</h1>
+      <p className="text-muted-foreground text-sm mb-6 text-pretty">
         Hi {firstName}! Contact hosts via WhatsApp for your bookings.
       </p>
 
@@ -88,31 +89,37 @@ export default function MessagesPage() {
       ) : bookings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <MessageCircle className="w-12 h-12 text-sky-300 mb-4" />
-          <p className="text-muted-foreground mb-3">No bookings to message about yet.</p>
+          <p className="text-muted-foreground mb-3 text-pretty">No bookings to message about yet.</p>
           <Link href="/" className="text-sm font-medium text-sky-500 hover:underline">
             Book your first stay to message hosts →
           </Link>
         </div>
       ) : (
         <div className="space-y-4">
-          {bookings.map((booking) => (
-            <Card key={booking.id} className="rounded-xl shadow-sm">
+          {bookings.map((booking, index) => (
+            <motion.div
+              key={booking.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: index * 0.1, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}
+            >
+            <Card className="rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <h3 className="font-semibold">{booking.listing_name}</h3>
+                    <h3 className="font-semibold text-balance">{booking.listing_name}</h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Calendar className="w-3 h-3" />
                       {format(parseISO(booking.check_in), 'MMM d')} – {format(parseISO(booking.check_out), 'MMM d, yyyy')}
                     </p>
-                    <p className="text-xs text-muted-foreground">Ref: {booking.confirmation_code}</p>
+                    <p className="text-xs text-muted-foreground font-mono tabular-nums">Ref: {booking.confirmation_code}</p>
                   </div>
                   {waLink(booking, 'Hello!') ? (
                     <a
                       href={waLink(booking, 'Hello!')!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 transition-colors whitespace-nowrap flex-shrink-0"
+                      className="flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 active:scale-[0.96] transition-[background-color,transform] duration-150 whitespace-nowrap flex-shrink-0"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       Message Host
@@ -134,7 +141,7 @@ export default function MessagesPage() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs px-3 py-1.5 rounded-full border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 transition-colors"
+                          className="text-xs px-3 py-1.5 min-h-[36px] flex items-center rounded-full border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 active:scale-[0.96] transition-[background-color,transform] duration-150"
                         >
                           {label}
                         </a>
@@ -144,6 +151,7 @@ export default function MessagesPage() {
                 )}
               </CardContent>
             </Card>
+            </motion.div>
           ))}
         </div>
       )}

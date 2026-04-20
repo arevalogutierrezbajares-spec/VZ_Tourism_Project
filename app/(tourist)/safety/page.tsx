@@ -36,8 +36,8 @@ export default async function SafetyPage() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold">Safety Hub</h1>
-        <p className="text-muted-foreground max-w-xl mx-auto">
+        <h1 className="text-3xl font-bold text-balance">Safety Hub</h1>
+        <p className="text-muted-foreground max-w-xl mx-auto text-pretty">
           Stay informed about safety conditions across Venezuela to plan your journey confidently.
         </p>
       </div>

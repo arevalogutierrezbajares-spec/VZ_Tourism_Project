@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { ArrowRight, MapPin, Shield, Sparkles, Star, Users, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
@@ -76,6 +77,12 @@ const CATEGORIES = [
   { label: 'Cultural', href: '/explore/category/cultural', icon: '🎭' },
 ];
 
+const staggerContainer = { visible: { transition: { staggerChildren: 0.1 } } };
+const staggerItem = {
+  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0, 0, 0.2, 1] as [number, number, number, number] } },
+};
+
 export default function LandingPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -115,7 +122,7 @@ export default function LandingPage() {
               src={src}
               alt={i === 0 ? 'Caracas city skyline at sunset' : 'Sunrise over El Avila mountain'}
               fill
-              className="object-cover"
+              className="object-cover outline outline-1 -outline-offset-1 outline-black/10"
               priority={i === 0}
               sizes="100vw"
             />
@@ -134,7 +141,7 @@ export default function LandingPage() {
               transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
             }}
           >
-            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[0.9]"
+            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[0.9] text-balance"
               style={{ textShadow: '0 2px 24px rgba(0,0,0,0.3)' }}
             >
               Venezuela,
@@ -144,7 +151,7 @@ export default function LandingPage() {
           </div>
 
           <p
-            className="mt-6 text-lg sm:text-xl text-white/80 max-w-lg font-light leading-relaxed"
+            className="mt-6 text-lg sm:text-xl text-white/80 max-w-lg font-light leading-relaxed text-pretty"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
@@ -166,14 +173,14 @@ export default function LandingPage() {
           >
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-8 py-4 bg-accent text-accent-foreground font-semibold rounded-lg text-base hover:brightness-110 transition-[filter,box-shadow,transform] duration-150 ease-out shadow-lg hover:shadow-xl active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
             >
               <Sparkles className="w-5 h-5" />
               Plan my trip with AI
             </Link>
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-lg text-base hover:bg-white/10 transition-all backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-8 py-4 border-2 border-white/40 text-white font-medium rounded-lg text-base hover:bg-white/10 transition-[background-color,transform] duration-150 ease-out backdrop-blur-sm active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
             >
               Explore Venezuela
               <ArrowRight className="w-4 h-4" />
@@ -193,21 +200,27 @@ export default function LandingPage() {
           <p className="text-center text-sm font-medium tracking-widest uppercase text-muted-foreground mb-3">
             How it works
           </p>
-          <h2 className="font-heading text-3xl sm:text-4xl text-center mb-16 text-foreground">
+          <h2 className="font-heading text-3xl sm:text-4xl text-center mb-16 text-foreground text-balance">
             From dream to departure in three steps
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
             {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="text-center md:text-left">
+              <motion.div key={item.step} className="text-center md:text-left" variants={staggerItem}>
                 <span className="font-heading text-5xl text-accent/30 block mb-4">
                   {item.step}
                 </span>
-                <h3 className="text-xl font-semibold mb-3 text-foreground">{item.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-              </div>
+                <h3 className="text-xl font-semibold mb-3 text-foreground text-balance">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-pretty">{item.description}</p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -218,7 +231,7 @@ export default function LandingPage() {
             <div key={stat.label} className="text-center">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 {stat.icon && <stat.icon className="w-5 h-5 text-accent fill-accent" />}
-                <span className="font-heading text-3xl text-foreground">{stat.value}</span>
+                <span className="font-heading text-3xl text-foreground tabular-nums">{stat.value}</span>
               </div>
               <span className="text-sm text-muted-foreground">{stat.label}</span>
             </div>
@@ -232,7 +245,7 @@ export default function LandingPage() {
           <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mb-3">
             Curated by locals
           </p>
-          <h2 className="font-heading text-3xl sm:text-4xl mb-12 text-foreground">
+          <h2 className="font-heading text-3xl sm:text-4xl mb-12 text-foreground text-balance">
             Where to begin
           </h2>
 
@@ -241,13 +254,13 @@ export default function LandingPage() {
             {/* Large feature card */}
             <Link
               href={EDITORIAL_PICKS[0].href}
-              className="group relative rounded-2xl overflow-hidden aspect-[4/5] lg:row-span-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              className="group relative rounded-2xl overflow-hidden aspect-[4/5] lg:row-span-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.97] transition-transform duration-150 ease-out"
             >
               <Image
                 src={EDITORIAL_PICKS[0].image}
                 alt={EDITORIAL_PICKS[0].title}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-cover transition-transform duration-700 group-hover:scale-105 outline outline-1 -outline-offset-1 outline-black/10"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -255,10 +268,10 @@ export default function LandingPage() {
                 <p className="text-sm font-medium text-white/60 uppercase tracking-wider mb-2">
                   {EDITORIAL_PICKS[0].subtitle}
                 </p>
-                <h3 className="font-heading text-3xl sm:text-4xl text-white mb-3">
+                <h3 className="font-heading text-3xl sm:text-4xl text-white mb-3 text-balance">
                   {EDITORIAL_PICKS[0].title}
                 </h3>
-                <p className="text-white/70 max-w-md leading-relaxed">
+                <p className="text-white/70 max-w-md leading-relaxed text-pretty">
                   {EDITORIAL_PICKS[0].description}
                 </p>
               </div>
@@ -269,13 +282,13 @@ export default function LandingPage() {
               <Link
                 key={pick.title}
                 href={pick.href}
-                className="group relative rounded-2xl overflow-hidden aspect-[16/9] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="group relative rounded-2xl overflow-hidden aspect-[16/9] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.97] transition-transform duration-150 ease-out"
               >
                 <Image
                   src={pick.image}
                   alt={pick.title}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 outline outline-1 -outline-offset-1 outline-black/10"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -283,10 +296,10 @@ export default function LandingPage() {
                   <p className="text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">
                     {pick.subtitle}
                   </p>
-                  <h3 className="font-heading text-2xl text-white mb-1.5">
+                  <h3 className="font-heading text-2xl text-white mb-1.5 text-balance">
                     {pick.title}
                   </h3>
-                  <p className="text-white/70 text-sm max-w-sm">
+                  <p className="text-white/70 text-sm max-w-sm text-pretty">
                     {pick.description}
                   </p>
                 </div>
@@ -306,10 +319,10 @@ export default function LandingPage() {
                 href={cat.href}
                 className="flex flex-col items-center gap-2 min-w-[72px] text-center group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-1"
               >
-                <span className="text-2xl group-hover:scale-110 transition-transform">
+                <span className="text-2xl group-hover:scale-110 transition-transform duration-150 ease-out">
                   {cat.icon}
                 </span>
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-[color] duration-150 whitespace-nowrap">
                   {cat.label}
                 </span>
               </Link>
@@ -318,10 +331,10 @@ export default function LandingPage() {
               href="/explore"
               className="flex flex-col items-center gap-2 min-w-[72px] text-center group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-1"
             >
-              <span className="w-8 h-8 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center group-hover:border-foreground transition-colors">
-                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <span className="w-8 h-8 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center group-hover:border-foreground transition-[border-color] duration-150">
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-[color] duration-150" />
               </span>
-              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-[color] duration-150 whitespace-nowrap">
                 See all
               </span>
             </Link>
@@ -337,17 +350,17 @@ export default function LandingPage() {
               <Sparkles className="w-4 h-4" />
               AI-powered
             </div>
-            <h2 className="font-heading text-3xl sm:text-4xl mb-5 text-foreground">
+            <h2 className="font-heading text-3xl sm:text-4xl mb-5 text-foreground text-balance">
               Your itinerary, built in seconds
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8">
+            <p className="text-muted-foreground leading-relaxed mb-8 text-pretty">
               Tell our AI where you want to go and how long you have.
               It builds a day-by-day itinerary with real places, real prices,
               and safety information... all in under 30 seconds.
             </p>
             <Link
               href="/plan"
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-[background-color,transform] duration-150 ease-out active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               Start planning
@@ -357,7 +370,7 @@ export default function LandingPage() {
 
           {/* Preview card */}
           <div className="flex-1 max-w-sm w-full">
-            <div className="bg-background border rounded-2xl shadow-lg p-6 space-y-4">
+            <div className="bg-background rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.06),0_4px_12px_rgba(0,0,0,0.08),0_16px_40px_rgba(0,0,0,0.06)] p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <MapPin className="w-5 h-5 text-accent" />
@@ -387,43 +400,49 @@ export default function LandingPage() {
       {/* === SOCIAL PROOF === */}
       <section className="py-16 px-6 bg-background">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-heading text-3xl sm:text-4xl mb-4 text-foreground">
+          <h2 className="font-heading text-3xl sm:text-4xl mb-4 text-foreground text-balance">
             Trusted by travelers
           </h2>
-          <p className="text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-muted-foreground mb-12 max-w-2xl mx-auto text-pretty">
             Venezuela is safe when you travel smart. Our verified providers and AI safety tools
             give you confidence to explore one of South America&apos;s most spectacular countries.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center gap-3">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
+            <motion.div className="flex flex-col items-center gap-3" variants={staggerItem}>
               <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
                 <Shield className="w-6 h-6 text-secondary" />
               </div>
-              <h3 className="font-semibold">Verified providers</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-semibold text-balance">Verified providers</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed text-pretty">
                 Every provider is locally vetted. Real businesses, real insurance, real accountability.
               </p>
-            </div>
-            <div className="flex flex-col items-center gap-3">
+            </motion.div>
+            <motion.div className="flex flex-col items-center gap-3" variants={staggerItem}>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <MapPin className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold">Safety zones</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-semibold text-balance">Safety zones</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed text-pretty">
                 Real-time safety data for every region. Know before you go. Travel with eyes open.
               </p>
-            </div>
-            <div className="flex flex-col items-center gap-3">
+            </motion.div>
+            <motion.div className="flex flex-col items-center gap-3" variants={staggerItem}>
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="font-semibold">WhatsApp support</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-semibold text-balance">WhatsApp support</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed text-pretty">
                 24/7 concierge via WhatsApp. Local contacts in every region. Never lost, never alone.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -433,21 +452,21 @@ export default function LandingPage() {
           src="/destinations/morrocoy.jpg"
           alt="Turquoise waters and islands of Morrocoy National Park"
           fill
-          className="object-cover"
+          className="object-cover outline outline-1 -outline-offset-1 outline-black/10"
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-heading text-3xl sm:text-4xl text-white mb-5">
+          <h2 className="font-heading text-3xl sm:text-4xl text-white mb-5 text-balance">
             Ready to discover Venezuela?
           </h2>
-          <p className="text-white/70 mb-8 max-w-xl mx-auto">
+          <p className="text-white/70 mb-8 max-w-xl mx-auto text-pretty">
             Start with our AI trip planner. It&apos;s free, takes 30 seconds,
             and gives you a complete day-by-day itinerary.
           </p>
           <Link
             href="/plan"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-lg hover:bg-white/90 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-foreground font-semibold rounded-lg hover:bg-white/90 transition-[background-color,transform] duration-150 ease-out shadow-lg active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black cursor-pointer"
           >
             <Sparkles className="w-5 h-5" />
             Plan my trip

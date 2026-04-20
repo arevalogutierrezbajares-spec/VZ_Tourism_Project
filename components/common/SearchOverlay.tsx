@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { AIResponsePanel } from '@/components/search/AIResponsePanel';
@@ -43,14 +44,24 @@ function Overlay({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Search">
       {/* Backdrop */}
-      <div
+      <motion.div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
         aria-hidden="true"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.2 }}
       />
 
       {/* Panel — slides down from top */}
-      <div className="relative z-10 w-full bg-background border-b shadow-2xl max-h-[90vh] flex flex-col">
+      <motion.div
+        className="relative z-10 w-full bg-background border-b shadow-2xl max-h-[90vh] flex flex-col"
+        initial={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -12, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         {/* Search bar row */}
         <div className="container px-4 py-4 flex items-center gap-3" ref={inputRef}>
           <SearchBar
@@ -61,7 +72,7 @@ function Overlay({ onClose }: { onClose: () => void }) {
           />
           <button
             onClick={handleClose}
-            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-muted transition-[background-color,color] duration-150 text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.96]"
             aria-label="Close search"
           >
             <X className="w-5 h-5" />
@@ -84,13 +95,17 @@ function Overlay({ onClose }: { onClose: () => void }) {
             <AIResponsePanel onSearch={search} />
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
-  if (!isOpen) return null;
   if (typeof document === 'undefined') return null;
-  return createPortal(<Overlay onClose={onClose} />, document.body);
+  return createPortal(
+    <AnimatePresence initial={false}>
+      {isOpen && <Overlay onClose={onClose} />}
+    </AnimatePresence>,
+    document.body
+  );
 }

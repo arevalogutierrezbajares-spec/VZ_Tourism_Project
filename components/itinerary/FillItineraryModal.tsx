@@ -128,11 +128,11 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-balance">
             <Sparkles className="w-4 h-4 text-primary" />
             AI Itinerary Builder
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-pretty">
             Tell us what you&apos;re looking for and we&apos;ll create a starting itinerary you can customize.
           </DialogDescription>
         </DialogHeader>
@@ -150,7 +150,7 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
                   key={r.value}
                   type="button"
                   onClick={() => toggleRegion(r.value)}
-                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
+                  className={`px-2.5 py-1 text-xs rounded-full border transition-[border-color,background-color,color] cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none min-h-[32px] active:scale-[0.96] ${
                     selectedRegions.includes(r.value)
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border hover:border-primary/50 hover:bg-muted/50'
@@ -175,9 +175,9 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
                 max={14}
                 value={days}
                 onChange={(e) => setDays(Math.max(1, Math.min(14, parseInt(e.target.value) || 1)))}
-                className="w-20"
+                className="w-20 tabular-nums"
               />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground tabular-nums">
                 {days === 1 ? '1 day' : `${days} days`}
               </span>
             </div>
@@ -195,7 +195,7 @@ export function FillItineraryModal({ isOpen, onClose }: FillItineraryModalProps)
                   key={v.value}
                   type="button"
                   onClick={() => setVibe(v.value)}
-                  className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
+                  className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-[border-color,background-color,color] text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none min-h-[40px] active:scale-[0.96] ${
                     vibe === v.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border hover:border-primary/50 hover:bg-muted/50'

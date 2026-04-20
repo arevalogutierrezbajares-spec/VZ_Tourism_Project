@@ -155,7 +155,7 @@ function StarRating({ rating }: { rating: number }) {
           <span key={`e${i}`} className="text-muted-foreground/30 text-sm leading-none">★</span>
         ))}
       </div>
-      <span className="text-sm font-semibold text-foreground">{rating.toFixed(1)}</span>
+      <span className="text-sm font-semibold text-foreground tabular-nums">{rating.toFixed(1)}</span>
     </div>
   );
 }
@@ -218,7 +218,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
     return (
       <Link href={`/listing/${listing.slug}`} className="group block">
         <div className={cn(
-          'bg-background rounded-2xl shadow-sm hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:transition-all duration-200 overflow-hidden border cursor-pointer',
+          'bg-background rounded-2xl shadow-sm hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:transition-[box-shadow,transform] duration-200 overflow-hidden border cursor-pointer active:scale-[0.97]',
           !isOnboarded && 'opacity-90'
         )}>
           <div className="relative w-full aspect-[16/10] overflow-hidden">
@@ -228,7 +228,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 alt={listing.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
+                className="object-cover outline outline-1 -outline-offset-1 outline-black/10"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.srcset = '';
@@ -242,7 +242,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
             )}
           </div>
           <div className="p-4">
-            <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-[color] duration-150 text-balance">
               {listing.title}
             </h3>
             <div className="flex items-center justify-between mt-2">
@@ -276,7 +276,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
   return (
     <Link href={`/listing/${listing.slug}`} className="group block">
       <div className={cn(
-        'bg-background rounded-2xl border border-border shadow-sm hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-all duration-200 overflow-hidden cursor-pointer',
+        'bg-background rounded-2xl border border-border shadow-sm hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-[box-shadow,transform] duration-200 overflow-hidden cursor-pointer active:scale-[0.97]',
         borderAccent,
         !isOnboarded && 'opacity-90'
       )}>
@@ -288,7 +288,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 alt={listing.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
+                className="object-cover outline outline-1 -outline-offset-1 outline-black/10"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.srcset = '';
@@ -333,7 +333,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
             <StarRating rating={listing.rating} />
           )}
 
-          <h3 className="font-bold text-base text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-base text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-[color] duration-150 text-balance">
             {listing.title}
           </h3>
 
@@ -361,7 +361,7 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
               {(listing.review_count ?? 0) > 0 && (
                 <>
                   <span className="text-muted-foreground text-xs">·</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {(listing.review_count ?? 0).toLocaleString()} reviews
                   </span>
                 </>

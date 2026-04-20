@@ -77,7 +77,7 @@ export default async function CreatorPage({ params }: Props) {
     <div className="container px-4 py-8 max-w-4xl mx-auto">
       {/* Creator Header */}
       <div className="flex flex-col sm:flex-row items-start gap-6 mb-8">
-        <Avatar className="w-24 h-24 shadow-lg ring-2 ring-primary ring-offset-2">
+        <Avatar className="w-24 h-24 shadow-[0_4px_12px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.06)] ring-2 ring-primary ring-offset-2 outline outline-1 -outline-offset-1 outline-black/10 rounded-full">
           <AvatarImage src={creator.user?.avatar_url || undefined} alt={`${creator.display_name || creator.username}'s avatar`} />
           <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
             {getInitials(creator.display_name || creator.user?.full_name || 'C')}
@@ -86,13 +86,13 @@ export default async function CreatorPage({ params }: Props) {
 
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold">{creator.display_name || creator.user?.full_name}</h1>
+            <h1 className="text-2xl font-bold text-balance">{creator.display_name || creator.user?.full_name}</h1>
             <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-0.5">@{creator.username}</p>
 
           {creator.bio && (
-            <p className="text-sm mt-2 max-w-lg">{creator.bio}</p>
+            <p className="text-sm mt-2 max-w-lg text-pretty">{creator.bio}</p>
           )}
 
           <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
@@ -107,7 +107,7 @@ export default async function CreatorPage({ params }: Props) {
                 href={`https://instagram.com/${creator.instagram_handle.replace('@', '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
+                className="flex items-center gap-1 hover:text-foreground transition-[color] duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
                 aria-label={`${creator.display_name || creator.username} on Instagram`}
               >
                 <Share2 className="w-3.5 h-3.5" />
@@ -119,7 +119,7 @@ export default async function CreatorPage({ params }: Props) {
                 href={creator.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
+                className="flex items-center gap-1 hover:text-foreground transition-[color] duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:rounded-sm"
                 aria-label={`${creator.display_name || creator.username}'s website`}
               >
                 <Globe className="w-3.5 h-3.5" />
@@ -131,15 +131,15 @@ export default async function CreatorPage({ params }: Props) {
           {/* Stats */}
           <div className="flex items-center gap-6 mt-4">
             <div className="text-center">
-              <p className="font-bold">{creator.followers_count || 0}</p>
+              <p className="font-bold tabular-nums">{creator.followers_count || 0}</p>
               <p className="text-xs text-muted-foreground">Followers</p>
             </div>
             <div className="text-center">
-              <p className="font-bold">{itineraries?.length || 0}</p>
+              <p className="font-bold tabular-nums">{itineraries?.length || 0}</p>
               <p className="text-xs text-muted-foreground">Itineraries</p>
             </div>
             <div className="text-center">
-              <p className="font-bold">{creator.total_likes || 0}</p>
+              <p className="font-bold tabular-nums">{creator.total_likes || 0}</p>
               <p className="text-xs text-muted-foreground">Total Likes</p>
             </div>
           </div>
@@ -164,14 +164,14 @@ export default async function CreatorPage({ params }: Props) {
               <a
                 key={itinerary.id}
                 href={`/itinerary/${itinerary.id}`}
-                className="block rounded-2xl border bg-card hover:shadow-md transition-shadow p-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="block rounded-2xl border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.06)] active:scale-[0.96] transition-[box-shadow,transform] duration-200 p-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
-                <h3 className="font-semibold text-sm line-clamp-2">{itinerary.title}</h3>
+                <h3 className="font-semibold text-sm line-clamp-2 text-balance">{itinerary.title}</h3>
                 {itinerary.description && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{itinerary.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2 text-pretty">{itinerary.description}</p>
                 )}
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                  <span>{itinerary.total_days} days</span>
+                  <span className="tabular-nums">{itinerary.total_days} days</span>
                   {itinerary.regions?.length > 0 && <span>{itinerary.regions[0]}</span>}
                 </div>
               </a>

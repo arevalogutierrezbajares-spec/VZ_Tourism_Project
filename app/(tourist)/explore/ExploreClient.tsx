@@ -225,7 +225,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           <button
             onClick={() => setViewMode('grid')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-[color,background-color] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
               viewMode === 'grid'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -239,7 +239,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
           <button
             onClick={() => setViewMode('map')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
+              'flex items-center gap-1.5 px-3 py-2.5 text-sm transition-[color,background-color] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
               viewMode === 'map'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -263,7 +263,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
               role="tab"
               aria-selected={category === id}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
+                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-[color,background-color,box-shadow] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
                 category === id
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -296,7 +296,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
       {/* Result count */}
       {!loading && (
         <p aria-live="polite" className="text-sm text-muted-foreground">
-          {count.toLocaleString()} {count === 1 ? 'place' : 'places'} found
+          <span className="tabular-nums">{count.toLocaleString()}</span> {count === 1 ? 'place' : 'places'} found
         </p>
       )}
 
@@ -318,8 +318,8 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
         ) : sortedListings.length === 0 ? (
           <div className="text-center py-16">
             <Search className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg">No results found</h3>
-            <p className="text-muted-foreground mt-1">Try adjusting your filters or search term.</p>
+            <h3 className="font-semibold text-lg text-balance">No results found</h3>
+            <p className="text-muted-foreground mt-1 text-pretty">Try adjusting your filters or search term.</p>
           </div>
         ) : (
           <>
@@ -334,7 +334,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-[background-color] duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
                 </button>

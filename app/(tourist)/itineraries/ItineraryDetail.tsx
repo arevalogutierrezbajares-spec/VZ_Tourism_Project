@@ -1,6 +1,7 @@
 'use client';
 
 import { MapPin, Clock, DollarSign, X, ChevronDown, ChevronUp, Compass, Copy, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -73,10 +74,21 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
       aria-modal="true"
       aria-label={`Itinerary details: ${itinerary.title}`}
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <motion.div
         ref={dialogRef}
-        className="relative bg-background rounded-2xl shadow-2xl max-w-3xl w-full mx-4 my-8 overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300"
+        initial={{ opacity: 0, y: 24, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -12, transition: { duration: 0.15, ease: 'easeIn' } }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        className="relative bg-background rounded-xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3),0_4px_16px_-4px_rgba(0,0,0,0.2)] max-w-3xl w-full mx-4 my-8 overflow-hidden"
       >
         {/* Hero image */}
         {itinerary.cover_image_url && (
@@ -88,11 +100,11 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-4 left-6 right-16 text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-1">{itinerary.title}</h2>
-              <div className="flex items-center gap-3 text-sm text-white/90">
+              <h2 className="text-2xl md:text-3xl font-bold mb-1 text-balance">{itinerary.title}</h2>
+              <div className="flex items-center gap-3 text-sm text-white/90 tabular-nums">
                 <span>{itinerary.total_days} days</span>
                 <span aria-hidden="true">·</span>
-                <span>{itinerary.regions.join(' → ')}</span>
+                <span>{itinerary.regions.join(' \u2192 ')}</span>
                 <span aria-hidden="true">·</span>
                 <span>{formatCurrency(itinerary.estimated_cost_usd)}/person</span>
               </div>
@@ -105,7 +117,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
           ref={closeButtonRef}
           onClick={onClose}
           aria-label="Close itinerary details"
-          className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors z-10 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+          className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-[background-color] z-10 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
           <X className="w-5 h-5" />
         </button>
@@ -128,7 +140,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground tabular-nums">
               <span className="text-primary font-semibold">
                 {((itinerary as unknown as Record<string, unknown>).recommendation_count as number || itinerary.saves + itinerary.likes).toLocaleString()} recommend
               </span>
@@ -137,7 +149,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
           </div>
 
           {/* Description */}
-          <p className="text-muted-foreground leading-relaxed">{itinerary.description}</p>
+          <p className="text-muted-foreground leading-relaxed text-pretty">{itinerary.description}</p>
 
           {/* Tags */}
           {itinerary.tags.length > 0 && (
@@ -163,7 +175,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                       onClick={() => toggleDay(day)}
                       aria-expanded={isExpanded}
                       aria-controls={`day-${day}-stops`}
-                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset focus-visible:outline-none cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-[background-color] text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset focus-visible:outline-none cursor-pointer min-h-[44px]"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
@@ -178,7 +190,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {dayStops.length > 0 && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground tabular-nums">
                             {formatCurrency(dayStops.reduce((sum, s) => sum + s.cost_usd, 0))}
                           </span>
                         )}
@@ -246,7 +258,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
           <div className="flex gap-3 pt-2 border-t">
             <Button
               size="lg"
-              className="flex-1 font-semibold"
+              className="flex-1 font-semibold active:scale-[0.96] transition-[transform,background-color]"
               onClick={() => {
                 const now = new Date().toISOString();
                 const cloned = {
@@ -311,7 +323,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

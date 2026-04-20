@@ -90,16 +90,16 @@ export default function RegisterPage() {
 
   if (registered) {
     return (
-      <Card className="shadow-xl border-0">
+      <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl">Account created!</CardTitle>
-          <CardDescription>One more step to get started</CardDescription>
+          <CardTitle className="text-2xl text-balance">Account created!</CardTitle>
+          <CardDescription className="text-pretty">One more step to get started</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-pretty">
             Check your email — click the verification link to activate your account.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground text-pretty">
             Didn&apos;t receive it? Check your spam folder or contact support.
           </p>
           <Link href="/login" className="inline-block text-sm text-primary font-medium hover:underline">
@@ -111,17 +111,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="shadow-xl border-0">
+    <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl">Create account</CardTitle>
-        <CardDescription>Join VZ Explorer and discover Venezuela</CardDescription>
+        <CardTitle className="text-2xl text-balance">Create account</CardTitle>
+        <CardDescription className="text-pretty">Join VZ Explorer and discover Venezuela</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
         <Button
           type="button"
           variant="outline"
-          className="w-full min-h-[44px]"
+          className="w-full min-h-[44px] active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
           onClick={signUpWithGoogle}
           disabled={isLoading}
           aria-label="Continue with Google"
@@ -180,7 +180,7 @@ export default function RegisterPage() {
                 <Input
                   id="reg-password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder="•••••��••"
                   autoComplete="new-password"
                   className="pr-10"
                   aria-invalid={!!errors.password}
@@ -190,7 +190,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-[color] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-[color] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={showConfirm ? 'Hide password confirmation' : 'Show password confirmation'}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -267,7 +267,7 @@ export default function RegisterPage() {
             <p className="text-xs text-destructive" role="alert">{errors.acceptTerms.message}</p>
           )}
 
-          <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px] active:scale-[0.96] transition-[transform,color,background-color] duration-150 ease-out" disabled={isLoading}>
             {isLoading ? 'Creating account...' : 'Create account'}
           </Button>
         </form>
@@ -292,7 +292,7 @@ function PasswordStrengthBar({ password }: { password: string }) {
         {[1, 2, 3, 4, 5].map((level) => (
           <div
             key={level}
-            className={`h-1 flex-1 rounded-full transition-colors ${
+            className={`h-1 flex-1 rounded-full transition-[background-color] ${
               level <= strength.score ? strength.color : 'bg-gray-200'
             }`}
           />

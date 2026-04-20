@@ -354,7 +354,7 @@ export function PlanningChatPanel({
           <Button
             variant="ghost"
             size="icon"
-            className="w-7 h-7"
+            className="min-w-[40px] min-h-[40px] w-9 h-9"
             onClick={onClose}
             aria-label="Close trip planner"
           >
@@ -503,7 +503,7 @@ export function PlanningChatPanel({
                         {stop.cost_usd > 0 && (
                           <Badge
                             variant="secondary"
-                            className="text-[10px] px-1 py-0 shrink-0"
+                            className="text-[10px] px-1 py-0 shrink-0 tabular-nums"
                           >
                             ${stop.cost_usd}
                           </Badge>
@@ -552,7 +552,7 @@ export function PlanningChatPanel({
             type="submit"
             size="icon"
             disabled={!input.trim() || isStreaming}
-            className={cn(isFullMode && 'h-11 w-11')}
+            className={cn('min-w-[40px] min-h-[40px] active:scale-[0.96] transition-[transform,background-color,opacity]', isFullMode && 'h-11 w-11')}
             aria-label={isStreaming ? 'Sending message' : 'Send message'}
           >
             {isStreaming ? (
@@ -562,7 +562,7 @@ export function PlanningChatPanel({
             )}
           </Button>
         </div>
-        <p className="text-[10px] text-muted-foreground/60 mt-1.5 text-center">
+        <p className="text-[10px] text-muted-foreground/60 mt-1.5 text-center text-pretty">
           AI-generated suggestions — verify details before booking
         </p>
       </form>
