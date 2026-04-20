@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getAllBookings, type LocalBooking, type BookingStatus } from '@/lib/bookings-store';
+import type { LocalBooking, BookingStatus } from '@/lib/bookings-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProviderBookingActions } from '@/components/provider/ProviderBookingActions';
@@ -94,7 +94,30 @@ export default async function BookingsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const allBookings = getAllBookings().sort(
+  // Scope bookings to this provider's listings only (P0-BOK-003)
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  let allBookings: LocalBooking[] = [];
+  if (provider) {
+    const { data: providerListings } = await supabase
+      .from('listings')
+      .select('id')
+      .eq('provider_id', provider.id);
+    const listingIds = providerListings?.map((l) => l.id) ?? [];
+    if (listingIds.length > 0) {
+      const { data: bookingsData } = await supabase
+        .from('guest_bookings')
+        .select('*')
+        .in('listing_id', listingIds)
+        .order('created_at', { ascending: false });
+      allBookings = (bookingsData ?? []) as unknown as LocalBooking[];
+    }
+  }
+  allBookings = allBookings.sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
