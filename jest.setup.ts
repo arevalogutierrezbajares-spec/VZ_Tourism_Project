@@ -15,6 +15,14 @@ jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
 }));
 
+// ─── @/lib/supabase/server ──────────────────────────────────────────────────
+// Global fallback — individual test files may override this mock.
+// Ensures createServiceClient is always exported as a named function.
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(() => null),
+  createServiceClient: jest.fn(() => null),
+}));
+
 // ─── @supabase/ssr ──────────────────────────────────────────────────────────
 jest.mock('@supabase/ssr', () => ({
   createBrowserClient: jest.fn(() => ({

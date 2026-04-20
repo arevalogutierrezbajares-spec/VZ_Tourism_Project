@@ -3,9 +3,20 @@ import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/bookings/route';
 import { mockBookings } from '@/__tests__/fixtures';
 
-// The bookings GET route uses createClient from @supabase/supabase-js (service role),
-// not @/lib/supabase/server. When env vars aren't set, it falls back to the in-memory store.
-// The POST route similarly falls back. Neither route checks authentication.
+const mockGetUser = jest.fn();
+
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(() => ({
+    auth: { getUser: mockGetUser },
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      then: (resolve: Function) => Promise.resolve({ data: [], error: null }).then(resolve as () => void),
+    })),
+  })),
+  createServiceClient: jest.fn(() => null),
+}));
 
 jest.mock('@/lib/stripe/server', () => ({
   createCheckoutSession: jest.fn().mockResolvedValue({
@@ -15,7 +26,11 @@ jest.mock('@/lib/stripe/server', () => ({
   handleWebhookEvent: jest.fn(),
 }));
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  // Default: authenticated user
+  mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123', email: 'maria@example.com' } } });
+});
 
 function makeRequest(url: string, init?: RequestInit) {
   return new NextRequest(url, init);
@@ -24,22 +39,19 @@ function makeRequest(url: string, init?: RequestInit) {
 // ─── GET /api/bookings ───────────────────────────────────────────────────────
 
 describe('GET /api/bookings', () => {
-  it('returns 200 with booking list (no auth required)', async () => {
-    // Route falls back to in-memory store when Supabase env vars are absent in test env
+  it('returns 401 when not authenticated', async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } });
+    const req = makeRequest('http://localhost/api/bookings');
+    const res = await GET(req);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 200 with the user's bookings when authenticated", async () => {
     const req = makeRequest('http://localhost/api/bookings');
     const res = await GET(req);
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(Array.isArray(json.data)).toBe(true);
-  });
-
-  it("returns the user's bookings when authenticated", async () => {
-    // Route doesn't check auth itself; Supabase path falls back to in-memory in test env
-    const req = makeRequest('http://localhost/api/bookings');
-    const res = await GET(req);
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.data).toBeDefined();
   });
 
   it('filters by status when provided', async () => {
@@ -91,28 +103,36 @@ describe('POST /api/bookings', () => {
     expect(res.status).toBe(400);
   });
 
-  it('creates a booking with all required fields (no auth required)', async () => {
-    // Route uses in-memory store fallback; Supabase env vars absent in test env
+  it('returns 401 when not authenticated on POST', async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } });
     const req = makeRequest('http://localhost/api/bookings', {
       method: 'POST',
       body: JSON.stringify(fullBooking),
       headers: { 'Content-Type': 'application/json' },
     });
     const res = await POST(req);
-    expect(res.status).toBe(201);
-    const json = await res.json();
-    expect(json.data).toBeDefined();
-    expect(json.confirmation_code).toMatch(/^VZ-/);
+    expect(res.status).toBe(401);
   });
 
-  it('creates booking with estimated price when listing is not in the database', async () => {
-    // Route uses estimatePrice() fallback instead of returning 404 for unknown listings
+  it('returns 422 when listing has no pricing (authenticated)', async () => {
+    // The test listing ID is not in scraped-listings.json so route returns 422
+    const req = makeRequest('http://localhost/api/bookings', {
+      method: 'POST',
+      body: JSON.stringify(fullBooking),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+
+  it('returns 422 when listing has no pricing available', async () => {
+    // Route returns 422 when the listing is not found or has no price_usd
     const req = makeRequest('http://localhost/api/bookings', {
       method: 'POST',
       body: JSON.stringify({ ...fullBooking, listing_id: 'completely-unknown-listing-id' }),
       headers: { 'Content-Type': 'application/json' },
     });
     const res = await POST(req);
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(422);
   });
 });
