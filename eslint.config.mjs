@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested frontend app build artifacts (P1-INF-004)
+    "frontend/.next/**",
+    "frontend/node_modules/**",
+    "node_modules/**",
   ]),
 ]);
 
