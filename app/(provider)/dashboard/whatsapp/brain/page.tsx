@@ -426,8 +426,9 @@ export default function BrainPage() {
       fetch('/api/providers/me').then((r) => r.json()),
     ]).then(([kRes, pRes]) => {
       if (kRes.data) {
-        setKnowledge(kRes.data);
-        setSavedKnowledge(kRes.data);
+        const merged = { ...EMPTY_KNOWLEDGE, ...kRes.data };
+        setKnowledge(merged);
+        setSavedKnowledge(merged);
       }
       if (pRes.data?.business_name) setProviderName(pRes.data.business_name);
       setLoading(false);
