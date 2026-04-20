@@ -1,6 +1,6 @@
 # Session Summary — 2026-04-20
 
-> Full QA pass, 15 bug fixes, PMS local setup, platform rebrand decision, **PMS integration into VAV shipped**.
+> Full QA pass, 15 bug fixes, PMS local setup, platform rebrand decision, **PMS integration into VAV shipped**, **WhatsApp AI Concierge — 13-fix engineering hardening + code review + 8 patches**.
 
 ---
 
@@ -152,6 +152,85 @@ Reviewed and tested the `/demo/whatsapp` demo from the frontend. Found and fixed
 3. `dashboard/layout.tsx`: role = `provider` → renders dashboard
 4. `ProviderSidebar`: shows "Property (PMS)" nav group
 5. PMS layout → `PmsProvider` → bridge auth → PMS user loaded → `needsOnboarding = true` (no properties yet)
+
+---
+
+### 11. WhatsApp AI Concierge — Engineering Hardening (13 fixes + code review)
+
+Executed the full [[WhatsApp-Eng-Review-Fix-Plan]] using 5 parallel agents (A–E), then ran an adversarial code review with Blind Hunter + Edge Case Hunter. 8 review findings patched on top.
+
+**Phase 1 — 5-Agent Fix Plan (13 items from architecture review):**
+
+| Agent | Domain | Fixes |
+|-------|--------|-------|
+| **A** | Webhook Security (P0) | HMAC signature verification (`X-Hub-Signature-256`), per-phone rate limiting (20/min), verify_token hashed at rest with plaintext fallback |
+| **B** | AI & Model Hardening | Temperature 0.7→0.3, `GROQ_MODEL` env var, `supabase: any` → typed `ServiceClient` (4 files), error message sanitization in send route |
+| **C** | Webhook Logic | Fixed broken `unread_count` RPC embed, working hours check + after-hours auto-reply, non-text message handling (image/audio/video get canned reply) |
+| **D** | Test Coverage | 3 new test suites, 34 tests: `parseWebhookPayload`, `analyzeMessage` sentiment, `buildSystemPrompt` injection safety |
+| **E** | Demo UI + Sentiment | Demo page 870→141 lines (4 extracted components + mock data file), sentiment false-positive fix via context-aware keyword filtering |
+
+**Phase 2 — Adversarial Code Review (Blind Hunter + Edge Case Hunter):**
+
+Found 23 raw findings → 15 unique after dedup → 8 patched, 4 deferred, 3 dismissed.
+
+| # | Severity | Patch |
+|---|----------|-------|
+| 1 | **HIGH** | verify_token hash broke dashboard copy-to-clipboard — GET now masks (`••••••••`), PUT returns plaintext once |
+| 2 | **HIGH** | Unread count TOCTOU race — added SQL migration `017_increment_wa_unread.sql` with atomic increment |
+| 3 | **HIGH** | Silent 403 when `META_APP_SECRET` unset — added explicit error log differentiating "secret missing" vs "signature invalid" |
+| 4 | **MED** | Non-text messages persisted empty body/preview — moved check earlier, now persists `[Photo]`/`[Voice note]`/etc. labels |
+| 5 | **MED** | Plaintext verify_token never auto-migrated — GET handler now hashes-on-match |
+| 6 | **MED** | Sentiment `POSITIVE_CONTEXT` not normalized for accented Spanish — added `normalize()` |
+| 7 | **LOW** | `hashToken` duplicated in 2 files — extracted to `lib/whatsapp/hash.ts` |
+| 8 | **NIT** | Dead `StatsStrip.tsx` component — deleted |
+
+**Deferred (not actionable in this diff):**
+- In-memory rate limiter is per-instance (by design on serverless, signature verification is primary defense)
+- `as unknown as Promise<>` double casts (Supabase PostgREST type limitation)
+- Working hours: overnight ranges unsupported (extremely unlikely for VZ posadas)
+- `ServiceClient` loses generic DB type info (no generated Supabase types yet)
+
+**Files changed:** 11 modified, 12 new (4 components, 3 test suites, 1 util, 1 type, 1 SQL migration, 1 mock data, 1 working-hours util)
+
+**New env vars:** `META_APP_SECRET` (required for production), `GROQ_MODEL` (optional, defaults to `llama-3.3-70b-versatile`)
+
+**Verification:** `tsc --noEmit` zero errors, `npm run build` passes, 34/34 tests pass.
+
+---
+
+### Next Session: WhatsApp Agent Platform Onboarding
+
+**Goal:** Make it as easy as possible for posadas to start using the WhatsApp AI agent suite.
+
+**Current state:** The onboarding flow exists at `/dashboard/pms/onboarding` (4-step wizard: property details → unit types → rooms → completion) but this is PMS onboarding only. The WhatsApp agent setup requires separate configuration at `/demo/whatsapp/settings` which is disconnected from the provider dashboard.
+
+**What needs to happen:**
+1. **Unified onboarding wizard** — Extend or create a new onboarding flow that gets a posada from zero to "WhatsApp agent live" in one sitting
+2. **WhatsApp setup steps to integrate:**
+   - Meta Business verification + phone number linking (guide + config fields)
+   - `phone_number_id` + `access_token` entry (currently in settings page)
+   - `verify_token` generation + Meta webhook URL setup (currently manual)
+   - AI persona configuration (name, tone, language, greeting style)
+   - Knowledge base seeding (property description, amenities, policies, pricing — pull from PMS if available)
+   - Working hours configuration
+   - Test message flow (send a test message to verify everything works)
+3. **Auto-populate from PMS** — If the posada already completed PMS onboarding, pre-fill the knowledge base from property/room/rate data
+4. **Settings page refactor** — Move `/demo/whatsapp/settings` into the real provider dashboard at `/dashboard/pms/settings` or a new `/dashboard/whatsapp/` section
+5. **Guided setup UX** — Step-by-step with progress indicators, inline validation, "test your agent" button at the end
+
+**Key files to start with:**
+- `app/(provider)/dashboard/pms/onboarding/page.tsx` — existing PMS onboarding wizard
+- `app/demo/whatsapp/settings/page.tsx` — current WhatsApp config UI (54 lines, just a sidebar + link to AiSettingsPanel)
+- `components/whatsapp/AiSettingsPanel.tsx` — the big 1,146-line settings panel (persona, tone, knowledge, working hours, etc.)
+- `app/api/whatsapp/config/route.ts` — GET/PUT for WhatsApp config
+- `app/api/whatsapp/knowledge/route.ts` — GET/PUT for knowledge base
+- `lib/pms/api.ts` — PMS client (for pulling property data to seed knowledge)
+
+**Design considerations:**
+- Use the existing DESIGN.md system (navy/gold palette, Bebas/Barlow fonts)
+- Mobile-first — many posada owners will set this up on their phone
+- Spanish-first with English fallback (most VZ posada owners speak Spanish)
+- Minimize Meta Business jargon — abstract away the Graph API complexity
 
 ---
 

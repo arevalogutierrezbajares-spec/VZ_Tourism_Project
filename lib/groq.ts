@@ -11,4 +11,4 @@ export function getGroqClient(): Groq {
   return _client;
 }
 
-export const GROQ_MODEL = 'llama-3.3-70b-versatile';
+export const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';

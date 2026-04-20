@@ -8,6 +8,7 @@
 
 import { getAvailability, getRoomTypes } from './availability-store';
 import type { PosadaKnowledge, PricingRules, PricingSeasonalPeriod } from '@/types/database';
+import type { ServiceClient } from '@/types/supabase-client';
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
@@ -139,9 +140,8 @@ function collapseWindows(
  * @param knowledge  The posada's knowledge base (for pricing_rules + room_types)
  * @returns  A formatted string ready to embed into the system prompt
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function buildLiveContext(
-  supabase: any,
+  supabase: ServiceClient,
   providerId: string,
   knowledge: PosadaKnowledge | null
 ): Promise<string> {

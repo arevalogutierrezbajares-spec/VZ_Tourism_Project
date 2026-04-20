@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { hashToken } from '@/lib/whatsapp/hash';
 
 /**
  * GET /api/whatsapp/config
@@ -32,7 +32,10 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Mask access_token — never send it to the client
+  // Mask secrets — never send raw tokens to the client
+  if (data?.verify_token) {
+    (data as Record<string, unknown>).verify_token = '••••••••';
+  }
   return NextResponse.json({ data: data ?? null });
 }
 
@@ -69,12 +72,19 @@ export async function PUT(request: NextRequest) {
     'upsell_enabled', 'sentiment_threshold', 'value_escalation_usd', 'escalation_keywords',
     'response_delay_ms',
     'working_hours_enabled', 'working_hours', 'after_hours_message',
-    'custom_instructions', 'ai_enabled',
+    'custom_instructions', 'ai_enabled', 'verify_token',
   ];
 
   const updates = Object.fromEntries(
     Object.entries(body).filter(([k]) => allowed.includes(k))
   );
+
+  // Hash verify_token before storing — never store plaintext.
+  // Preserve the plaintext to return in the response (shown once for Meta setup).
+  const plaintextVerifyToken = typeof updates.verify_token === 'string' ? updates.verify_token : null;
+  if (plaintextVerifyToken) {
+    updates.verify_token = hashToken(plaintextVerifyToken);
+  }
 
   if (!updates.phone_number_id) {
     // Validate required field only on first creation
@@ -126,5 +136,12 @@ export async function PUT(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ data });
+  // Return plaintext verify_token in response so UI can display it once for Meta setup.
+  // After this response, subsequent GETs will return a masked placeholder.
+  const responseData = { ...data } as Record<string, unknown>;
+  if (plaintextVerifyToken) {
+    responseData.verify_token = plaintextVerifyToken;
+  }
+
+  return NextResponse.json({ data: responseData });
 }

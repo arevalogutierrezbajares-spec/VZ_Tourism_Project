@@ -15,8 +15,9 @@ export interface WhatsAppTokenRow {
   access_token_vault_id: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getWhatsAppToken(supabase: any, config: WhatsAppTokenRow): Promise<string> {
+import type { ServiceClient } from '@/types/supabase-client';
+
+export async function getWhatsAppToken(supabase: ServiceClient, config: WhatsAppTokenRow): Promise<string> {
   if (config.access_token_vault_id) {
     try {
       const { data, error } = await supabase.rpc('vault_read_wa_token', {

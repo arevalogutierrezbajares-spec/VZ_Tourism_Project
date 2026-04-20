@@ -25,6 +25,25 @@ const THREAT_EN = [
   'i will kill','going to kill','blast you','expose you',
 ];
 
+// Context words that neutralize nearby keyword matches (reduces false positives).
+// e.g. "my lawyer recommended this place" or "the police station is nearby"
+const POSITIVE_CONTEXT = [
+  'good', 'great', 'amazing', 'excellent', 'recommend', 'recommended',
+  'bueno', 'buena', 'excelente', 'recomend', 'recomendado', 'recomendaron',
+  'nearby', 'near', 'close', 'cerca', 'cercano',
+  'perfect', 'perfecto', 'perfecta', 'love', 'best', 'mejor',
+  'beautiful', 'hermoso', 'hermosa', 'fantastic', 'nice',
+];
+
+function hasPositiveContext(text: string, keyword: string): boolean {
+  const idx = text.indexOf(keyword);
+  if (idx < 0) return false;
+  const windowStart = Math.max(0, idx - 50);
+  const windowEnd = idx + keyword.length + 50;
+  const window = text.slice(windowStart, windowEnd);
+  return POSITIVE_CONTEXT.some(pos => window.includes(normalize(pos)));
+}
+
 const BOT_QUESTIONS_ES = [
   'eres un bot','eres humano','eres una ia','eres inteligencia artificial',
   'estoy hablando con','hablas con robot','es automatico','es automático',
@@ -50,11 +69,21 @@ function countMatches(text: string, terms: string[]): number {
   return terms.reduce((n, term) => n + (text.includes(normalize(term)) ? 1 : 0), 0);
 }
 
+function countMatchesWithContext(text: string, terms: string[]): number {
+  return terms.reduce((n, term) => {
+    const normalized = normalize(term);
+    if (!text.includes(normalized)) return n;
+    // Skip this hit if the surrounding text has positive/neutral context
+    if (hasPositiveContext(text, normalized)) return n;
+    return n + 1;
+  }, 0);
+}
+
 export function analyzeMessage(content: string): SentimentResult {
   const t = normalize(content);
 
-  const rudeHits   = countMatches(t, [...RUDE_ES,   ...RUDE_EN]);
-  const threatHits  = countMatches(t, [...THREAT_ES,  ...THREAT_EN]);
+  const rudeHits   = countMatchesWithContext(t, [...RUDE_ES,   ...RUDE_EN]);
+  const threatHits  = countMatchesWithContext(t, [...THREAT_ES,  ...THREAT_EN]);
   const botHits     = countMatches(t, [...BOT_QUESTIONS_ES, ...BOT_QUESTIONS_EN]);
 
   // Score: start at 0.8 (neutral-positive baseline), penalize negatives

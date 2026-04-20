@@ -83,6 +83,7 @@ export interface InboundMessage {
   guestName: string | null;
   waMessageId: string;
   body: string;
+  messageType: string;
   timestamp: number;
 }
 
@@ -116,13 +117,15 @@ export function parseWebhookPayload(payload: unknown): InboundMessage[] {
         );
 
         for (const msg of val.messages) {
-          if (msg.type !== 'text' || !msg.text?.body) continue;
+          if (!msg.id) continue;
+          const body = msg.text?.body ?? '';
           messages.push({
             phoneNumberId,
             from: msg.from ?? '',
             guestName: contactMap.get(msg.from ?? '') ?? null,
-            waMessageId: msg.id ?? '',
-            body: msg.text.body,
+            waMessageId: msg.id,
+            body,
+            messageType: msg.type ?? 'unknown',
             timestamp: parseInt(msg.timestamp ?? '0', 10),
           });
         }

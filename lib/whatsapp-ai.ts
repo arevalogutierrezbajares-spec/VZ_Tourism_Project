@@ -209,7 +209,7 @@ export async function generateReply(opts: BuildReplyOptions): Promise<string> {
     model: GROQ_MODEL,
     messages,
     max_tokens: opts.config.response_length === 'brief' ? 150 : 400,
-    temperature: 0.7,
+    temperature: 0.3,
     top_p: 0.9,
   });
 

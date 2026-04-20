@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
     .select()
     .single();
 
-  if (msgError) return NextResponse.json({ error: msgError.message }, { status: 500 });
+  if (msgError) {
+    console.error('[whatsapp/send] message insert failed:', msgError.message);
+    return NextResponse.json({ error: 'Failed to persist message' }, { status: 500 });
+  }
 
   // Update conversation preview
   await supabase

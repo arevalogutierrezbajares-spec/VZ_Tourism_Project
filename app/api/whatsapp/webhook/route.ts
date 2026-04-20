@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
 import { createServiceClient } from '@/lib/supabase/server';
@@ -5,13 +6,49 @@ import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/w
 import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
 import { buildLiveContext } from '@/lib/whatsapp-context';
+import { isWithinWorkingHours } from '@/lib/whatsapp-hours';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
+import { hashToken } from '@/lib/whatsapp/hash';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
+import type { ServiceClient } from '@/types/supabase-client';
 
 // Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies.
 // Permissive — matches anywhere in the string so the LLM can place it mid-reply.
 const NEEDS_HUMAN_RE = /\[NEEDS_HUMAN:\s*([^\]]+)\]/;
+
+// ─── Webhook signature verification ──────────────────────────────────────────
+
+function verifyWebhookSignature(rawBody: string, signature: string | null): boolean {
+  const secret = process.env.META_APP_SECRET;
+  if (!secret) {
+    console.error('[whatsapp/webhook] META_APP_SECRET is not set — all inbound messages will be rejected');
+    return false;
+  }
+  if (!signature) return false;
+  const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
+
+// ─── In-memory rate limiter (per phone number) ──────────────────────────────
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 20;
+const rateLimitMap = new Map<string, number[]>();
+
+function isRateLimited(phone: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(phone) ?? [];
+  const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX) return true;
+  recent.push(now);
+  rateLimitMap.set(phone, recent);
+  return false;
+}
 
 // ─── Webhook verification (Meta GET challenge) ────────────────────────────────
 
@@ -21,21 +58,38 @@ export async function GET(request: NextRequest) {
   const token     = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  if (mode !== 'subscribe' || !challenge) {
+  if (mode !== 'subscribe' || !challenge || !token) {
     return new NextResponse('Bad Request', { status: 400 });
   }
 
-  // Look up the config row where verify_token matches
+  // Look up the config row where verify_token matches (hashed first, plaintext fallback)
   const supabase = await createServiceClient();
   if (!supabase) return new NextResponse('Service unavailable', { status: 503 });
 
+  // Try hashed comparison first
   const { data: config } = await supabase
     .from('posada_whatsapp_config')
     .select('id')
-    .eq('verify_token', token)
+    .eq('verify_token', hashToken(token))
     .single();
 
-  if (!config) return new NextResponse('Forbidden', { status: 403 });
+  if (!config) {
+    // Fallback: try plaintext match for pre-migration tokens
+    const { data: legacyConfig } = await supabase
+      .from('posada_whatsapp_config')
+      .select('id')
+      .eq('verify_token', token)
+      .single();
+
+    if (!legacyConfig) return new NextResponse('Forbidden', { status: 403 });
+
+    // Auto-migrate: hash the plaintext token so future lookups use the hashed path
+    await supabase
+      .from('posada_whatsapp_config')
+      .update({ verify_token: hashToken(token) })
+      .eq('id', legacyConfig.id);
+    console.info('[whatsapp/webhook] verify_token auto-migrated from plaintext to hash');
+  }
 
   return new NextResponse(challenge, { status: 200 });
 }
@@ -43,10 +97,17 @@ export async function GET(request: NextRequest) {
 // ─── Inbound message handler ──────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  // Always acknowledge Meta immediately (must be within 20s)
+  // 1. Read raw body and verify Meta webhook signature (HMAC-SHA256)
+  const rawBody = await request.text();
+  const sig = request.headers.get('x-hub-signature-256');
+  if (!verifyWebhookSignature(rawBody, sig)) {
+    return new NextResponse('Invalid signature', { status: 403 });
+  }
+
+  // 2. Parse JSON from verified raw body
   let payload: unknown;
   try {
-    payload = await request.json();
+    payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ status: 'ok' });
   }
@@ -71,6 +132,11 @@ async function processInbound(payload: unknown) {
   if (!messages.length) return;
 
   for (const msg of messages) {
+    // Rate limit: skip processing if phone number exceeds threshold
+    if (isRateLimited(msg.from)) {
+      console.warn(`[whatsapp/webhook] rate limited: ${msg.from}`);
+      continue;
+    }
     try {
       await handleMessage(supabase, msg);
     } catch (err) {
@@ -80,11 +146,10 @@ async function processInbound(payload: unknown) {
 }
 
 async function handleMessage(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: ServiceClient,
   msg: Awaited<ReturnType<typeof parseWebhookPayload>>[number]
 ) {
-  const { phoneNumberId, from, guestName, waMessageId, body } = msg;
+  const { phoneNumberId, from, guestName, waMessageId, body, messageType } = msg;
 
   // 1. Look up posada config by phone_number_id
   const { data: config } = await supabase
@@ -120,6 +185,50 @@ async function handleMessage(
 
   if (count && count > 0) return;
 
+  // 3b. Non-text message — persist with descriptive label, skip AI
+  if (messageType !== 'text') {
+    const typeLabels: Record<string, string> = {
+      image: '[Photo]', audio: '[Voice note]', video: '[Video]',
+      document: '[Document]', sticker: '[Sticker]', location: '[Location]',
+      contacts: '[Contact]',
+    };
+    const label = typeLabels[messageType] ?? `[${messageType}]`;
+
+    await supabase.from('wa_messages').insert({
+      conversation_id: conv.id,
+      wa_message_id: waMessageId,
+      role: 'inbound',
+      content: label,
+      is_ai: false,
+      flagged: false,
+    });
+
+    await supabase.from('wa_conversations').update({
+      last_message_at: new Date().toISOString(),
+      last_message_preview: label,
+      guest_name: guestName ?? undefined,
+    }).eq('id', conv.id);
+
+    const { error: rpcError } = await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
+    if (rpcError) {
+      const { data: cur } = await supabase
+        .from('wa_conversations')
+        .select('unread_count')
+        .eq('id', conv.id)
+        .single();
+      await supabase
+        .from('wa_conversations')
+        .update({ unread_count: (cur?.unread_count ?? 0) + 1 })
+        .eq('id', conv.id);
+    }
+
+    const ack = config.tone_language === 'en'
+      ? 'Thanks for sharing! I can only read text messages right now. Could you describe what you need in a text message?'
+      : '¡Gracias por compartir! Por ahora solo puedo leer mensajes de texto. ¿Podrías describir lo que necesitas en un mensaje escrito?';
+    await sendAndPersist(supabase, conv.id, config, accessToken, from, ack, true);
+    return;
+  }
+
   // 4. Sentiment analysis + language detection + translation (run in parallel)
   const [sentiment, translation] = await Promise.all([
     Promise.resolve(analyzeMessage(body)),
@@ -143,7 +252,7 @@ async function handleMessage(
     sentiment_score: sentiment.score,
   });
 
-  // 6. Update conversation preview + unread count + detected language
+  // 6. Update conversation preview + detected language
   await supabase
     .from('wa_conversations')
     .update({
@@ -151,16 +260,25 @@ async function handleMessage(
       last_message_preview: body.slice(0, 120),
       guest_name: guestName ?? undefined,
       guest_language: detectedLang ?? undefined,
-      unread_count: supabase.rpc('increment', { x: 1 }), // simple counter; fallback below
     })
     .eq('id', conv.id);
 
-  // Fallback unread increment (rpc may not exist yet)
-  try {
-    await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
-  } catch {
-    await supabase.from('wa_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conv.id);
+  // Increment unread count atomically via RPC (see supabase/migrations for function definition)
+  const { error: rpcError } = await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
+  if (rpcError) {
+    // Fallback: read-then-write (has TOCTOU race under concurrent messages).
+    // Deploy the increment_wa_unread RPC to eliminate this — see supabase/migrations/.
+    const { data: current } = await supabase
+      .from('wa_conversations')
+      .select('unread_count')
+      .eq('id', conv.id)
+      .single();
+    await supabase
+      .from('wa_conversations')
+      .update({ unread_count: (current?.unread_count ?? 0) + 1 })
+      .eq('id', conv.id);
   }
+
 
   // 7. If conversation is in human or closed mode — skip AI
   if (conv.status === 'human' || conv.status === 'closed') return;
@@ -178,6 +296,14 @@ async function handleMessage(
 
   // 9. If AI is disabled on this posada — skip
   if (!config.ai_enabled) return;
+
+  // 9b. Working hours check
+  if (config.working_hours_enabled && !isWithinWorkingHours(config)) {
+    if (config.after_hours_message) {
+      await sendAndPersist(supabase, conv.id, config, accessToken, from, config.after_hours_message, true);
+    }
+    return;
+  }
 
   // 10. Bot-question detected — send standard response + escalate
   if (sentiment.is_bot_question) {
@@ -204,12 +330,12 @@ async function handleMessage(
       .select('id, role, content, is_ai, created_at')
       .eq('conversation_id', conv.id)
       .order('created_at', { ascending: true })
-      .limit(20) as Promise<{ data: WaMessage[] | null }>,
+      .limit(20) as unknown as Promise<{ data: WaMessage[] | null }>,
     supabase
       .from('posada_knowledge')
       .select('*')
       .eq('provider_id', provider.id)
-      .single() as Promise<{ data: PosadaKnowledge | null }>,
+      .single() as unknown as Promise<{ data: PosadaKnowledge | null }>,
   ]);
 
   // 11c. Build live context (dynamic pricing + availability)
@@ -258,8 +384,7 @@ async function handleMessage(
 }
 
 async function sendAndPersist(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: ServiceClient,
   convId: string,
   config: PosadaWhatsappConfig,
   accessToken: string,
