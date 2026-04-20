@@ -41,19 +41,19 @@ interface PipelineProvider {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STAGES: { id: string; label: string; color: string; bg: string; border: string }[] = [
-  { id: 'lead', label: 'Lead', color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB' },
-  { id: 'contacted', label: 'Contacted', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
-  { id: 'interested', label: 'Interested', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
-  { id: 'call_scheduled', label: 'Call Scheduled', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE' },
-  { id: 'onboarding', label: 'Onboarding', color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC' },
-  { id: 'live', label: 'Live', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0' },
+const STAGES: { id: string; label: string; color: string; activeBg: string; dropBorder: string }[] = [
+  { id: 'lead',           label: 'Lead',           color: '#6B7280', activeBg: 'bg-muted',         dropBorder: 'border-muted-foreground' },
+  { id: 'contacted',      label: 'Contacted',      color: '#2563EB', activeBg: 'bg-primary/10',    dropBorder: 'border-primary' },
+  { id: 'interested',     label: 'Interested',     color: '#D97706', activeBg: 'bg-status-pending/10', dropBorder: 'border-status-pending' },
+  { id: 'call_scheduled', label: 'Call Scheduled', color: '#7C3AED', activeBg: 'bg-purple-100',    dropBorder: 'border-purple-400' },
+  { id: 'onboarding',     label: 'Onboarding',     color: '#0891B2', activeBg: 'bg-cyan-50',       dropBorder: 'border-cyan-400' },
+  { id: 'live',           label: 'Live',           color: '#059669', activeBg: 'bg-status-confirmed/10', dropBorder: 'border-status-confirmed' },
 ];
 
-const TIER_COLORS: Record<string, { bg: string; text: string }> = {
-  A: { bg: '#FEF2F2', text: '#DC2626' },
-  B: { bg: '#FFF7ED', text: '#EA580C' },
-  C: { bg: '#F9FAFB', text: '#6B7280' },
+const TIER_CLASSES: Record<string, string> = {
+  A: 'bg-status-cancelled/10 text-status-cancelled',
+  B: 'bg-status-pending/10 text-status-pending',
+  C: 'bg-muted text-muted-foreground',
 };
 
 const REGIONS = ['caracas', 'merida', 'los-roques', 'gran-sabana', 'isla-margarita', 'llanos', 'maracaibo', 'delta'];
@@ -79,7 +79,7 @@ function ProviderCard({
   onDragEnd: () => void;
   onClick: (provider: PipelineProvider) => void;
 }) {
-  const tier = TIER_COLORS[provider.tier] ?? TIER_COLORS.C!;
+  const tierCls = TIER_CLASSES[provider.tier] ?? TIER_CLASSES.C!;
   const days = daysInStage(provider.entered_stage_at);
   const stage = STAGES.find((s) => s.id === provider.stage);
 
@@ -93,8 +93,7 @@ function ProviderCard({
       tabIndex={0}
       role="button"
       aria-label={`${provider.business_name} — ${provider.type}, ${provider.region.replace('-', ' ')}. Click to view details, drag to change stage.`}
-      className="rounded-lg border cursor-pointer select-none transition-all hover:shadow-md active:opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      style={{ background: '#fff', borderColor: '#E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="rounded-lg border border-border cursor-pointer select-none transition-all hover:shadow-md active:opacity-70 focus:outline-none focus:ring-2 focus:ring-primary bg-background shadow-sm"
     >
       {/* Cover image */}
       {provider.cover_image_url && (
@@ -110,45 +109,39 @@ function ProviderCard({
       <div className="p-3 space-y-2">
         {/* Name + type */}
         <div className="flex items-start justify-between gap-1">
-          <span className="font-semibold text-sm text-gray-900 leading-tight">{provider.business_name}</span>
-          <span
-            className="flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded capitalize"
-            style={{ background: '#EFF6FF', color: '#2563EB' }}
-          >
+          <span className="font-semibold text-sm text-foreground leading-tight">{provider.business_name}</span>
+          <span className="flex-shrink-0 text-2xs font-medium px-1.5 py-0.5 rounded capitalize bg-primary/10 text-primary">
             {provider.type}
           </span>
         </div>
 
         {/* Region */}
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPin className="w-3 h-3" />
           <span className="capitalize">{provider.region.replace('-', ' ')}</span>
         </div>
 
         {/* Tier + days */}
         <div className="flex items-center justify-between">
-          <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{ background: tier.bg, color: tier.text }}
-          >
+          <span className={`text-2xs font-bold px-1.5 py-0.5 rounded ${tierCls}`}>
             Tier {provider.tier}
           </span>
-          <span className="text-[11px] text-gray-400 flex items-center gap-1">
+          <span className="text-2xs text-muted-foreground flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {days}d in {stage?.label ?? provider.stage}
           </span>
         </div>
 
         {/* Contact icons + invite link + rating */}
-        <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-1 border-t border-border">
           <div className="flex items-center gap-2">
             {provider.phone && (
-              <Phone className="w-3.5 h-3.5 text-gray-400" />
+              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
             )}
             {provider.phone && (
-              <MessageSquare className="w-3.5 h-3.5 text-green-500" />
+              <MessageSquare className="w-3.5 h-3.5 text-status-confirmed" />
             )}
-            <Mail className="w-3.5 h-3.5 text-gray-400" />
+            <Mail className="w-3.5 h-3.5 text-muted-foreground" />
             <button
               title="Copy Invite Link"
               aria-label={`Copy invite link for ${provider.business_name}`}
@@ -164,7 +157,7 @@ function ProviderCard({
             </button>
           </div>
           {provider.avg_rating && (
-            <span className="text-[11px] text-gray-500 flex items-center gap-0.5">
+            <span className="text-2xs text-muted-foreground flex items-center gap-0.5">
               <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
               {provider.avg_rating.toFixed(1)}
             </span>
@@ -217,27 +210,24 @@ function ProviderModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="rounded-xl w-full overflow-hidden flex flex-col"
-        style={{ background: '#fff', maxWidth: 640, maxHeight: '90vh' }}
+        className="rounded-xl w-full overflow-hidden flex flex-col bg-background"
+        style={{ maxWidth: 640, maxHeight: '90vh' }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-gray-100">
+        <div className="flex items-start justify-between p-5 border-b border-border">
           <div>
-            <h2 className="font-bold text-gray-900 text-lg leading-tight">{provider.business_name}</h2>
+            <h2 className="font-bold text-foreground text-lg leading-tight">{provider.business_name}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs capitalize text-gray-500">{provider.type}</span>
-              <span className="text-gray-300">·</span>
-              <span className="text-xs text-gray-500 capitalize">{provider.region.replace('-', ' ')}</span>
-              <span className="text-gray-300">·</span>
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                style={{ background: TIER_COLORS[provider.tier]?.bg, color: TIER_COLORS[provider.tier]?.text }}
-              >
+              <span className="text-xs capitalize text-muted-foreground">{provider.type}</span>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="text-xs text-muted-foreground capitalize">{provider.region.replace('-', ' ')}</span>
+              <span className="text-muted-foreground/40">·</span>
+              <span className={`text-2xs font-bold px-1.5 py-0.5 rounded ${TIER_CLASSES[provider.tier] ?? TIER_CLASSES.C}`}>
                 Tier {provider.tier}
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-400" aria-label="Close provider details">
+          <button onClick={onClose} className="p-1 rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-muted-foreground" aria-label="Close provider details">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -245,7 +235,7 @@ function ProviderModal({
         <div className="overflow-y-auto flex-1 p-5 space-y-5">
           {/* Stage progress */}
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-2">PIPELINE STAGE</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">PIPELINE STAGE</p>
             <div className="flex items-center gap-1 flex-wrap">
               {STAGES.map((s, i) => {
                 const isActive = s.id === provider.stage;
@@ -255,13 +245,14 @@ function ProviderModal({
                     key={s.id}
                     onClick={() => handleMove(s.id)}
                     disabled={movingTo !== null}
-                    className="text-xs px-2.5 py-1 rounded-full transition-all border"
-                    style={{
-                      background: isActive ? s.color : isPast ? '#F3F4F6' : '#fff',
-                      color: isActive ? '#fff' : isPast ? '#9CA3AF' : '#374151',
-                      borderColor: isActive ? s.color : '#E5E7EB',
-                      fontWeight: isActive ? 600 : 400,
-                    }}
+                    className={`text-xs px-2.5 py-1 rounded-full transition-all border ${
+                      isActive
+                        ? 'text-white font-semibold'
+                        : isPast
+                        ? 'bg-muted text-muted-foreground border-border'
+                        : 'bg-background text-foreground border-border'
+                    }`}
+                    style={isActive ? { background: s.color, borderColor: s.color } : undefined}
                   >
                     {movingTo === s.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : s.label}
                   </button>
@@ -272,14 +263,14 @@ function ProviderModal({
 
           {/* Contact info */}
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-2">CONTACT</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">CONTACT</p>
             <div className="flex gap-2 flex-wrap">
               {provider.phone && (
                 <a
                   href={`tel:${provider.phone}`}
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-border hover:bg-muted"
                 >
-                  <Phone className="w-3.5 h-3.5 text-gray-500" />
+                  <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                   {provider.phone}
                 </a>
               )}
@@ -288,7 +279,7 @@ function ProviderModal({
                   href={`https://wa.me/${provider.phone?.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-status-confirmed/30 text-status-confirmed hover:bg-status-confirmed/10"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   WhatsApp
@@ -299,7 +290,7 @@ function ProviderModal({
                   const slug = provider.business_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
                   navigator.clipboard.writeText(`${window.location.origin}/join/${slug}`);
                 }}
-                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-cyan-200 text-cyan-700 hover:bg-cyan-50"
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted"
               >
                 <Link2 className="w-3.5 h-3.5" />
                 Copy Invite Link
@@ -308,8 +299,8 @@ function ProviderModal({
                 <button
                   onClick={() => handleMove(nextStage.id)}
                   disabled={movingTo !== null}
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg font-medium transition-all"
-                  style={{ background: nextStage.color, color: '#fff' }}
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg font-medium text-white transition-all"
+                  style={{ background: nextStage.color }}
                 >
                   {movingTo === nextStage.id
                     ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -318,7 +309,7 @@ function ProviderModal({
                 </button>
               )}
               {provider.stage !== 'live' ? null : (
-                <span className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-green-700 bg-green-50 border border-green-200">
+                <span className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-status-confirmed bg-status-confirmed/10 border border-status-confirmed/30">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Live
                 </span>
               )}
@@ -328,18 +319,18 @@ function ProviderModal({
           {/* Contact history */}
           {provider.contact_history.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">CONTACT HISTORY</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">CONTACT HISTORY</p>
               <div className="space-y-2">
                 {provider.contact_history.map((entry, i) => {
                   const Icon = contactIcon[entry.type];
                   return (
                     <div key={i} className="flex gap-2.5 text-sm">
                       <div className="mt-0.5 flex-shrink-0">
-                        <Icon className="w-3.5 h-3.5 text-gray-400" />
+                        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="text-gray-700">{entry.note}</span>
-                        <span className="ml-2 text-xs text-gray-400">
+                        <span className="text-foreground">{entry.note}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">
                           {new Date(entry.date).toLocaleDateString()}
                         </span>
                       </div>
@@ -352,13 +343,13 @@ function ProviderModal({
 
           {/* Notes */}
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-2">NOTES</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">NOTES</p>
             {provider.notes.length > 0 && (
               <div className="space-y-2 mb-3">
                 {provider.notes.map((note) => (
-                  <div key={note.id} className="rounded-lg p-3 text-sm" style={{ background: '#FAFAFA', border: '1px solid #F3F4F6' }}>
-                    <p className="text-gray-700">{note.text}</p>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(note.created_at).toLocaleDateString()}</p>
+                  <div key={note.id} className="rounded-lg p-3 text-sm bg-muted border border-border">
+                    <p className="text-foreground">{note.text}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{new Date(note.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
@@ -371,13 +362,12 @@ function ProviderModal({
                 onChange={(e) => setNoteText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddNote(); } }}
                 placeholder="Add a note..."
-                className="flex-1 text-sm px-3 py-2 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                className="flex-1 text-sm px-3 py-2 rounded-lg border border-border outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
               />
               <button
                 onClick={handleAddNote}
                 disabled={!noteText.trim() || savingNote}
-                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
-                style={{ background: '#3B82F6', color: '#fff' }}
+                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary transition-all bg-primary text-primary-foreground"
               >
                 {savingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
               </button>
@@ -385,22 +375,22 @@ function ProviderModal({
           </div>
 
           {/* Meta */}
-          <div className="grid grid-cols-2 gap-3 text-xs text-gray-500 pt-2 border-t border-gray-100">
+          <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
             <div>
-              <span className="font-medium text-gray-700">Assigned to</span>
+              <span className="font-medium text-foreground">Assigned to</span>
               <p>{provider.assigned_to || '—'}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Added</span>
+              <span className="font-medium text-foreground">Added</span>
               <p>{new Date(provider.created_at).toLocaleDateString()}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Days in stage</span>
+              <span className="font-medium text-foreground">Days in stage</span>
               <p>{daysInStage(provider.entered_stage_at)} days</p>
             </div>
             {provider.avg_rating && (
               <div>
-                <span className="font-medium text-gray-700">Rating</span>
+                <span className="font-medium text-foreground">Rating</span>
                 <p className="flex items-center gap-1">
                   <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                   {provider.avg_rating.toFixed(1)}
@@ -504,35 +494,34 @@ export default function AdminProvidersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#F3F4F6' }}>
+    <div className="flex flex-col h-full bg-muted/30">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-background border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Provider Onboarding Pipeline</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Track providers from lead to live</p>
+            <h1 className="text-xl font-bold text-foreground">Provider Onboarding Pipeline</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Track providers from lead to live</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted"
             >
               <Filter className="w-4 h-4" />
               Filters
               {(filterRegion || filterTier || filterType) && (
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="w-2 h-2 rounded-full bg-primary" />
               )}
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: '#3B82F6' }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
             >
               <Plus className="w-4 h-4" />
               Add from Scraped
@@ -543,35 +532,35 @@ export default function AdminProvidersPage() {
         {/* Stats bar */}
         <div className="flex items-center gap-6 mt-4">
           <div className="text-sm">
-            <span className="text-gray-500">Total</span>
-            <span className="ml-2 font-bold text-gray-900">{total}</span>
+            <span className="text-muted-foreground">Total</span>
+            <span className="ml-2 font-bold text-foreground">{total}</span>
           </div>
           {STAGES.map((s) => (
             <div key={s.id} className="text-sm">
               <span style={{ color: s.color }} className="font-medium">{s.label}</span>
-              <span className="ml-1.5 font-bold text-gray-900">{stageCounts[s.id] ?? 0}</span>
+              <span className="ml-1.5 font-bold text-foreground">{stageCounts[s.id] ?? 0}</span>
             </div>
           ))}
           <div className="text-sm ml-auto">
-            <span className="text-gray-500">Conversion</span>
-            <span className="ml-2 font-bold text-green-600">{conversionRate}%</span>
+            <span className="text-muted-foreground">Conversion</span>
+            <span className="ml-2 font-bold text-status-confirmed">{conversionRate}%</span>
           </div>
           <div className="text-sm">
-            <span className="text-gray-500">Avg days to live</span>
-            <span className="ml-2 font-bold text-gray-900">{avgDaysToLive}d</span>
+            <span className="text-muted-foreground">Avg days to live</span>
+            <span className="ml-2 font-bold text-foreground">{avgDaysToLive}d</span>
           </div>
         </div>
 
         {/* Filters */}
         {showFilters && (
-          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
             <div>
               <label htmlFor="filter-region" className="sr-only">Filter by region</label>
               <select
                 id="filter-region"
                 value={filterRegion}
                 onChange={(e) => setFilterRegion(e.target.value)}
-                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+                className="text-sm px-3 py-1.5 rounded-lg border border-border bg-background outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">All regions</option>
                 {REGIONS.map((r) => (
@@ -585,7 +574,7 @@ export default function AdminProvidersPage() {
                 id="filter-tier"
                 value={filterTier}
                 onChange={(e) => setFilterTier(e.target.value)}
-                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+                className="text-sm px-3 py-1.5 rounded-lg border border-border bg-background outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">All tiers</option>
                 <option value="A">Tier A</option>
@@ -599,7 +588,7 @@ export default function AdminProvidersPage() {
                 id="filter-type"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+                className="text-sm px-3 py-1.5 rounded-lg border border-border bg-background outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">All types</option>
                 <option value="hotel">Hotel</option>
@@ -611,7 +600,7 @@ export default function AdminProvidersPage() {
             {(filterRegion || filterTier || filterType) && (
               <button
                 onClick={() => { setFilterRegion(''); setFilterTier(''); setFilterType(''); }}
-                className="text-sm text-red-500 hover:underline"
+                className="text-sm text-status-cancelled hover:underline"
               >
                 Clear
               </button>
@@ -630,12 +619,12 @@ export default function AdminProvidersPage() {
             return (
               <div
                 key={stage.id}
-                className="flex flex-col rounded-xl flex-shrink-0 transition-all"
-                style={{
-                  width: 240,
-                  background: isDropTarget ? stage.bg : '#ECEFF4',
-                  border: `2px solid ${isDropTarget ? stage.color : 'transparent'}`,
-                }}
+                className={`flex flex-col rounded-xl flex-shrink-0 transition-all border-2 ${
+                  isDropTarget
+                    ? `${stage.activeBg} ${stage.dropBorder}`
+                    : 'bg-muted/50 border-transparent'
+                }`}
+                style={{ width: 240 }}
                 onDragOver={(e) => handleDragOver(e, stage.id)}
                 onDragLeave={() => setDropTarget(null)}
                 onDrop={(e) => handleDrop(e, stage.id)}
@@ -658,8 +647,7 @@ export default function AdminProvidersPage() {
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                   {columnProviders.length === 0 && (
                     <div
-                      className="rounded-lg border-2 border-dashed flex items-center justify-center text-xs text-gray-400 py-6"
-                      style={{ borderColor: stage.border }}
+                      className="rounded-lg border-2 border-dashed border-border flex items-center justify-center text-xs text-muted-foreground py-6"
                     >
                       Drop here
                     </div>
@@ -744,34 +732,34 @@ function AddFromScrapedModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="rounded-xl w-full overflow-hidden flex flex-col"
-        style={{ background: '#fff', maxWidth: 520, maxHeight: '80vh' }}
+        className="rounded-xl w-full overflow-hidden flex flex-col bg-background"
+        style={{ maxWidth: 520, maxHeight: '80vh' }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="font-bold text-gray-900">Add from Scraped Listings</h3>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h3 className="font-bold text-foreground">Add from Scraped Listings</h3>
+          <button onClick={onClose}><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
-        <div className="p-3 border-b border-gray-100">
+        <div className="p-3 border-b border-border">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search listings..."
-            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-400"
+            className="w-full text-sm px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-primary"
           />
         </div>
         <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">No listings found</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No listings found</p>
           ) : (
             filtered.slice(0, 30).map((l) => (
-              <div key={l.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+              <div key={l.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{l.name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{l.type} · {l.region}</p>
+                  <p className="text-sm font-medium text-foreground">{l.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{l.type} · {l.region}</p>
                 </div>
                 <button
                   disabled={adding === l.id}
@@ -787,8 +775,7 @@ function AddFromScrapedModal({
                     });
                     setAdding(null);
                   }}
-                  className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all"
-                  style={{ background: '#3B82F6', color: '#fff' }}
+                  className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all bg-primary text-primary-foreground"
                 >
                   {adding === l.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
                 </button>

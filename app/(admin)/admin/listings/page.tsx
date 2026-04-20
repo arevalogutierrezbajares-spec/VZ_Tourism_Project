@@ -254,10 +254,10 @@ function EditPanel({
 
       {/* Warnings */}
       {warnings.length > 0 && (
-        <div className="mx-5 mt-4 p-3 rounded-lg bg-amber-50 border border-amber-100 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+        <div className="mx-5 mt-4 p-3 rounded-lg bg-status-pending/10 border border-status-pending/20 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-status-pending mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-xs font-medium text-amber-800">Missing: {warnings.join(', ')}</p>
+            <p className="text-xs font-medium text-status-pending">Missing: {warnings.join(', ')}</p>
           </div>
         </div>
       )}
@@ -353,7 +353,7 @@ function EditPanel({
           </div>
           {descDiff ? (
             <div className="space-y-2">
-              <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+              <div className="p-3 rounded-lg bg-status-cancelled/5 border border-status-cancelled/20">
                 <div className="text-2xs text-status-cancelled font-medium mb-1">BEFORE</div>
                 <p className="text-xs text-muted-foreground">{descDiff.original}</p>
               </div>
@@ -926,8 +926,8 @@ function OutreachModal({
           <div className="flex-1 p-5 overflow-y-auto">
             {generating ? (
               <div className="flex flex-col items-center justify-center h-40 gap-3">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                <p className="text-sm text-gray-500">Generando mensajes personalizados con IA...</p>
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Generando mensajes personalizados con IA...</p>
               </div>
             ) : messages ? (
               <div className="space-y-3">
@@ -940,15 +940,15 @@ function OutreachModal({
                         value={editedText}
                         onChange={(e) => setEditedText(e.target.value)}
                         rows={8}
-                        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-primary rounded text-gray-800"
+                        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-primary rounded text-foreground"
                       />
                     </>
                   ) : (
-                    <p className="text-gray-800">{currentText}</p>
+                    <p className="text-foreground">{currentText}</p>
                   )}
                 </div>
                 {sent === tab && (
-                  <div className="flex items-center gap-2 text-green-600 text-xs">
+                  <div className="flex items-center gap-2 text-status-confirmed text-xs">
                     <Check className="w-3.5 h-3.5" />
                     Enviado y registrado en el CRM
                   </div>
@@ -1003,7 +1003,7 @@ function OutreachModal({
 
 export default function AdminListingsPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-full py-24 text-gray-400">Loading…</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-full py-24 text-muted-foreground">Loading…</div>}>
       <AdminListingsInner />
     </Suspense>
   );
@@ -1607,7 +1607,7 @@ function AdminListingsInner() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={9} className="py-24 text-center text-gray-400">
+                <td colSpan={9} className="py-24 text-center text-muted-foreground">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
                   <p className="text-sm">Loading 1,170+ listings…</p>
                 </td>
@@ -1615,7 +1615,7 @@ function AdminListingsInner() {
             )}
             {!loading && paginated.length === 0 && (
               <tr>
-                <td colSpan={9} className="py-24 text-center text-gray-400">
+                <td colSpan={9} className="py-24 text-center text-muted-foreground">
                   <SlidersHorizontal className="w-8 h-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">No listings match your filters</p>
                 </td>
@@ -1761,7 +1761,7 @@ function AdminListingsInner() {
                           setAllListings((prev) => prev.map((x) => x.id === l.id ? { ...x, status: x.status === 'featured' ? 'published' : 'featured' } : x));
                         }}
                       >
-                        <Star className={`w-3.5 h-3.5 ${l.status === 'featured' ? 'text-amber-400 fill-amber-400' : 'text-gray-400'}`} />
+                        <Star className={`w-3.5 h-3.5 ${l.status === 'featured' ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
                       </button>
                       <button
                         className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
