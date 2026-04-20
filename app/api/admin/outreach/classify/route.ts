@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, CLAUDE_MODEL } from '@/lib/claude/client';
 import { getById, updateRecord } from '@/lib/outreach-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 const CLASSIFIER_SYSTEM = `Eres un experto en análisis de respuestas B2B para ventas SaaS de turismo.
 Tu tarea: clasificar respuestas de negocios venezolanos a mensajes de outreach de VZ Explorer.
@@ -44,6 +45,9 @@ const SAMPLE_RESPONSES = [
 ];
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { outreach_id, response_text, simulate = false } = body;
 

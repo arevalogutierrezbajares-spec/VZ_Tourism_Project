@@ -8,7 +8,8 @@ import { NextRequest } from 'next/server';
  */
 export async function GET(request: NextRequest) {
   const photoName = request.nextUrl.searchParams.get('ref');
-  const maxWidth = request.nextUrl.searchParams.get('maxWidth') || '800';
+  const rawMaxWidth = parseInt(request.nextUrl.searchParams.get('maxWidth') || '800', 10);
+  const maxWidth = String(Math.min(Math.max(isNaN(rawMaxWidth) ? 800 : rawMaxWidth, 100), 2000));
 
   if (!photoName) {
     return new Response('Missing photo reference', { status: 400 });

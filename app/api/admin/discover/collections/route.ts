@@ -5,15 +5,22 @@ import {
   updateCollection,
   deleteCollection,
 } from '@/lib/discover-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const collections = getCollections();
   return NextResponse.json({ collections });
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   try {
     const data = await request.json();
     const collection = createCollection(data);
@@ -24,6 +31,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   try {
     const data = await request.json();
     const { id, ...updates } = data;
@@ -37,6 +47,9 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

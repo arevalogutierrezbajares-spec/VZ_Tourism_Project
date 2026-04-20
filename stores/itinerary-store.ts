@@ -213,6 +213,7 @@ export const useItineraryStore = create<ItineraryStore>()(
     }),
     {
       name: 'vz_itinerary',
+      skipHydration: true,
       // Only persist data — not ephemeral UI state (isOpen, isSaving)
       partialize: (state) => ({
         current: state.current,

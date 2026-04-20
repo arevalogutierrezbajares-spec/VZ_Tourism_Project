@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, createClient } from '@/lib/supabase/server';
 import {
   createBooking,
   getAllBookings,
@@ -11,40 +11,7 @@ import { PLATFORM_COMMISSION_RATE } from '@/lib/constants';
 import { createCheckoutSession } from '@/lib/stripe/server';
 import { Resend } from 'resend';
 
-/**
- * Returns a Supabase service-role client, or null if env vars are not set.
- * Uses the service role key to bypass RLS for server-side booking writes.
- */
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key);
-}
 
-/**
- * Estimates a nightly/per-person price for a listing based on type and rating.
- * Used when no explicit price_usd is stored (scraped data often lacks pricing).
- */
-function estimatePrice(listing: Record<string, unknown> | undefined): number {
-  if (!listing) return 60;
-  const type = String(listing.type ?? '').toLowerCase();
-  const rating = Number(listing.avg_rating ?? listing.rating ?? 0);
-
-  if (type === 'restaurante' || type === 'restaurant') {
-    return rating >= 4.5 ? 35 : rating >= 4 ? 27 : 18;
-  }
-  if (type === 'posada' || type === 'alojamiento' || type === 'hospedaje') {
-    return rating >= 4.5 ? 75 : rating >= 4 ? 60 : 40;
-  }
-  if (type === 'hotel') {
-    return rating >= 4.5 ? 185 : rating >= 4 ? 110 : rating >= 3 ? 80 : 60;
-  }
-  if (type === 'tours' || type === 'experience') {
-    return rating >= 4.5 ? 45 : 30;
-  }
-  return 60;
-}
 
 // Load scraped listings for price/capacity lookups
 let _listings: Record<string, unknown>[] | null = null;
@@ -76,27 +43,32 @@ const createBookingSchema = z.object({
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
-  const email = searchParams.get('email');
 
-  // Try Supabase first
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
-      let query = supabase.from('guest_bookings').select('*').order('created_at', { ascending: false });
-      if (email) query = query.eq('guest_email', email);
-      if (status) query = query.eq('status', status);
-      const { data, error } = await query;
-      if (!error && data) {
-        return NextResponse.json({ data, count: data.length });
-      }
-      console.error('Supabase GET bookings error:', error);
-    } catch (err) {
-      console.error('Supabase GET bookings exception:', err);
+  // Authenticate using cookie-based SSR client
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const email = user.email;
+  if (!email) return NextResponse.json({ data: [], count: 0 });
+
+  // Try Supabase first — scoped to authenticated user's email only
+  try {
+    let query = supabase.from('guest_bookings').select('*').eq('guest_email', email).order('created_at', { ascending: false });
+    if (status) query = query.eq('status', status);
+    const { data, error } = await query;
+    if (!error && data) {
+      return NextResponse.json({ data, count: data.length });
     }
+    console.error('Supabase GET bookings error:', error);
+  } catch (err) {
+    console.error('Supabase GET bookings exception:', err);
   }
 
-  // JSON fallback
-  let bookings = email ? getBookingsByEmail(email) : getAllBookings();
+  // JSON fallback — scoped to authenticated user's email
+  let bookings = getBookingsByEmail(email);
   if (status) bookings = bookings.filter((b) => b.status === status);
   bookings = [...bookings].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -152,7 +124,13 @@ export async function POST(request: NextRequest) {
   const listing_name = listing?.title ?? listing?.name ?? `Experience ${listing_id}`;
   const listing_slug = (listing as { slug?: string } | undefined)?.slug;
   const provider_id = listing?.provider_id;
-  const base_price_usd = listing?.price_usd ?? listing?.price ?? estimatePrice(listing);
+  const base_price_usd = listing?.price_usd ?? listing?.price;
+  if (!base_price_usd) {
+    return NextResponse.json(
+      { error: 'This listing does not have pricing available yet. Bookings are only available for verified partners.' },
+      { status: 422 }
+    );
+  }
   const max_guests = listing?.max_guests ?? 99;
   const min_guests = listing?.min_guests ?? 1;
 
@@ -208,7 +186,7 @@ export async function POST(request: NextRequest) {
   // Try Supabase first
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let booking: any = null;
-  const supabase = getSupabase();
+  const supabase = await createServiceClient();
   if (supabase) {
     try {
       const { data, error } = await supabase

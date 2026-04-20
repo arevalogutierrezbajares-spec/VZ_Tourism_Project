@@ -134,7 +134,19 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) {
+    return (
+      <div className="container px-4 py-16 max-w-md mx-auto text-center">
+        <p className="text-lg font-medium mb-2">Sign in to view your booking</p>
+        <p className="text-sm text-muted-foreground mb-6">
+          Your booking details are available after signing in.
+        </p>
+        <a href="/login?next=/trips" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+          Sign in
+        </a>
+      </div>
+    );
+  }
 
   if (!booking) {
     return (

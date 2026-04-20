@@ -16,7 +16,7 @@ export function MyTripFab() {
     <Link
       href="/plan"
       className={cn(
-        'fixed bottom-6 right-6 z-40',
+        'fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40',
         'flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg',
         'bg-primary text-primary-foreground',
         'hover:bg-primary/90 transition-all hover:shadow-xl hover:-translate-y-0.5',

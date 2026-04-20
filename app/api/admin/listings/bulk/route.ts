@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bulkUpdate, loadAll } from '@/lib/admin-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { ids, action, value, preview } = body as {
     ids: string[];

@@ -29,17 +29,23 @@ export default async function ProviderDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  const { data: recentBookings } = await supabase
-    .from('bookings')
-    .select('*, listing:listings(title, slug), tourist:users(full_name, avatar_url)')
-    .in('listing_id', listings?.map((l) => l.id) || [])
-    .order('created_at', { ascending: false })
-    .limit(10);
+  const listingIds = listings?.map((l) => l.id) || [];
 
-  const { data: allBookings } = await supabase
-    .from('bookings')
-    .select('total_usd, status')
-    .in('listing_id', listings?.map((l) => l.id) || []);
+  const { data: recentBookings } = listingIds.length > 0
+    ? await supabase
+        .from('bookings')
+        .select('*, listing:listings(title, slug), tourist:users(full_name, avatar_url)')
+        .in('listing_id', listingIds)
+        .order('created_at', { ascending: false })
+        .limit(10)
+    : { data: [] };
+
+  const { data: allBookings } = listingIds.length > 0
+    ? await supabase
+        .from('bookings')
+        .select('total_usd, status')
+        .in('listing_id', listingIds)
+    : { data: [] };
 
   const totalRevenue = allBookings?.filter((b) => b.status === 'completed').reduce((sum, b) => sum + (b.total_usd || 0), 0) || 0;
   const pendingBookings = allBookings?.filter((b) => b.status === 'pending').length || 0;

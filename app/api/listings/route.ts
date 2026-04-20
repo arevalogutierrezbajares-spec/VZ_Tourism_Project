@@ -125,7 +125,10 @@ export async function GET(request: NextRequest) {
           .range(offset, offset + limit - 1);
 
         if (region) query = query.eq('region', region);
-        if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,location_name.ilike.%${search}%`);
+        if (search) {
+          const s = search.replace(/[%_,()\\]/g, '\\$&');
+          query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%,location_name.ilike.%${s}%`);
+        }
         if (category) query = query.eq('category', category);
         else if (type) query = query.eq('category', mapTypeToCategory(type));
         if (minPrice !== undefined && !isNaN(minPrice)) query = query.gte('price_usd', minPrice);
@@ -186,7 +189,10 @@ export async function GET(request: NextRequest) {
         .limit(10000);
 
       if (region) query = query.eq('region', region);
-      if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+      if (search) {
+        const s = search.replace(/[%_,()\\]/g, '\\$&');
+        query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%`);
+      }
       if (category) query = query.eq('category', category);
       else if (type) query = query.eq('category', mapTypeToCategory(type));
 

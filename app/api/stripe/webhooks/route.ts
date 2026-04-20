@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/server';
 import { handleWebhookEvent } from '@/lib/stripe/server';
 import { updateBookingStatus, updateBookingBySessionId, getBooking } from '@/lib/bookings-store';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key);
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function updateSupabaseBooking(supabase: any, id: string, status: string, extra: Record<string, unknown> = {}) {
@@ -45,7 +38,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const supabase = getSupabase();
+  const supabase = await createServiceClient();
 
   try {
     switch (event.type) {

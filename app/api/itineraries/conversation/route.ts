@@ -1,12 +1,26 @@
 import { NextRequest } from 'next/server';
 import { getAnthropicClient, tourismTools } from '@/lib/claude/client';
 import { handleToolCall } from '@/lib/claude/tool-handlers';
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
+import { z } from 'zod';
 import type Anthropic from '@anthropic-ai/sdk';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const SONNET_MODEL = 'claude-sonnet-4-5';
+
+const conversationSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.string(),
+        content: z.string().max(10000, 'Message content must be 10,000 characters or fewer'),
+      })
+    )
+    .min(1, 'At least one message is required')
+    .max(50, 'Conversation exceeds maximum length of 50 messages'),
+});
 
 const PLANNING_SYSTEM_PROMPT = `You are VZ, a Venezuela trip planner. Be SHORT and PUNCHY.
 
@@ -42,6 +56,9 @@ Match the user's language.`;
  * Streams text token-by-token via SSE. Emits <day-plan> and <itinerary-json> events.
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(getClientIp(request), 10);
+  if (limited) return limited;
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return new Response(JSON.stringify({ error: 'The AI trip planner is temporarily unavailable. Please try again later.' }), {
       status: 503,
@@ -50,16 +67,17 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { messages: inputMessages } = body as {
-    messages: { role: 'user' | 'assistant'; content: string }[];
-  };
+  const parsed = conversationSchema.safeParse(body);
 
-  if (!inputMessages?.length) {
-    return new Response(JSON.stringify({ error: 'Messages required' }), {
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? 'Invalid request body';
+    return new Response(JSON.stringify({ error: firstError }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  const { messages: inputMessages } = parsed.data;
 
   const encoder = new TextEncoder();
 
@@ -74,7 +92,7 @@ export async function POST(request: NextRequest) {
       const client = getAnthropicClient();
 
       let apiMessages: Anthropic.MessageParam[] = inputMessages.map((m) => ({
-        role: m.role,
+        role: m.role as 'user' | 'assistant',
         content: m.content,
       }));
 

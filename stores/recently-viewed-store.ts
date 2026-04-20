@@ -41,7 +41,7 @@ export const useRecentlyViewedStore = create<RecentlyViewedState & RecentlyViewe
 
         clear: () => set({ items: [] }),
       }),
-      { name: 'vz-recently-viewed' }
+      { name: 'vz-recently-viewed', skipHydration: true }
     ),
     { name: 'recently-viewed-store' }
   )

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className={`border-t bg-muted/30 ${className ?? ''}`}>
       <div className="container px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="col-span-2 md:col-span-1">

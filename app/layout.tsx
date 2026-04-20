@@ -1,10 +1,24 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Fraunces, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
+import { StoreHydration } from '@/components/common/StoreHydration';
+import { MotionProvider } from '@/components/common/MotionProvider';
 import './globals.css';
 
 const inter = Inter({
   variable: '--font-sans',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const fraunces = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-body',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -32,9 +46,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${fraunces.variable} ${plusJakartaSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          Skip to content
+        </a>
+        <StoreHydration />
+        <MotionProvider>
+          {children}
+        </MotionProvider>
         <Toaster
           position="top-right"
           toastOptions={{

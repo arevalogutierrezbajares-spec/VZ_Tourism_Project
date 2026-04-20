@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { streamSearch } from '@/lib/claude/client';
 import { searchListings, mapTypeToCategory } from '@/lib/local-listings';
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
 import type { AISearchRequest } from '@/types/api';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(getClientIp(request), 10);
+  if (limited) return limited;
+
   const body = (await request.json()) as AISearchRequest;
   const { query, conversationHistory, filters } = body;
 
@@ -101,10 +105,11 @@ export async function POST(request: NextRequest) {
           case 'get_safety_info': {
             if (!supabase) return [];
             const { region } = input as { region: string };
+            const escapedRegion = region.replace(/[%_]/g, '\\$&');
             const { data } = await supabase
               .from('safety_zones')
               .select('name, level, description, tips')
-              .ilike('name', `%${region}%`)
+              .ilike('name', `%${escapedRegion}%`)
               .limit(3);
             return data || [];
           }

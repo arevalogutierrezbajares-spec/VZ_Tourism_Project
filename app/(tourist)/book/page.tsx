@@ -38,22 +38,11 @@ interface ApiListing {
   platform_status?: string;
 }
 
-function estimatePrice(listing: ApiListing): number {
-  const type = listing.type?.toLowerCase() ?? '';
-  const rating = listing.rating ?? 0;
-  if (type === 'restaurante' || type === 'restaurant' || type === 'cafe') return rating >= 4.5 ? 35 : 22;
-  if (type === 'hotel') return rating >= 4.5 ? 185 : rating >= 4 ? 110 : 75;
-  if (type === 'posada' || type === 'hospedaje') return rating >= 4.5 ? 75 : 50;
-  if (type === 'tours' || type === 'experience') return rating >= 4.5 ? 45 : 30;
-  return 60;
-}
-
 function ResultCard({ listing }: { listing: ApiListing }) {
-  const price = estimatePrice(listing);
   const isOnboarded = listing.platform_status === 'verified' || listing.platform_status === 'founding_partner';
   return (
     <Link href={`/listing/${listing.slug}`} className="group block">
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden border">
+      <div className={cn('bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden border', !isOnboarded && 'opacity-90')}>
         <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
           <div className="absolute inset-0">
             {listing.cover_image_url ? (
@@ -74,10 +63,11 @@ function ResultCard({ listing }: { listing: ApiListing }) {
               <MapPin className="w-3 h-3" />
               {listing.region}
             </div>
-            <span className="text-sm font-semibold text-foreground">
-              ~${price}
-              <span className="text-xs font-normal text-muted-foreground">/night</span>
-            </span>
+            {!isOnboarded && (
+              <span className="text-muted-foreground bg-muted text-xs px-2 py-0.5 rounded-full">
+                Preview
+              </span>
+            )}
           </div>
           <div className="mt-3">
             <span className={cn(

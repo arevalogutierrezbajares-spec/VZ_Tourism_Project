@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, createRecord, updateRecord, getStats } from '@/lib/outreach-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const { searchParams } = req.nextUrl;
   const filters = {
     status: searchParams.get('status') ?? undefined,
@@ -18,6 +22,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
 
   const {
@@ -57,6 +64,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { id, ...fields } = body;
 

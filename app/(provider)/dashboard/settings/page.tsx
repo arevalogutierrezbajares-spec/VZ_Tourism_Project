@@ -17,8 +17,9 @@ type ProviderForm = z.infer<typeof providerSchema>;
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   // TODO: replace with real provider session once auth is implemented
-  const [providerId, setProviderId] = useState<string>('prov_001');
+  const [providerId, setProviderId] = useState<string>('');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProviderForm>({
     resolver: zodResolver(providerSchema) as any,
@@ -31,6 +32,7 @@ export default function SettingsPage() {
         const json = await res.json();
         if (res.ok && json.data) {
           setProviderId(json.data.id);
+          setLoadError(false);
           reset({
             business_name: json.data.business_name || '',
             description: json.data.description || '',
@@ -40,8 +42,12 @@ export default function SettingsPage() {
             instagram_handle: json.data.instagram_handle || '',
             rif: json.data.rif || '',
           });
+        } else {
+          setLoadError(true);
+          toast.error('Failed to load provider profile');
         }
       } catch {
+        setLoadError(true);
         toast.error('Failed to load settings');
       }
     }
@@ -49,6 +55,10 @@ export default function SettingsPage() {
   }, [reset]);
 
   async function onSubmit(data: ProviderForm) {
+    if (!providerId) {
+      toast.error('Provider profile not loaded. Please refresh the page.');
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await fetch(`/api/providers/${providerId}`, {
@@ -72,6 +82,19 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold">Provider Settings</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Manage your business profile and payment preferences</p>
       </div>
+
+      {loadError && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+          <p className="text-sm text-destructive font-medium">Unable to load your provider profile. Changes cannot be saved.</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="text-sm text-destructive underline mt-1"
+          >
+            Refresh page to retry
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -107,8 +130,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? 'Saving...' : 'Save Settings'}
+        <Button type="submit" disabled={isLoading || !providerId} className="w-full">
+          {isLoading ? 'Saving...' : !providerId ? 'Save Settings (unavailable)' : 'Save Settings'}
         </Button>
       </form>
 

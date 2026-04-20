@@ -34,6 +34,7 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     }),
     {
       name: 'vz_favorites',
+      skipHydration: true,
       // Only persist the favorites array — not auth state (userId/loaded)
       partialize: (state) => ({ favorites: state.favorites }),
     }

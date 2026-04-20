@@ -8,8 +8,12 @@ import {
   type ProviderStage,
   type ProviderTier,
 } from '@/lib/providers-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const { searchParams } = new URL(req.url);
   const region = searchParams.get('region');
   const tier = searchParams.get('tier');
@@ -27,6 +31,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { business_id, business_name, type, region, tier, phone, cover_image_url, avg_rating } = body;
 
@@ -54,6 +61,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { id, action, ...rest } = body;
 

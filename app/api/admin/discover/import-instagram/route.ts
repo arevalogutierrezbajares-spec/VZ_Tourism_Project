@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createContent } from '@/lib/discover-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export const runtime = 'nodejs';
 
@@ -13,6 +14,9 @@ interface OEmbedResponse {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   try {
     const { url } = await request.json();
     if (!url || !url.includes('instagram.com')) {

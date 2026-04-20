@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient } from '@/lib/claude/client';
 import { updateListing, bulkUpdate, loadAll } from '@/lib/admin-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 const MODEL = 'claude-opus-4-5';
 
@@ -139,6 +140,9 @@ Query: "${query}"`,
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { action, id, ids, listing, query, save } = body as {
     action: string;

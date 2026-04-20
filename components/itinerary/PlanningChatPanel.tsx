@@ -203,6 +203,7 @@ export function PlanningChatPanel({
         const decoder = new TextDecoder();
         let fullText = '';
         let buffer = '';
+        let streamDone = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -227,6 +228,7 @@ export function PlanningChatPanel({
                 setGeneratedItinerary(payload.data);
                 onItinerary?.(payload.data);
               } else if (payload.type === 'done') {
+                streamDone = true;
                 const cleanText = cleanStreamText(fullText);
                 setMessages((prev) => [
                   ...prev,
@@ -240,6 +242,15 @@ export function PlanningChatPanel({
               // Skip malformed SSE lines
             }
           }
+        }
+
+        // Stream ended without a 'done' event — commit partial text so it isn't lost
+        if (!streamDone && fullText.trim()) {
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: cleanStreamText(fullText) },
+          ]);
+          setStreamingText('');
         }
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, CLAUDE_MODEL } from '@/lib/claude/client';
 import { loadAll } from '@/lib/admin-store';
 import { bulkCreate } from '@/lib/outreach-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 const COMPOSER_SYSTEM = `Eres un experto en ventas B2B especializado en turismo venezolano.
 Redacta mensajes de outreach personalizados para invitar a negocios a unirse a VZ Explorer como socios fundadores.
@@ -35,6 +36,9 @@ async function composeMessage(
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const {
     business_ids,

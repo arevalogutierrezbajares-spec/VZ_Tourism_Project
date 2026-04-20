@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { CLAUDE_MODEL, SYSTEM_PROMPT } from '@/lib/claude/client';
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(getClientIp(request), 10);
+  if (limited) return limited;
+
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();

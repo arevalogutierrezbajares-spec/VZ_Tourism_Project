@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient } from '@/lib/claude/client';
 import { getAllContent } from '@/lib/discover-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export const runtime = 'nodejs';
 
@@ -18,6 +19,9 @@ async function generateText(prompt: string): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'AI not configured' }, { status: 503 });
   }

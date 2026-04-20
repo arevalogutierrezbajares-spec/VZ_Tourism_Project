@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { MapPin, Heart, Plus, Compass, Waves, Mountain, Building2, Utensils, Zap, Bird } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useItineraryStore } from '@/stores/itinerary-store';
@@ -66,7 +67,7 @@ function InstagramCard({ item }: { item: DiscoverItem }) {
       <div
         ref={containerRef}
         className="w-full bg-white"
-        dangerouslySetInnerHTML={{ __html: embedHtml }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(embedHtml) }}
       />
     );
   }

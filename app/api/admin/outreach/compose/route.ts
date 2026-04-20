@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, CLAUDE_MODEL } from '@/lib/claude/client';
 import { loadAll } from '@/lib/admin-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 const COMPOSER_SYSTEM = `Eres un experto en ventas B2B y relaciones con hoteles, restaurantes y operadores turísticos venezolanos.
 Tu tarea es redactar mensajes de outreach PERSONALIZADOS para invitar a negocios a unirse a VZ Explorer como socios fundadores.
@@ -24,6 +25,9 @@ Para Instagram DM: máximo 2-3 líneas, muy breve, 1-2 emojis, call-to-action cl
 Para Email: estructura formal breve: saludo, propuesta, beneficio clave, CTA. Máximo 5 párrafos cortos.`;
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { business_id, channels = ['whatsapp', 'instagram', 'email'] } = body;
 

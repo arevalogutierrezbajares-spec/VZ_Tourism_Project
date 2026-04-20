@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useTransition } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import {
   Plus, Grid3X3, List, Search, Filter, Wand2, Tag,
   MapPin, Star, Archive, Eye, EyeOff, Trash2, Edit3, X, Check,
@@ -337,7 +338,7 @@ function ContentEditModal({
               </div>
               <div
                 className="p-3 flex justify-center"
-                dangerouslySetInnerHTML={{ __html: form.instagram_embed_html }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(form.instagram_embed_html) }}
               />
             </div>
           )}

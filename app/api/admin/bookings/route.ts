@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllBookings } from '@/lib/bookings-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
   const region = searchParams.get('region');

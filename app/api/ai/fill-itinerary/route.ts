@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnthropicClient, tourismTools, SYSTEM_PROMPT } from '@/lib/claude/client';
 import { handleToolCall } from '@/lib/claude/tool-handlers';
+import { rateLimit, getClientIp } from '@/lib/api/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -14,6 +15,9 @@ const SONNET_MODEL = 'claude-sonnet-4-5-20241022';
  * Uses Sonnet with search_listings tool to populate with real DB listings.
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(getClientIp(request), 10);
+  if (limited) return limited;
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'AI not configured' }, { status: 503 });
   }

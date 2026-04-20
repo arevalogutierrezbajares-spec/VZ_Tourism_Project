@@ -63,6 +63,7 @@ export const useAuthStore = create<AuthStore>()(
       }),
       {
         name: 'vz-auth',
+        skipHydration: true,
         // Only persist user/profile — loading/initialized are transient
         partialize: (state) => ({ user: state.user, profile: state.profile }),
       }

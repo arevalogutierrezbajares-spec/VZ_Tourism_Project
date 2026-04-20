@@ -117,7 +117,19 @@ export default function AccountPage() {
     );
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) {
+    return (
+      <div className="container px-4 py-16 max-w-md mx-auto text-center">
+        <p className="text-lg font-medium mb-2">Sign in to manage your account</p>
+        <p className="text-sm text-muted-foreground mb-6">
+          Your profile, preferences, and settings are available after signing in.
+        </p>
+        <a href="/login?next=/account" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+          Sign in
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="container px-4 py-8 max-w-2xl mx-auto">

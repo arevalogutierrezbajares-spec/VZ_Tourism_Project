@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loadAll, updateListing, deleteListing } from '@/lib/admin-store';
+import { requireAdmin } from '@/lib/api/require-auth';
 
 const CATEGORY_TYPES: Record<string, string[]> = {
   hotels: ['hotel', 'posada', 'hospedaje', 'alojamiento', 'casa vacacional', 'hostal'],
@@ -16,6 +17,9 @@ function mapTypeToCategory(type: string): string {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const { searchParams } = req.nextUrl;
   const search = searchParams.get('search') || '';
   const category = searchParams.get('category') || 'all';
@@ -75,6 +79,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const body = await req.json();
   const { id, ...fields } = body;
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -84,6 +91,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return auth.error;
+
   const { searchParams } = req.nextUrl;
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });

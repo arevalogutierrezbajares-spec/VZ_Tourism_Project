@@ -1,18 +1,20 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getAllBookings, type LocalBooking, type BookingStatus } from '@/lib/bookings-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProviderBookingActions } from '@/components/provider/ProviderBookingActions';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Bookings' };
 export const dynamic = 'force-dynamic';
 
 const STATUS_COLORS: Record<BookingStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  confirmed: 'bg-green-100 text-green-800 border-green-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
-  completed: 'bg-blue-100 text-blue-800 border-blue-200',
-  payment_submitted: 'bg-purple-100 text-purple-800 border-purple-200',
+  pending: 'bg-status-pending/10 text-status-pending border-status-pending/20',
+  confirmed: 'bg-status-confirmed/10 text-status-confirmed border-status-confirmed/20',
+  cancelled: 'bg-status-cancelled/10 text-status-cancelled border-status-cancelled/20',
+  completed: 'bg-status-info/10 text-status-info border-status-info/20',
+  payment_submitted: 'bg-status-pending/10 text-status-pending border-status-pending/20',
 };
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -62,7 +64,7 @@ function BookingRow({ booking }: { booking: LocalBooking }) {
               <span className="font-semibold text-foreground">
                 ${booking.total_usd.toFixed(2)} total
               </span>
-              <span className="text-green-700">
+              <span className="text-status-confirmed">
                 ${booking.net_provider_usd.toFixed(2)} to you
               </span>
             </div>
@@ -87,6 +89,11 @@ function BookingRow({ booking }: { booking: LocalBooking }) {
 }
 
 export default async function BookingsPage() {
+  const supabase = await createClient();
+  if (!supabase) redirect('/login');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
   const allBookings = getAllBookings().sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
@@ -117,10 +124,10 @@ export default async function BookingsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {(
           [
-            { label: 'Pending', count: counts.pending, color: 'text-yellow-600' },
-            { label: 'Confirmed', count: counts.confirmed, color: 'text-green-600' },
-            { label: 'Completed', count: counts.completed, color: 'text-blue-600' },
-            { label: 'Cancelled', count: counts.cancelled, color: 'text-red-600' },
+            { label: 'Pending', count: counts.pending, color: 'text-status-pending' },
+            { label: 'Confirmed', count: counts.confirmed, color: 'text-status-confirmed' },
+            { label: 'Completed', count: counts.completed, color: 'text-status-info' },
+            { label: 'Cancelled', count: counts.cancelled, color: 'text-status-cancelled' },
           ] as const
         ).map(({ label, count, color }) => (
           <Card key={label}>
@@ -135,7 +142,7 @@ export default async function BookingsPage() {
       {/* Pending / needs action */}
       {pendingBookings.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-yellow-700 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-status-pending uppercase tracking-wide">
             Needs Action ({pendingBookings.length})
           </h2>
           {pendingBookings.map((b) => (
@@ -147,7 +154,7 @@ export default async function BookingsPage() {
       {/* Upcoming / confirmed */}
       {confirmedBookings.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-green-700 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-status-confirmed uppercase tracking-wide">
             Upcoming ({confirmedBookings.length})
           </h2>
           {confirmedBookings.map((b) => (

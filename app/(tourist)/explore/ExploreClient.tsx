@@ -197,23 +197,6 @@ function generateTags(listing: ApiListing): Tag[] {
   return tags.slice(0, 4);
 }
 
-function estimateListingPrice(listing: ApiListing): number {
-  const type = listing.type?.toLowerCase() ?? '';
-  const rating = listing.rating ?? 0;
-  if (type === 'restaurante' || type === 'restaurant' || type === 'cafe' || type === 'bar') {
-    return rating >= 4.5 ? 35 : rating >= 4 ? 27 : 18;
-  }
-  if (type === 'posada' || type === 'alojamiento' || type === 'hospedaje' || type === 'casa vacacional') {
-    return rating >= 4.5 ? 75 : rating >= 4 ? 60 : 40;
-  }
-  if (type === 'hotel') {
-    return rating >= 4.5 ? 185 : rating >= 4 ? 110 : rating >= 3 ? 80 : 60;
-  }
-  if (type === 'tours' || type === 'tour' || type === 'experience') {
-    return rating >= 4.5 ? 45 : 30;
-  }
-  return 60;
-}
 
 function listingToPin(listing: ApiListing): MapPinType {
   const fallback = REGION_COORDS[listing.region?.toLowerCase() ?? ''] ?? REGION_COORDS.venezuela;
@@ -260,17 +243,16 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function PriceDisplay({ listing }: { listing: ApiListing }) {
-  const estimate = estimateListingPrice(listing);
-  const type = listing.type?.toLowerCase() ?? '';
-  const isFood = type === 'restaurante' || type === 'restaurant' || type === 'cafe' || type === 'bar';
-  const isTour = type === 'tours' || type === 'tour' || type === 'experience';
-  const suffix = isFood ? '/person' : isTour ? '/person' : '/night';
-  return (
-    <span className="text-sm font-medium text-gray-700">
-      ~${estimate}
-      <span className="text-gray-400 font-normal text-xs ml-0.5">{suffix}</span>
-    </span>
-  );
+  const isOnboarded = listing.platform_status === 'verified' || listing.platform_status === 'founding_partner';
+  if (!isOnboarded) {
+    return (
+      <span className="text-muted-foreground bg-muted text-xs px-2 py-0.5 rounded-full">
+        Preview
+      </span>
+    );
+  }
+  // Only show price for verified/founding_partner listings that have real price data
+  return null;
 }
 
 function TierBadge({ status }: { status?: string }) {
@@ -339,7 +321,7 @@ function ListingCard({ listing }: { listing: ApiListing }) {
 
   return (
     <Link href={`/listing/${listing.slug}`} className="group block">
-      <div className={cn('bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden', borderAccent)}>
+      <div className={cn('bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden', borderAccent, !isOnboarded && 'opacity-90')}>
         {/* Photo area — 16:10 */}
         <div className="relative w-full" style={{ paddingBottom: '62.5%' }}>
           <div className="absolute inset-0">
@@ -543,8 +525,8 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
   const sortedListings = [...listings].sort((a, b) => {
     if (sortBy === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
     if (sortBy === 'reviews') return b.review_count - a.review_count;
-    if (sortBy === 'price_asc') return estimateListingPrice(a) - estimateListingPrice(b);
-    if (sortBy === 'price_desc') return estimateListingPrice(b) - estimateListingPrice(a);
+    // Price sorting removed — no reliable price data for scraped listings
+    if (sortBy === 'price_asc' || sortBy === 'price_desc') return 0;
     return 0; // default: server order
   });
 

@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import {
   Bot, User, AlertTriangle, Send, RefreshCw,
   MessageCircle, Settings, Sparkles, Phone,
-  CheckCheck, Circle, Globe,
+  CheckCheck, Circle, Globe, ChevronLeft,
 } from 'lucide-react';
 import type {
   WaConversation, WaMessage, WaConversationStatus, WaBookingStage,
@@ -349,6 +349,7 @@ export default function MessagesPage() {
   const [threadLoading, setThreadLoading] = useState(false);
   const [filter, setFilter]               = useState<FilterTab>('all');
   const [configured, setConfigured]       = useState(true);
+  const [mobileView, setMobileView]       = useState<'list' | 'chat'>('list');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ── Load conversations ──────────────────────────────────────────────────────
@@ -386,6 +387,7 @@ export default function MessagesPage() {
   // ── Load thread ─────────────────────────────────────────────────────────────
   const loadThread = useCallback(async (convId: string) => {
     setThreadLoading(true);
+    setMobileView('chat');
     const res = await fetch(`/api/whatsapp/conversations/${convId}`);
     if (res.ok) {
       const json = await res.json() as { data: ConvWithMessages };
@@ -518,7 +520,11 @@ export default function MessagesPage() {
     <div className="flex h-[calc(100vh-88px)] -m-6 overflow-hidden bg-background">
 
       {/* ── Left: Conversation list ──────────────────────────────────────────── */}
-      <div className="w-[280px] flex-shrink-0 border-r flex flex-col">
+      <div className={cn(
+        'flex-shrink-0 border-r flex flex-col',
+        'w-full md:w-[260px] lg:w-[280px]',
+        mobileView === 'chat' && 'hidden md:flex'
+      )}>
         {/* Header */}
         <div className="px-4 py-3.5 border-b">
           <div className="flex items-center justify-between">
@@ -586,12 +592,24 @@ export default function MessagesPage() {
       </div>
 
       {/* ── Center: Thread ───────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 border-r">
+      <div className={cn(
+        'flex-1 flex flex-col min-w-0 border-r',
+        mobileView === 'list' && 'hidden md:flex'
+      )}>
         {selected ? (
           <>
             {/* Thread header */}
             <div className="px-4 py-3 border-b flex items-center justify-between bg-background shrink-0">
               <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 md:hidden shrink-0"
+                  onClick={() => setMobileView('list')}
+                  aria-label="Back to conversations"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
                 <Avatar className="w-8 h-8">
                   <AvatarFallback className="text-xs font-semibold">
                     {getInitials(selected.guest_name, selected.guest_phone)}
@@ -685,7 +703,7 @@ export default function MessagesPage() {
 
       {/* ── Right: Controls ──────────────────────────────────────────────────── */}
       {selected && (
-        <div className="w-52 flex-shrink-0 flex flex-col overflow-y-auto">
+        <div className="hidden lg:flex w-52 flex-shrink-0 flex-col overflow-y-auto">
           {/* Mode control */}
           <div className="p-4 border-b">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">

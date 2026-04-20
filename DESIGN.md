@@ -97,6 +97,21 @@
 - **Safety indicators:** Green (safe) / Yellow (caution) / Orange (elevated) / Red (avoid) — maps to safety_zones data
 - **Social proof:** "{N} recommend" in primary color, derived from saves + likes
 
+## Status Colors (added v0.3.5 design review)
+- **Confirmed/Success:** oklch(0.65 0.15 142) — `bg-status-confirmed`, `text-status-confirmed`
+- **Pending/Warning:** oklch(0.7 0.15 75) — `bg-status-pending`, `text-status-pending`
+- **Cancelled/Error:** oklch(0.577 0.245 27) — `bg-status-cancelled`, `text-status-cancelled`
+- **Info:** oklch(0.55 0.18 220) — `bg-status-info`, `text-status-info`
+- **All status indicators must use icon + color, never color alone (WCAG)**
+
+## Radius Differentiation (added v0.3.5 design review)
+- **Cards:** rounded-2xl (16px)
+- **Modals:** rounded-xl (14px)
+- **Buttons:** rounded-lg (12px)
+- **Inputs:** rounded-md (10px)
+- **Badges/chips:** rounded-md (8px) or rounded-full (pills)
+- **Avatars:** rounded-full
+
 ## Decisions Log
 | Date | Decision | Rationale |
 |------|----------|-----------|
@@ -105,3 +120,16 @@
 | 2026-04-07 | OKLCH color system formalized | Already in globals.css, documented for consistency |
 | 2026-04-07 | Warm gold accent for influencer content | Differentiates creator-curated from community content |
 | 2026-04-07 | Editorial aesthetic direction | Curated travel magazine feel matches influencer-first positioning |
+| 2026-04-19 | Three-font system: Fraunces + Plus Jakarta Sans + Inter | Design review: Inter-only makes platform look like SaaS. Fraunces for editorial headlines, PJS for body, Inter for data. |
+| 2026-04-19 | Semantic status color tokens | Design review: 8+ files use hardcoded Tailwind colors. Tokens enable dark mode and theme changes. |
+| 2026-04-19 | Radius differentiation | Design review: rounded-xl on everything is AI slop pattern #5. Different radii for different component types. |
+| 2026-04-19 | Separate landing page at / | Design review: redirect to /library is a hard rejection (no value prop, no trust bridge). |
+| 2026-04-19 | Merge browse into single /explore | Design review: /library + /explore + /discover overlap. One browse surface. |
+| 2026-04-19 | Unified ListingCard with variant prop | Design review: two competing card components causes divergence. Single source of truth. |
+| 2026-04-19 | Sticky booking card on listing detail | Design review: Airbnb-style price-first sidebar. Price buried below fold currently. |
+| 2026-04-19 | Fraunces wordmark brand mark | Design review: generic map pin SVG is invisible. Serif wordmark in warm gold. |
+| 2026-04-19 | Scraped listings: Preview tier | Design review: fake prices + "Not on platform" dead end destroys trust. Clear labeling. |
+| 2026-04-19 | Full interaction state library | Design review: zero error states, blank trips page, emoji empty states. Production blocker. |
+| 2026-04-19 | Mobile bottom tab bar (consumer) | Design review: no mobile nav exists. 5-item bar: Home/Explore/Plan/Trips/Profile. |
+| 2026-04-19 | Collapsible provider sidebar | Design review: fixed 256px sidebar breaks on tablet/mobile. 3-tier responsive. |
+| 2026-04-19 | Dark mode: implement properly | Design review: .dark theme defined but components hardcode light colors. Color audit enables it. |

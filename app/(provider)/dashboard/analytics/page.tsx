@@ -78,9 +78,9 @@ export default function AnalyticsPage() {
   const totalPending = bookings.filter((b) => b.status === 'pending').length;
   const totalConfirmed = bookings.filter((b) => ['confirmed', 'completed'].includes(b.status)).length;
   const totalCompleted = bookings.filter((b) => b.status === 'completed').length;
-  const estimatedViews = Math.round(bookings.length * 4.2); // rough estimate
+  const estimatedViews = Math.round(bookings.length * 4.2); // rough estimate based on industry averages
   const funnelData = [
-    { name: 'Views', value: estimatedViews },
+    { name: 'Views (est.)', value: estimatedViews },
     { name: 'Inquiries', value: bookings.length },
     { name: 'Confirmed', value: totalConfirmed },
     { name: 'Completed', value: totalCompleted },
