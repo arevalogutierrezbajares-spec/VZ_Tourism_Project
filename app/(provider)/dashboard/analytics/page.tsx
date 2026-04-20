@@ -1,7 +1,8 @@
+import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { TrendingUp, DollarSign, Users, Repeat, Percent, BarChart3, Eye } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Repeat, Percent, BarChart3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { getAllBookings } from '@/lib/bookings-store';
+import { createClient } from '@/lib/supabase/server';
 import { formatCurrency } from '@/lib/utils';
 import { AnalyticsCharts } from '@/components/provider/AnalyticsCharts';
 
@@ -24,12 +25,35 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   arrival: 'On Arrival',
 };
 
-export default function AnalyticsPage() {
-  const bookings = getAllBookings();
+export default async function AnalyticsPage() {
+  const supabase = await createClient();
+  if (!supabase) redirect('/login');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: provider } = await supabase.from('providers').select('id').eq('user_id', user.id).single();
+  const { data: providerListings } = await supabase.from('listings').select('id').eq('provider_id', provider?.id || '');
+  const providerListingIds = providerListings?.map((l) => l.id) || [];
+
+  type GuestBookingRow = {
+    listing_id: string; listing_name: string; guest_email: string; check_in: string;
+    nights: number; total_usd: number; net_provider_usd: number;
+    payment_method: string; status: string; created_at: string;
+  };
+
+  const { data: bookings = [] } = providerListingIds.length > 0
+    ? await supabase
+        .from('guest_bookings')
+        .select('listing_id, listing_name, guest_email, check_in, nights, total_usd, net_provider_usd, payment_method, status, created_at')
+        .in('listing_id', providerListingIds)
+    : { data: [] as GuestBookingRow[] };
+
+  const typedBookings = (bookings ?? []) as GuestBookingRow[];
+
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const activeBookings = bookings.filter((b) => ['confirmed', 'completed'].includes(b.status));
+  const activeBookings = typedBookings.filter((b) => ['confirmed', 'completed'].includes(b.status));
 
   // This month's bookings
   const monthBookings = activeBookings.filter((b) => new Date(b.created_at) >= monthStart);
@@ -42,8 +66,8 @@ export default function AnalyticsPage() {
 
   // Occupancy rate this month
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const listingIds = [...new Set(activeBookings.map((b) => b.listing_id))];
-  const totalAvailableNights = daysInMonth * Math.max(listingIds.length, 1);
+  const uniqueActiveListingIds = [...new Set(activeBookings.map((b) => b.listing_id))];
+  const totalAvailableNights = daysInMonth * Math.max(uniqueActiveListingIds.length, 1);
   const bookedNightsThisMonth = monthBookings.reduce((s, b) => s + b.nights, 0);
   const occupancyRate = totalAvailableNights > 0
     ? Math.min(100, (bookedNightsThisMonth / totalAvailableNights) * 100)
@@ -75,11 +99,11 @@ export default function AnalyticsPage() {
   });
 
   // Conversion funnel: inquiries → confirmed → completed
-  const totalPending = bookings.filter((b) => b.status === 'pending').length;
-  const totalConfirmed = bookings.filter((b) => ['confirmed', 'completed'].includes(b.status)).length;
-  const totalCompleted = bookings.filter((b) => b.status === 'completed').length;
+  const totalPending = typedBookings.filter((b) => b.status === 'pending').length;
+  const totalConfirmed = typedBookings.filter((b) => ['confirmed', 'completed'].includes(b.status)).length;
+  const totalCompleted = typedBookings.filter((b) => b.status === 'completed').length;
   const funnelData = [
-    { name: 'Inquiries', value: bookings.length },
+    { name: 'Inquiries', value: typedBookings.length },
     { name: 'Confirmed', value: totalConfirmed },
     { name: 'Completed', value: totalCompleted },
   ];
@@ -104,7 +128,7 @@ export default function AnalyticsPage() {
         return ci >= weekStart && ci < weekEnd;
       })
       .reduce((s, b) => s + b.nights, 0);
-    const availableNights = 7 * Math.max(listingIds.length, 1);
+    const availableNights = 7 * Math.max(providerListingIds.length, 1);
     return {
       week: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       occupancy: Math.min(100, Math.round((weekNights / availableNights) * 100)),

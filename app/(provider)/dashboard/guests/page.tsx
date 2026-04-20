@@ -20,22 +20,22 @@ export default async function GuestsPage() {
   const listingIds = listings?.map((l) => l.id) || [];
 
   const { data: bookings } = await supabase
-    .from('bookings')
-    .select('*, listing:listings(title), tourist:users(id, full_name, email, avatar_url, nationality, created_at)')
+    .from('guest_bookings')
+    .select('guest_name, guest_email, created_at')
     .in('listing_id', listingIds)
     .in('status', ['confirmed', 'completed'])
     .order('created_at', { ascending: false });
 
-  // Deduplicate by tourist id
-  const guestMap = new Map<string, { tourist: NonNullable<typeof bookings>[0]['tourist'], visits: number, lastVisit: string }>();
+  // Deduplicate by guest_email
+  const guestMap = new Map<string, { name: string; email: string; visits: number; lastVisit: string }>();
   bookings?.forEach((b) => {
-    if (!b.tourist) return;
-    const existing = guestMap.get(b.tourist.id);
+    if (!b.guest_email) return;
+    const existing = guestMap.get(b.guest_email);
     if (existing) {
       existing.visits++;
       if (b.created_at > existing.lastVisit) existing.lastVisit = b.created_at;
     } else {
-      guestMap.set(b.tourist.id, { tourist: b.tourist, visits: 1, lastVisit: b.created_at });
+      guestMap.set(b.guest_email, { name: b.guest_name, email: b.guest_email, visits: 1, lastVisit: b.created_at });
     }
   });
 
@@ -50,20 +50,16 @@ export default async function GuestsPage() {
 
       {guests.length > 0 ? (
         <div className="grid gap-3">
-          {guests.map(({ tourist, visits, lastVisit }) => (
-            <Card key={tourist?.id}>
+          {guests.map(({ name, email, visits, lastVisit }) => (
+            <Card key={email}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-12 h-12 flex-shrink-0">
-                    <AvatarImage src={tourist?.avatar_url || undefined} />
-                    <AvatarFallback>{getInitials(tourist?.full_name || 'G')}</AvatarFallback>
+                    <AvatarFallback>{getInitials(name || 'G')}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold">{tourist?.full_name}</p>
-                    <p className="text-sm text-muted-foreground">{tourist?.email}</p>
-                    {tourist?.nationality && (
-                      <p className="text-xs text-muted-foreground">From {tourist.nationality}</p>
-                    )}
+                    <p className="font-semibold">{name}</p>
+                    <p className="text-sm text-muted-foreground">{email}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <Badge variant="secondary">{visits} visit{visits !== 1 ? 's' : ''}</Badge>

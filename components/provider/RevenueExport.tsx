@@ -3,10 +3,26 @@
 import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
-import type { LocalBooking } from '@/lib/bookings-store';
+
+interface ExportBooking {
+  created_at: string;
+  confirmation_code: string;
+  guest_name: string;
+  listing_name: string;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  guest_count: number;
+  subtotal_usd: number;
+  commission_usd: number;
+  net_provider_usd: number;
+  total_usd: number;
+  status: string;
+  payment_method: string;
+}
 
 interface RevenueExportProps {
-  bookings: LocalBooking[];
+  bookings: ExportBooking[];
   month: string; // e.g. "April 2026"
 }
 

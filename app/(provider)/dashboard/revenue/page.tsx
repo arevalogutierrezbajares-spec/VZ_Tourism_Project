@@ -1,10 +1,11 @@
+import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import {
   DollarSign, TrendingUp, TrendingDown, Clock, BarChart3, Percent,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getAllBookings } from '@/lib/bookings-store';
+import { createClient } from '@/lib/supabase/server';
 import { PLATFORM_COMMISSION_RATE } from '@/lib/constants';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { RevenueChart } from '@/components/provider/RevenueChart';
@@ -57,8 +58,33 @@ function Trend({ value, prev }: { value: number; prev: number }) {
   );
 }
 
-export default function RevenuePage() {
-  const bookings = getAllBookings();
+export default async function RevenuePage() {
+  const supabase = await createClient();
+  if (!supabase) redirect('/login');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: provider } = await supabase.from('providers').select('id').eq('user_id', user.id).single();
+  const { data: listings } = await supabase.from('listings').select('id').eq('provider_id', provider?.id || '');
+  const listingIds = listings?.map((l) => l.id) || [];
+
+  type RevenueBookingRow = {
+    id: string; listing_id: string; listing_name: string; guest_name: string;
+    guest_email: string; check_in: string; check_out: string; nights: number;
+    guest_count: number; subtotal_usd: number; commission_usd: number;
+    total_usd: number; net_provider_usd: number; payment_method: string;
+    status: string; confirmation_code: string; created_at: string;
+  };
+
+  const { data: rawBookings = [] } = listingIds.length > 0
+    ? await supabase
+        .from('guest_bookings')
+        .select('id, listing_id, listing_name, guest_name, guest_email, check_in, check_out, nights, guest_count, subtotal_usd, commission_usd, total_usd, net_provider_usd, payment_method, status, confirmation_code, created_at')
+        .in('listing_id', listingIds)
+        .order('created_at', { ascending: false })
+    : { data: [] as RevenueBookingRow[] };
+
+  const bookings = (rawBookings ?? []) as RevenueBookingRow[];
   const activeBookings = bookings.filter((b) => ['confirmed', 'completed'].includes(b.status));
 
   const now = new Date();

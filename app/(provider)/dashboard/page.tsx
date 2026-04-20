@@ -33,8 +33,8 @@ export default async function ProviderDashboardPage() {
 
   const { data: recentBookings } = listingIds.length > 0
     ? await supabase
-        .from('bookings')
-        .select('*, listing:listings(title, slug), tourist:users(full_name, avatar_url)')
+        .from('guest_bookings')
+        .select('id, listing_id, listing_name, listing_slug, guest_name, status, total_usd, check_in, check_out, created_at')
         .in('listing_id', listingIds)
         .order('created_at', { ascending: false })
         .limit(10)
@@ -42,7 +42,7 @@ export default async function ProviderDashboardPage() {
 
   const { data: allBookings } = listingIds.length > 0
     ? await supabase
-        .from('bookings')
+        .from('guest_bookings')
         .select('total_usd, status')
         .in('listing_id', listingIds)
     : { data: [] };
@@ -138,8 +138,8 @@ export default async function ProviderDashboardPage() {
                 {recentBookings.slice(0, 5).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div>
-                      <p className="text-sm font-medium">{booking.listing?.title}</p>
-                      <p className="text-xs text-muted-foreground">{booking.tourist?.full_name} · {formatDate(booking.check_in)}</p>
+                      <p className="text-sm font-medium">{booking.listing_name}</p>
+                      <p className="text-xs text-muted-foreground">{booking.guest_name} · {formatDate(booking.check_in)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">{formatCurrency(booking.total_usd)}</p>
