@@ -71,27 +71,6 @@ Single platform for tourists and providers. PMS will be embedded so providers ac
 
 ---
 
-## What's Next
-
-### Immediate: Embed PMS into VAV
-
-**Goal:** Mount the Posada PMS inside the main platform as `/dashboard/pms/*` with shared Supabase auth.
-
-**Approach (planned for next session):**
-
-1. **Route group:** Create `app/(provider)/dashboard/pms/` route group inside VAV
-2. **Shared auth:** Providers log in via Supabase (VAV auth) — the PMS session is derived from the same Supabase user
-3. **API proxy or embed:** Either:
-   - (a) Re-implement PMS pages as Next.js pages inside VAV, calling the NestJS API directly, or
-   - (b) Keep NestJS API as a microservice, proxy from VAV API routes to PMS API
-4. **Database:** Migrate PMS tables into the existing Supabase Postgres, or keep separate DB with shared user IDs
-5. **Provider role:** Use Supabase `users.role = 'provider'` to gate access to PMS routes
-
-**Key decisions to make:**
-- Monolith (move PMS code into VAV) vs microservice (keep PMS API separate, proxy calls)
-- Single Supabase DB vs separate PMS database with user ID linkage
-- How to handle PMS JWT auth → Supabase session auth migration
-
 ### 8. WhatsApp AI Concierge Fixes (5 bugs)
 
 Reviewed and tested the `/demo/whatsapp` demo from the frontend. Found and fixed 5 issues:
@@ -151,6 +130,28 @@ Reviewed and tested the `/demo/whatsapp` demo from the frontend. Found and fixed
 **Navigation:** Added "Property (PMS)" section to `ProviderSidebar` with Hotel icon.
 
 **Build:** TypeScript clean, Next.js build passes, PMS DB migration applied.
+
+### 10. Provider Login Fix (End-to-End)
+
+**Bug:** After Google OAuth login, navigating to `/dashboard` or `/dashboard/pms` redirected back to `/` — provider dashboard was inaccessible.
+
+**Root cause (3 layers):**
+1. User `tomas.gutierrez.2000@gmail.com` existed in the `users` table but with `role: 'tourist'` (set by the OAuth callback which hardcodes `role: 'tourist'` for new signups)
+2. `dashboard/layout.tsx` checks `profile.role === 'provider' || 'admin'` — `tourist` fails this check → redirect to `/`
+3. No `providers` row existed for the user, so even if the role check passed, the dashboard overview page would have no provider data
+
+**Fix (data + verification):**
+- Updated `users.role` from `'tourist'` → `'provider'` via Supabase service role API
+- Created `providers` row (`business_name: 'Posada Tomas Dev'`, `region: 'Caracas'`, `is_verified: true`, `is_approved: true`)
+- Verified PMS auth bridge works with updated user (returns PMS JWT + empty properties → triggers onboarding)
+- Verified OAuth callback uses `ignoreDuplicates: true` → re-login won't reset role back to `tourist`
+
+**Auth flow verified end-to-end:**
+1. Google OAuth → Supabase session created
+2. `proxy.ts` middleware: session exists → passes through
+3. `dashboard/layout.tsx`: role = `provider` → renders dashboard
+4. `ProviderSidebar`: shows "Property (PMS)" nav group
+5. PMS layout → `PmsProvider` → bridge auth → PMS user loaded → `needsOnboarding = true` (no properties yet)
 
 ---
 
