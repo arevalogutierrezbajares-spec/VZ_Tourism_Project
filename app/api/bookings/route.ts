@@ -77,6 +77,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Auth guard — require authenticated user before creating a booking
+  const supabaseAuth = await createClient();
+  if (!supabaseAuth) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+  const { data: { user: authUser } } = await supabaseAuth.auth.getUser();
+  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   let body: unknown;
   try {
     body = await request.json();
