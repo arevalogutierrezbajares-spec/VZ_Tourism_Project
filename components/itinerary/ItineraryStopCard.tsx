@@ -326,7 +326,7 @@ export function ItineraryStopCard({
           <PopoverTrigger render={<div />} openOnHover delay={300} closeDelay={150}>
             {cardContent}
           </PopoverTrigger>
-          <PopoverContent side="right" sideOffset={12} align="start" className="w-auto p-4 rounded-2xl shadow-lg">
+          <PopoverContent side="left" sideOffset={12} align="start" className="w-auto p-4 rounded-2xl shadow-lg">
             {popoverDetail}
           </PopoverContent>
         </Popover>
