@@ -1,65 +1,107 @@
--- Migration 020: Creator Program
--- Fixes 5 schema gaps discovered during plan-eng-review, plus creator_invites table
--- Resilient: creates tables if not yet present (works regardless of which earlier
--- migrations have been applied to this Supabase instance).
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 1. creator_profiles — add missing columns
--- ═══════════════════════════════════════════════════════════════════════════
-
--- Make username nullable so invite claim can insert profile before onboarding
-ALTER TABLE creator_profiles ALTER COLUMN username DROP NOT NULL;
-
--- Display name separate from username (shown publicly)
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
-
--- Location string shown on public profile
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS location TEXT;
-
--- Niche tags for profile filtering (max 3 per onboarding wizard)
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS niche_tags TEXT[] NOT NULL DEFAULT '{}';
-
--- followers_count: public profile page uses this name (DB had `followers`)
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS followers_count INTEGER NOT NULL DEFAULT 0;
-
--- total_likes: aggregate of likes across all published itineraries
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS total_likes INTEGER NOT NULL DEFAULT 0;
-
--- Per-creator commission rate; default 8% (can be overridden per creator by admin)
-ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5,4) NOT NULL DEFAULT 0.08;
+-- Migration 020: Creator Program (self-contained)
+-- Embeds all dependencies so it runs cleanly on a fresh Supabase instance
+-- that only has migration 001 applied.
+--
+-- Dependency order:
+--   001 assumed (creator_profiles, itineraries, bookings, users, update_updated_at)
+--   → guest_bookings  (from 003)
+--   → itinerary_referrals  (from 008, extended)
+--   → discount_codes / discount_code_uses  (from 015, extended)
+--   → creator_invites  (new in 020)
+--   → creator_profiles column additions  (new in 020)
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 2. itinerary_referrals — create if missing, then add new columns
+-- A. guest_bookings  (migration 003)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Create the table with all required columns if migration 008 was never run.
--- ADD COLUMN IF NOT EXISTS below is a no-op when the column already exists.
+CREATE TABLE IF NOT EXISTS guest_bookings (
+  id                         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  listing_id                 TEXT        NOT NULL,
+  listing_name               TEXT        NOT NULL,
+  listing_slug               TEXT,
+  provider_id                TEXT,
+  guest_name                 TEXT        NOT NULL,
+  guest_email                TEXT        NOT NULL,
+  guest_phone                TEXT,
+  check_in                   DATE        NOT NULL,
+  check_out                  DATE        NOT NULL,
+  guest_count                INTEGER     NOT NULL DEFAULT 1,
+  base_price_usd             NUMERIC(10,2) NOT NULL,
+  nights                     INTEGER     NOT NULL DEFAULT 1,
+  subtotal_usd               NUMERIC(10,2) NOT NULL,
+  service_fee_usd            NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total_usd                  NUMERIC(10,2) NOT NULL,
+  commission_usd             NUMERIC(10,2) NOT NULL DEFAULT 0,
+  net_provider_usd           NUMERIC(10,2) NOT NULL DEFAULT 0,
+  status                     TEXT        NOT NULL DEFAULT 'pending',
+  payment_method             TEXT        NOT NULL DEFAULT 'card',
+  payment_intent_id          TEXT,
+  stripe_checkout_session_id TEXT,
+  confirmation_code          TEXT        NOT NULL,
+  special_requests           TEXT,
+  notes                      TEXT,
+  -- discount columns (migration 015)
+  discount_code_id           UUID,       -- FK added below after discount_codes exists
+  discount_amount_usd        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  created_at                 TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at                 TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_guest_bookings_email   ON guest_bookings(guest_email);
+CREATE INDEX IF NOT EXISTS idx_guest_bookings_status  ON guest_bookings(status);
+CREATE INDEX IF NOT EXISTS idx_guest_bookings_session ON guest_bookings(stripe_checkout_session_id);
+CREATE INDEX IF NOT EXISTS idx_guest_bookings_listing ON guest_bookings(listing_id);
+
+ALTER TABLE guest_bookings ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Service role has full access to guest_bookings"
+    ON guest_bookings FOR ALL USING (true) WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_guest_bookings_updated_at
+    BEFORE UPDATE ON guest_bookings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- B. itineraries — extra columns  (migrations 008, 015)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS is_influencer_pick BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE;
+ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS creator_text TEXT;
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- C. itinerary_referrals  (migration 008 + 020 extensions)
+-- ═══════════════════════════════════════════════════════════════════════════
+
 CREATE TABLE IF NOT EXISTS itinerary_referrals (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  itinerary_id     UUID        NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
-  creator_id       UUID        NOT NULL REFERENCES creator_profiles(id),
-  referral_code    TEXT        NOT NULL,
-  ip_hash          TEXT        NOT NULL,
-  booking_id       UUID        REFERENCES bookings(id) ON DELETE SET NULL,
-  guest_booking_id UUID        REFERENCES guest_bookings(id) ON DELETE SET NULL,
-  clicked_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  converted_at     TIMESTAMPTZ,
-  paid_at          TIMESTAMPTZ,
-  commission_rate  NUMERIC(5,4) NOT NULL DEFAULT 0.08,
+  id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  itinerary_id          UUID        NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
+  creator_id            UUID        NOT NULL REFERENCES creator_profiles(id),
+  referral_code         TEXT        NOT NULL,
+  ip_hash               TEXT        NOT NULL,
+  booking_id            UUID        REFERENCES bookings(id) ON DELETE SET NULL,
+  guest_booking_id      UUID        REFERENCES guest_bookings(id) ON DELETE SET NULL,
+  clicked_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  converted_at          TIMESTAMPTZ,
+  paid_at               TIMESTAMPTZ,
+  commission_rate       NUMERIC(5,4) NOT NULL DEFAULT 0.08,
   commission_amount_usd NUMERIC(10,2),
   UNIQUE(itinerary_id, ip_hash)
 );
 
--- For instances where the table already existed (migration 008 was run),
--- add only the new columns.
+-- For instances where the table already existed, add only the new columns
 ALTER TABLE itinerary_referrals
   ADD COLUMN IF NOT EXISTS guest_booking_id UUID REFERENCES guest_bookings(id) ON DELETE SET NULL;
-
 ALTER TABLE itinerary_referrals
   ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_itinerary_referrals_creator
   ON itinerary_referrals(creator_id);
 CREATE INDEX IF NOT EXISTS idx_itinerary_referrals_code
@@ -69,7 +111,6 @@ CREATE INDEX IF NOT EXISTS idx_itinerary_referrals_paid
 CREATE INDEX IF NOT EXISTS idx_itinerary_referrals_guest_booking
   ON itinerary_referrals(guest_booking_id) WHERE guest_booking_id IS NOT NULL;
 
--- RLS
 ALTER TABLE itinerary_referrals ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
@@ -105,10 +146,9 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 3. discount_code_uses — create if missing, then fix TEXT→UUID
+-- D. discount_codes  (migration 015)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Create the table if migration 015 was never run.
 CREATE TABLE IF NOT EXISTS discount_codes (
   id                      UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id              UUID        NOT NULL REFERENCES creator_profiles(id) ON DELETE CASCADE,
@@ -120,52 +160,18 @@ CREATE TABLE IF NOT EXISTS discount_codes (
   times_used              INTEGER     NOT NULL DEFAULT 0,
   total_revenue_generated NUMERIC(12,2) NOT NULL DEFAULT 0,
   expires_at              TIMESTAMPTZ,
-  status                  TEXT        NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'expired')),
+  status                  TEXT        NOT NULL DEFAULT 'active'
+                          CHECK (status IN ('active', 'paused', 'expired')),
   listing_ids             UUID[],
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT code_format CHECK (code ~ '^[A-Z0-9]{3,15}$')
 );
 
-CREATE TABLE IF NOT EXISTS discount_code_uses (
-  id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  code_id             UUID        NOT NULL REFERENCES discount_codes(id) ON DELETE CASCADE,
-  guest_booking_id    UUID        REFERENCES guest_bookings(id) ON DELETE SET NULL,
-  discount_amount_usd NUMERIC(10,2) NOT NULL,
-  used_at             TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- For instances where discount_code_uses already existed with TEXT column,
--- cast it to UUID in-place. NULLs pass through; valid UUID strings cast cleanly.
-DO $$ BEGIN
-  ALTER TABLE discount_code_uses
-    ALTER COLUMN guest_booking_id TYPE UUID USING (guest_booking_id::UUID);
-EXCEPTION
-  WHEN datatype_mismatch THEN NULL; -- already UUID, skip
-  WHEN others THEN RAISE;
-END $$;
-
--- FK constraint (idempotent via DO block)
-DO $$ BEGIN
-  ALTER TABLE discount_code_uses
-    ADD CONSTRAINT fk_discount_code_uses_guest_booking
-    FOREIGN KEY (guest_booking_id)
-    REFERENCES guest_bookings(id)
-    ON DELETE SET NULL;
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Ensure discount_codes_enabled exists on creator_profiles (migration 015 adds it)
-ALTER TABLE creator_profiles
-  ADD COLUMN IF NOT EXISTS discount_codes_enabled BOOLEAN NOT NULL DEFAULT false;
-
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_discount_codes_creator ON discount_codes(creator_id, status);
-CREATE INDEX IF NOT EXISTS idx_discount_codes_code ON discount_codes(code);
-CREATE INDEX IF NOT EXISTS idx_discount_code_uses_code ON discount_code_uses(code_id, used_at);
+CREATE INDEX IF NOT EXISTS idx_discount_codes_code    ON discount_codes(code);
 
--- RLS
 ALTER TABLE discount_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE discount_code_uses ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "Creators can manage own discount codes" ON discount_codes
@@ -187,11 +193,59 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  CREATE TRIGGER update_discount_codes_updated_at
+    BEFORE UPDATE ON discount_codes
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- E. discount_code_uses  (migration 015)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS discount_code_uses (
+  id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  code_id             UUID        NOT NULL REFERENCES discount_codes(id) ON DELETE CASCADE,
+  guest_booking_id    UUID        REFERENCES guest_bookings(id) ON DELETE SET NULL,
+  discount_amount_usd NUMERIC(10,2) NOT NULL,
+  used_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- If table already existed with TEXT column, cast it to UUID
+DO $$ BEGIN
+  ALTER TABLE discount_code_uses
+    ALTER COLUMN guest_booking_id TYPE UUID USING (guest_booking_id::UUID);
+EXCEPTION
+  WHEN datatype_mismatch THEN NULL;  -- already UUID
+  WHEN others THEN RAISE;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE discount_code_uses
+    ADD CONSTRAINT fk_discount_code_uses_guest_booking
+    FOREIGN KEY (guest_booking_id) REFERENCES guest_bookings(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE INDEX IF NOT EXISTS idx_discount_code_uses_code
+  ON discount_code_uses(code_id, used_at);
+CREATE INDEX IF NOT EXISTS idx_guest_bookings_discount_code
+  ON guest_bookings(discount_code_id) WHERE discount_code_id IS NOT NULL;
+
+ALTER TABLE discount_code_uses ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
   CREATE POLICY "Service role full access to discount_code_uses" ON discount_code_uses
     FOR ALL USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- Atomic increment RPC (CREATE OR REPLACE is always safe)
+-- Now that discount_codes exists, add the FK on guest_bookings.discount_code_id
+DO $$ BEGIN
+  ALTER TABLE guest_bookings
+    ADD CONSTRAINT fk_guest_bookings_discount_code
+    FOREIGN KEY (discount_code_id) REFERENCES discount_codes(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Atomic increment RPC
 CREATE OR REPLACE FUNCTION increment_discount_code_use(
   p_code_id UUID,
   p_revenue NUMERIC DEFAULT 0
@@ -200,7 +254,7 @@ LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   UPDATE discount_codes
   SET
-    times_used = times_used + 1,
+    times_used              = times_used + 1,
     total_revenue_generated = total_revenue_generated + p_revenue
   WHERE id = p_code_id;
 END;
@@ -208,7 +262,22 @@ $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 4. creator_invites — invite-only signup token table
+-- F. creator_profiles — new columns  (migration 020)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE creator_profiles ALTER COLUMN username DROP NOT NULL;
+
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS display_name        TEXT;
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS location             TEXT;
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS niche_tags           TEXT[]      NOT NULL DEFAULT '{}';
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS followers_count      INTEGER     NOT NULL DEFAULT 0;
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS total_likes          INTEGER     NOT NULL DEFAULT 0;
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS commission_rate      NUMERIC(5,4) NOT NULL DEFAULT 0.08;
+ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS discount_codes_enabled BOOLEAN   NOT NULL DEFAULT false;
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- G. creator_invites  (new in 020)
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS creator_invites (
