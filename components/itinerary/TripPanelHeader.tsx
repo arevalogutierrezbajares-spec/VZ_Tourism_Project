@@ -26,7 +26,7 @@ export function TripPanelHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-8 h-8"
+          className="w-11 h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50"
           onClick={closePanel}
           aria-label="Close trip planner"
         >

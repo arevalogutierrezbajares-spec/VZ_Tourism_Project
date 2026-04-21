@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { MapPin, Bot, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useItineraryStore } from '@/stores/itinerary-store';
@@ -26,6 +26,7 @@ export function TripSidePanel() {
     moveStop,
   } = useItineraryStore();
 
+  const prefersReducedMotion = useReducedMotion();
   const peekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforePeekRef = useRef(false);
@@ -95,7 +96,7 @@ export function TripSidePanel() {
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 28, stiffness: 300 }}
           role="complementary"
           aria-label="Trip planner"
           className={cn(
@@ -117,7 +118,8 @@ export function TripSidePanel() {
               aria-controls="panel-stops"
               onClick={() => setActiveTab('stops')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors relative',
+                'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors duration-200 relative cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm',
                 activeTab === 'stops'
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -144,7 +146,8 @@ export function TripSidePanel() {
               aria-controls="panel-ai"
               onClick={() => setActiveTab('ai')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors relative',
+                'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors duration-200 relative cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm',
                 activeTab === 'ai'
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -213,7 +216,7 @@ export function TripSidePanel() {
           <div className="border-t border-border/50 px-5 py-3 flex items-center justify-between">
             <Link
               href="/plan"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm"
             >
               <ExternalLink className="w-3 h-3" />
               Open full planner
