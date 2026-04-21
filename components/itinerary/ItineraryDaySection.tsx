@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,29 +32,34 @@ export function ItineraryDaySection({
   onRemoveDay,
   className,
 }: ItineraryDaySectionProps) {
-  const dragStopIdRef = useRef<string | null>(null);
-  const dragSourceDayRef = useRef<number | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestions, setSuggestions] = useState<AIGeneratedStop[]>([]);
   const { addStop, current, days } = useItineraryStore();
 
-  const handleDragStart = (stopId: string, sourceDay: number) => {
-    dragStopIdRef.current = stopId;
-    dragSourceDayRef.current = sourceDay;
+  const handleDragStart = (e: React.DragEvent, stopId: string) => {
+    e.dataTransfer.setData('text/plain', stopId);
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDrop = (e: React.DragEvent, targetOrder: number) => {
     e.preventDefault();
-    const stopId = dragStopIdRef.current;
+    setIsDragOver(false);
+    const stopId = e.dataTransfer.getData('text/plain');
     if (!stopId || !onMoveStop) return;
     onMoveStop(stopId, day, targetOrder);
-    dragStopIdRef.current = null;
-    dragSourceDayRef.current = null;
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the container, not entering a child
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOver(false);
   };
 
   const handleSuggestStops = async () => {
@@ -107,15 +112,15 @@ export function ItineraryDaySection({
   };
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('rounded-xl border bg-background shadow-sm overflow-hidden', className)}>
       {/* Day header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold tabular-nums">
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold tabular-nums shadow-sm">
             {day}
           </div>
           <h4 className="font-semibold text-sm">{title}</h4>
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span className="text-[11px] text-muted-foreground tabular-nums">
             {stops.length} stop{stops.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -150,8 +155,12 @@ export function ItineraryDaySection({
 
       {/* Stops */}
       <div
-        className="ml-3 border-l-2 border-muted pl-3 space-y-2"
+        className={cn(
+          'p-3 space-y-2 transition-colors duration-150',
+          isDragOver && 'bg-primary/5'
+        )}
         onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, stops.length)}
       >
         <AnimatePresence initial={false}>
@@ -163,17 +172,20 @@ export function ItineraryDaySection({
             exit={{ opacity: 0, y: -12, transition: { duration: 0.15, ease: [0.4, 0.0, 1, 1] } }}
             layout
             draggable
-            onDragStart={() => handleDragStart(stop.id, day)}
+            onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, stop.id)}
             onDrop={(e) => {
               e.stopPropagation();
-              handleDrop(e, idx);
+              handleDrop(e as unknown as React.DragEvent, idx);
             }}
-            onDragOver={handleDragOver}
+            onDragOver={(e) => {
+              (e as unknown as React.DragEvent).preventDefault();
+            }}
           >
             <ItineraryStopCard
               stop={stop}
               onRemove={onRemoveStop}
               isDraggable
+              showPhoto
             />
           </motion.div>
         ))}
@@ -181,7 +193,10 @@ export function ItineraryDaySection({
 
         {stops.length === 0 && !suggestions.length && (
           <div
-            className="py-4 border-2 border-dashed border-muted rounded-lg text-center"
+            className={cn(
+              'py-4 border-2 border-dashed rounded-lg text-center transition-colors duration-150',
+              isDragOver ? 'border-primary/40 bg-primary/5' : 'border-muted'
+            )}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, 0)}
           >
@@ -202,7 +217,7 @@ export function ItineraryDaySection({
               <button
                 type="button"
                 onClick={handleDismissSuggestions}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Dismiss
               </button>
@@ -212,7 +227,7 @@ export function ItineraryDaySection({
                 key={idx}
                 type="button"
                 onClick={() => handleAcceptSuggestion(suggestion)}
-                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-[background-color] duration-150 group cursor-pointer"
+                className="w-full text-left p-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-[background-color] duration-150 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 aria-label={`Add ${suggestion.title} to Day ${day}`}
               >
                 <div className="flex items-start gap-2">

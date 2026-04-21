@@ -263,32 +263,21 @@ export function TripSidePanel() {
                   />
                 ))}
 
-                {/* Day management + AI organize */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={addDay}
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Add day
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={handleOrganize}
-                    disabled={isOrganizing}
-                  >
-                    {isOrganizing ? (
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3 h-3 mr-1" />
-                    )}
-                    Organize trip
-                  </Button>
-                </div>
+                {/* AI organize */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={handleOrganize}
+                  disabled={isOrganizing}
+                >
+                  {isOrganizing ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3 mr-1" />
+                  )}
+                  Organize trip
+                </Button>
               </div>
             )}
           </div>
