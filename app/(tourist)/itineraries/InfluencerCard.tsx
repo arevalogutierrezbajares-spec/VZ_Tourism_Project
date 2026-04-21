@@ -42,7 +42,7 @@ export function InfluencerCard({ creator, itinerary, className }: InfluencerCard
               {creator.is_verified && (
                 <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" aria-label="Verified creator" />
               )}
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-status-pending/10 text-status-pending border-status-pending/20">Creator</Badge>
             </div>
             {creator.instagram_handle && (
               <p className="text-xs text-muted-foreground truncate">

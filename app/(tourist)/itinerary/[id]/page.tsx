@@ -96,7 +96,7 @@ export default async function ItineraryPage({ params }: Props) {
             <span className="text-sm text-muted-foreground">by</span>
             <span className="text-sm font-medium">{it.user.full_name}</span>
             {it.user.role === 'creator' && (
-              <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
+              <Badge variant="secondary" className="text-xs bg-status-pending/10 text-status-pending border-status-pending/20">Creator</Badge>
             )}
           </div>
         )}
@@ -131,16 +131,16 @@ export default async function ItineraryPage({ params }: Props) {
 
         {/* Discount code callout — shown when creator attached an active code */}
         {discountDisplay && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-            <Tag className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-status-pending/10 border border-status-pending/20">
+            <Tag className="w-4 h-4 text-status-pending flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <span className="text-sm text-amber-900 dark:text-amber-100">
+              <span className="text-sm text-foreground">
                 Use code{' '}
                 <span className="font-mono font-bold">{discountDisplay.code}</span>
                 {' '}for <span className="font-semibold">{discountDisplay.label}</span> on any booking from this itinerary
               </span>
             </div>
-            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300 flex-shrink-0">
+            <Badge variant="outline" className="text-xs border-status-pending/40 text-status-pending flex-shrink-0">
               {discountDisplay.label}
             </Badge>
           </div>

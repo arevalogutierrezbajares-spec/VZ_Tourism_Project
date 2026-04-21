@@ -119,7 +119,7 @@ export default function MessagesPage() {
                       href={waLink(booking, 'Hello!')!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 active:scale-[0.96] transition-[background-color,transform] duration-150 whitespace-nowrap flex-shrink-0"
+                      className="flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] rounded-lg bg-status-confirmed text-white text-xs font-medium hover:bg-status-confirmed/90 active:scale-[0.96] transition-[background-color,transform] duration-150 whitespace-nowrap flex-shrink-0"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       Message Host

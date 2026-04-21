@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Search, ChevronDown, LayoutGrid, Map, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, LayoutGrid, Map, SlidersHorizontal, Globe2, Building2, Utensils, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMapStore } from '@/stores/map-store';
 import { BrowseListingCard } from '@/components/listing/BrowseListingCard';
@@ -35,10 +35,10 @@ interface ApiListing {
 }
 
 const CATEGORIES = [
-  { id: 'all', label: 'All', icon: '🌎' },
-  { id: 'hotel', label: 'Hotels', icon: '🏨' },
-  { id: 'restaurant', label: 'Restaurants', icon: '🍽️' },
-  { id: 'experience', label: 'Experiences', icon: '🎒' },
+  { id: 'all', label: 'All', icon: Globe2 },
+  { id: 'hotel', label: 'Hotels', icon: Building2 },
+  { id: 'restaurant', label: 'Restaurants', icon: Utensils },
+  { id: 'experience', label: 'Experiences', icon: Compass },
 ] as const;
 
 const REGIONS: { id: string; label: string }[] = [
@@ -199,7 +199,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
             placeholder="Search hotels, restaurants, experiences…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full pl-9 pr-4 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
 
@@ -209,7 +209,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
             id="explore-region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="appearance-none pl-4 pr-9 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+            className="appearance-none pl-4 pr-9 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
           >
             {REGIONS.map((r) => (
               <option key={r.id} value={r.id}>
@@ -221,7 +221,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
         </div>
 
         {/* View toggle */}
-        <div className="flex rounded-xl border overflow-hidden bg-background" role="group" aria-label="View mode">
+        <div className="flex rounded-lg border overflow-hidden bg-background" role="group" aria-label="View mode">
           <button
             onClick={() => setViewMode('grid')}
             className={cn(
@@ -255,21 +255,21 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
       {/* Category tabs + sort row */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit" role="tablist" aria-label="Filter by category">
-          {CATEGORIES.map(({ id, label, icon }) => (
+        <div className="flex gap-1 bg-muted/50 rounded-lg p-1 w-fit" role="tablist" aria-label="Filter by category">
+          {CATEGORIES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setCategory(id)}
               role="tab"
               aria-selected={category === id}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-[color,background-color,box-shadow] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
+                'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
                 category === id
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span aria-hidden="true">{icon}</span>
+              <Icon className="w-3.5 h-3.5" aria-hidden="true" />
               {label}
             </button>
           ))}
@@ -334,7 +334,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="px-6 py-2.5 rounded-xl border font-medium text-sm hover:bg-muted transition-[background-color] duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-6 py-2.5 rounded-lg border font-medium text-sm hover:bg-muted transition-[background-color] duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
                 </button>

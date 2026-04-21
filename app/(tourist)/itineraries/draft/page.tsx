@@ -70,7 +70,7 @@ export default function DraftItineraryPage() {
               </span>
             )}
             {isDirty && (
-              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              <span className="text-xs text-status-pending bg-status-pending/10 px-2 py-0.5 rounded-full border border-status-pending/20">
                 Unsaved changes
               </span>
             )}

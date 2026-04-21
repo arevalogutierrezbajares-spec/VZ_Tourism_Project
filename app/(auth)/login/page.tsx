@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -124,7 +124,7 @@ function LoginForm() {
 
       <CardContent className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-md" role="alert">
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md" role="alert">
             {error === 'auth_callback_failed'
               ? 'Sign-in failed. Please try again.'
               : 'An error occurred during sign-in.'}
@@ -151,11 +151,11 @@ function LoginForm() {
         <Button
           type="button"
           variant="secondary"
-          className="w-full min-h-[44px] bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
+          className="w-full min-h-[44px] bg-status-pending/10 hover:bg-status-pending/15 border border-status-pending/30 text-foreground active:scale-[0.96] transition-[transform,color,background-color,border-color] duration-150 ease-out"
           onClick={signInAsDemo}
           disabled={isLoading}
         >
-          <span className="mr-2">✨</span>
+          <Sparkles className="w-4 h-4 mr-2 text-status-pending" aria-hidden="true" />
           Try Demo Account
         </Button>
 
