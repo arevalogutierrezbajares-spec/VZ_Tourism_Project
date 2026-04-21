@@ -116,7 +116,7 @@ export function ItineraryStopCard({
   };
 
   const listing = stop.listing;
-  const hasDetails = !!(listing?.description || listing?.short_description || stop.description || stop.notes || coverUrl);
+  const hasDetails = !!(listing?.description || listing?.short_description || stop.description || stop.notes || coverUrl || stop.location_name || stop.start_time || stop.duration_hours);
 
   // The main card content (extracted for reuse inside popover trigger)
   const cardContent = (
