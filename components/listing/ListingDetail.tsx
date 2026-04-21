@@ -58,7 +58,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="capitalize">
                 {category?.icon} {listing.category}
@@ -82,6 +82,13 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
               </span>
             </div>
           </div>
+          {/* Price — above fold on mobile; hidden on desktop where sidebar handles it */}
+          {listing.price_usd > 0 && (
+            <div className="lg:hidden text-right shrink-0">
+              <p className="text-2xl font-bold tabular-nums">${listing.price_usd.toFixed(0)}</p>
+              <p className="text-xs text-muted-foreground">per person</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -237,6 +244,7 @@ export function ListingDetail({ listing, reviews, canReview, bookingId }: Listin
                 transport_to_next: null,
                 transport_duration_minutes: null,
                 notes: null,
+                listing: listing,
               });
               openPanel();
               setAddedToItinerary(true);

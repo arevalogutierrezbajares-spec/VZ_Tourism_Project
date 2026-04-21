@@ -25,10 +25,10 @@ export interface BrowseApiListing {
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
-  hotel: 'from-blue-400 to-blue-600',
-  restaurant: 'from-orange-400 to-orange-600',
-  experience: 'from-emerald-400 to-emerald-600',
-  other: 'from-purple-400 to-purple-600',
+  hotel: 'from-primary/60 to-primary',
+  restaurant: 'from-accent/60 to-accent',
+  experience: 'from-secondary/60 to-secondary',
+  other: 'from-muted-foreground/40 to-muted-foreground/70',
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -82,42 +82,42 @@ function generateTags(listing: BrowseApiListing): Tag[] {
   const name = listing.title?.toLowerCase() ?? '';
 
   if (['losroques', 'morrocoy', 'choroni', 'margarita'].includes(region)) {
-    tags.push({ label: 'Beachfront', icon: '🏖️', color: 'bg-cyan-50 text-cyan-700' });
+    tags.push({ label: 'Beachfront', icon: '🏖️', color: 'bg-primary/10 text-primary' });
   }
   if (['merida', 'canaima'].includes(region)) {
-    tags.push({ label: 'Mountain', icon: '⛰️', color: 'bg-emerald-50 text-emerald-700' });
+    tags.push({ label: 'Mountain', icon: '⛰️', color: 'bg-secondary/10 text-secondary' });
   }
   if (region === 'losroques' || region === 'margarita') {
-    tags.push({ label: 'Island', icon: '🏝️', color: 'bg-blue-50 text-blue-700' });
+    tags.push({ label: 'Island', icon: '🏝️', color: 'bg-primary/10 text-primary' });
   }
   if (region === 'caracas') {
-    tags.push({ label: 'City Center', icon: '🏙️', color: 'bg-slate-50 text-slate-700' });
+    tags.push({ label: 'City Center', icon: '🏙️', color: 'bg-muted text-muted-foreground' });
   }
   if (region === 'losroques' || (category === 'experience' && region === 'margarita')) {
-    tags.push({ label: 'Diving', icon: '🤿', color: 'bg-teal-50 text-teal-700' });
+    tags.push({ label: 'Diving', icon: '🤿', color: 'bg-primary/10 text-primary' });
   }
   if (['merida', 'canaima'].includes(region) || category === 'adventure' || name.includes('hik') || name.includes('trek')) {
-    tags.push({ label: 'Hiking', icon: '🥾', color: 'bg-green-50 text-green-700' });
+    tags.push({ label: 'Hiking', icon: '🥾', color: 'bg-secondary/10 text-secondary' });
   }
   if (region === 'canaima' || name.includes('nature') || name.includes('wildlife')) {
-    tags.push({ label: 'Nature', icon: '🌿', color: 'bg-lime-50 text-lime-700' });
+    tags.push({ label: 'Nature', icon: '🌿', color: 'bg-secondary/10 text-secondary' });
   }
   if (type === 'posada' || type === 'casa vacacional') {
-    tags.push({ label: 'Boutique Stay', icon: '🏡', color: 'bg-orange-50 text-orange-700' });
+    tags.push({ label: 'Boutique Stay', icon: '🏡', color: 'bg-accent/10 text-accent' });
   }
   if (type === 'tours' || type === 'tour' || category === 'experience') {
-    tags.push({ label: 'Guided Tour', icon: '🎒', color: 'bg-violet-50 text-violet-700' });
+    tags.push({ label: 'Guided Tour', icon: '🎒', color: 'bg-primary/10 text-primary' });
   }
   if (name.includes('spa') || name.includes('wellness') || category === 'wellness') {
-    tags.push({ label: 'Spa & Wellness', icon: '💆', color: 'bg-pink-50 text-pink-700' });
+    tags.push({ label: 'Spa & Wellness', icon: '💆', color: 'bg-accent/10 text-accent' });
   }
   if (name.includes('eco') || name.includes('natural') || name.includes('reserva')) {
-    tags.push({ label: 'Eco-Friendly', icon: '🌱', color: 'bg-green-50 text-green-700' });
+    tags.push({ label: 'Eco-Friendly', icon: '🌱', color: 'bg-secondary/10 text-secondary' });
   }
-  if (rating >= 4.5) tags.push({ label: 'Top Rated', icon: '🏆', color: 'bg-amber-50 text-amber-700' });
-  if (reviews >= 500) tags.push({ label: 'Popular', icon: '🔥', color: 'bg-rose-50 text-rose-700' });
-  if (reviews >= 50 && reviews < 500 && rating >= 4.0) tags.push({ label: 'Local Favorite', icon: '❤️', color: 'bg-rose-50 text-rose-700' });
-  if (rating >= 4.0 && reviews < 50) tags.push({ label: 'Hidden Gem', icon: '💎', color: 'bg-purple-50 text-purple-700' });
+  if (rating >= 4.5) tags.push({ label: 'Top Rated', icon: '🏆', color: 'bg-accent/10 text-accent' });
+  if (reviews >= 500) tags.push({ label: 'Popular', icon: '🔥', color: 'bg-destructive/10 text-destructive' });
+  if (reviews >= 50 && reviews < 500 && rating >= 4.0) tags.push({ label: 'Local Favorite', icon: '❤️', color: 'bg-destructive/10 text-destructive' });
+  if (rating >= 4.0 && reviews < 50) tags.push({ label: 'Hidden Gem', icon: '💎', color: 'bg-primary/10 text-primary' });
 
   return tags.slice(0, 4);
 }
@@ -125,14 +125,14 @@ function generateTags(listing: BrowseApiListing): Tag[] {
 function TierBadge({ status }: { status?: string }) {
   if (status === 'founding_partner') {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/30">
         🏆 Founding Partner
       </span>
     );
   }
   if (status === 'verified') {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/30">
         ✅ Verified Partner
       </span>
     );
@@ -182,8 +182,8 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
   const typeLabel = TYPE_LABELS[listing.type?.toLowerCase() ?? ''] ?? listing.type ?? 'Place';
   const regionLabel = REGION_LABELS[listing.region?.toLowerCase() ?? ''] ?? listing.region ?? 'Venezuela';
   const borderAccent =
-    listing.platform_status === 'founding_partner' ? 'border-l-4 border-l-amber-400' :
-    listing.platform_status === 'verified'         ? 'border-l-4 border-l-emerald-400' : '';
+    listing.platform_status === 'founding_partner' ? 'border-l-4 border-l-accent' :
+    listing.platform_status === 'verified'         ? 'border-l-4 border-l-secondary' : '';
 
   const handleAddToTrip = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -207,6 +207,15 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
       transport_to_next: null,
       transport_duration_minutes: null,
       notes: null,
+      listing: {
+        title: listing.title,
+        cover_image_url: listing.cover_image_url ?? null,
+        slug: listing.slug,
+        price_usd: 0,
+        category: (listing.category ?? 'other') as import('@/types/database').ListingCategory,
+        rating: listing.rating ?? 0,
+        total_reviews: listing.review_count ?? 0,
+      } as import('@/types/database').Listing,
     });
     openPanel();
     setAddedToTrip(true);
