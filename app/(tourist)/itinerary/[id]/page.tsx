@@ -116,7 +116,6 @@ export default async function ItineraryPage({ params }: Props) {
           user: it.user || null,
           regions: it.regions,
           total_days: it.total_days,
-          estimated_cost_usd: it.estimated_cost_usd,
           start_date: it.start_date,
           likes: it.likes,
           saves: it.saves,

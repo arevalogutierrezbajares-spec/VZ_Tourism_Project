@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import {
   MapPin,
   Calendar,
-  DollarSign,
   Tag,
   Compass,
   MessageSquare,
@@ -21,7 +20,7 @@ import { ItineraryStopCard } from '@/components/itinerary/ItineraryStopCard';
 import { BookActions } from '@/components/itinerary/BookActions';
 import { ReactionBar } from '@/components/social/ReactionBar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatDate, formatCurrency, getInitials } from '@/lib/utils';
+import { formatDate, getInitials } from '@/lib/utils';
 import type { ItineraryStop } from '@/types/database';
 
 const PLAN_STEPS = [
@@ -53,7 +52,6 @@ interface ItineraryViewPanelProps {
     user?: { id: string; full_name: string; avatar_url: string | null; role: string } | null;
     regions: string[];
     total_days: number;
-    estimated_cost_usd: number;
     start_date?: string | null;
     likes: number;
     saves: number;
@@ -150,12 +148,6 @@ export function ItineraryViewPanel({ itinerary: it, stops, discountDisplay }: It
                 </span>
                 {it.start_date && (
                   <span className="bg-muted/50 px-2.5 py-1 rounded-full">{formatDate(it.start_date)}</span>
-                )}
-                {it.estimated_cost_usd > 0 && (
-                  <span className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-full">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    From {formatCurrency(it.estimated_cost_usd)}
-                  </span>
                 )}
                 {it.regions.length > 0 && (
                   <span className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-full">
