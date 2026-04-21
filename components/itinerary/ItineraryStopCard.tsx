@@ -13,9 +13,11 @@ import {
   ArrowLeftRight,
   X,
   ImageOff,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import type { ItineraryStop, AIGeneratedStop } from '@/types/database';
 import { formatDuration } from '@/lib/utils';
@@ -113,108 +115,224 @@ export function ItineraryStopCard({
     toast.success(`Swapped to "${alt.title}"`);
   };
 
-  return (
-    <div className={cn('space-y-1', className)}>
-      <div className={cn(
-        'flex gap-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-[box-shadow] duration-150 group',
-        hasPhoto && 'p-0 overflow-hidden'
-      )}>
-        {/* Listing photo */}
-        {hasPhoto && (
-          <div className="relative w-20 h-20 shrink-0">
-            <Image
-              src={coverUrl!}
-              alt={stop.title}
-              fill
-              className="object-cover"
-              sizes="80px"
-              onError={() => setImgError(true)}
-            />
-          </div>
-        )}
+  const listing = stop.listing;
+  const hasDetails = !!(listing?.description || listing?.short_description || stop.description || stop.notes || coverUrl);
 
-        {/* Photo fallback placeholder (only in showPhoto mode when no image) */}
-        {showPhoto && !hasPhoto && (
-          <div className="w-20 h-20 shrink-0 bg-muted flex items-center justify-center rounded-l-lg">
-            <ImageOff className="w-5 h-5 text-muted-foreground/40" />
-          </div>
-        )}
+  // The main card content (extracted for reuse inside popover trigger)
+  const cardContent = (
+    <div className={cn(
+      'flex gap-3 p-3 bg-background rounded-xl border hover:shadow-md motion-safe:hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 group cursor-default',
+      hasPhoto && 'p-0 overflow-hidden'
+    )}>
+      {/* Listing photo */}
+      {hasPhoto && (
+        <div className="relative w-20 h-20 shrink-0">
+          <Image
+            src={coverUrl!}
+            alt={stop.title}
+            fill
+            className="object-cover"
+            sizes="80px"
+            onError={() => setImgError(true)}
+          />
+        </div>
+      )}
 
-        {isDraggable && !showPhoto && (
-          <div className="flex items-center cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground" aria-label="Drag to reorder">
-            <GripVertical className="w-4 h-4" />
-          </div>
-        )}
+      {/* Photo fallback placeholder (only in showPhoto mode when no image) */}
+      {showPhoto && !hasPhoto && (
+        <div className="w-20 h-20 shrink-0 bg-muted flex items-center justify-center rounded-l-lg">
+          <ImageOff className="w-5 h-5 text-muted-foreground/40" />
+        </div>
+      )}
 
-        <div className={cn('flex-1 min-w-0 space-y-1', hasPhoto && 'p-3')}>
-          <div className="flex items-start gap-2">
-            <p className="font-medium text-sm line-clamp-1 flex-1">{stop.title}</p>
-            <div className="flex items-center gap-0.5 shrink-0">
+      {isDraggable && !showPhoto && (
+        <div className="flex items-center cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground" aria-label="Drag to reorder">
+          <GripVertical className="w-4 h-4" />
+        </div>
+      )}
+
+      <div className={cn('flex-1 min-w-0 space-y-1', hasPhoto && 'p-3')}>
+        <div className="flex items-start gap-2">
+          <p className="font-medium text-sm line-clamp-1 flex-1">{stop.title}</p>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-7 h-7 min-w-[28px] min-h-[28px] md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+              onClick={handleGetAlternatives}
+              disabled={isLoadingAlts}
+              aria-label={alternatives.length > 0 ? `Hide alternatives for ${stop.title}` : `Suggest alternatives for ${stop.title}`}
+            >
+              {isLoadingAlts ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : alternatives.length > 0 ? (
+                <X className="w-3.5 h-3.5" />
+              ) : (
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+              )}
+            </Button>
+            {onRemove && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-7 h-7 min-w-[28px] min-h-[28px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
-                onClick={handleGetAlternatives}
-                disabled={isLoadingAlts}
-                aria-label={alternatives.length > 0 ? `Hide alternatives for ${stop.title}` : `Suggest alternatives for ${stop.title}`}
+                className="w-7 h-7 min-w-[28px] min-h-[28px] md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                onClick={() => onRemove(stop.id)}
+                aria-label={`Remove ${stop.title}`}
               >
-                {isLoadingAlts ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : alternatives.length > 0 ? (
-                  <X className="w-3.5 h-3.5" />
-                ) : (
-                  <ArrowLeftRight className="w-3.5 h-3.5" />
-                )}
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
-              {onRemove && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="w-7 h-7 min-w-[28px] min-h-[28px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemove(stop.id)}
-                  aria-label={`Remove ${stop.title}`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {stop.location_name && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {stop.location_name}
-            </p>
-          )}
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {stop.start_time && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {stop.start_time}
-                {stop.end_time && ` - ${stop.end_time}`}
-              </span>
-            )}
-            {stop.duration_hours && (
-              <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                {formatDuration(stop.duration_hours)}
-              </Badge>
-            )}
-            {stop.cost_usd > 0 && (
-              <span className="text-xs font-medium text-primary flex items-center gap-0.5 tabular-nums">
-                <DollarSign className="w-3 h-3" />
-                {stop.cost_usd.toFixed(0)}
-              </span>
-            )}
-            {stop.source_type === 'ai_suggested' && (
-              <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-0" title="AI-generated suggestion — verify details">
-                <Sparkles className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" />
-                AI
-              </Badge>
             )}
           </div>
         </div>
+
+        {stop.location_name && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {stop.location_name}
+          </p>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {stop.start_time && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {stop.start_time}
+              {stop.end_time && ` - ${stop.end_time}`}
+            </span>
+          )}
+          {stop.duration_hours && (
+            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+              {formatDuration(stop.duration_hours)}
+            </Badge>
+          )}
+          {stop.cost_usd > 0 && (
+            <span className="text-xs font-medium text-primary flex items-center gap-0.5 tabular-nums">
+              <DollarSign className="w-3 h-3" />
+              {stop.cost_usd.toFixed(0)}
+            </span>
+          )}
+          {stop.source_type === 'ai_suggested' && (
+            <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-0" title="AI-generated suggestion — verify details">
+              <Sparkles className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" />
+              AI
+            </Badge>
+          )}
+        </div>
       </div>
+    </div>
+  );
+
+  // Detail popover content
+  const popoverDetail = (
+    <div className="w-80 space-y-3">
+      {/* Photo */}
+      {coverUrl && (
+        <div className="relative w-full aspect-[16/10] rounded-lg overflow-hidden">
+          <Image
+            src={coverUrl}
+            alt={stop.title}
+            fill
+            className="object-cover"
+            sizes="320px"
+          />
+          {listing?.category && (
+            <div className="absolute top-2 left-2">
+              <span className="bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-full capitalize">
+                {listing.category}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Title & location */}
+      <div>
+        <h4 className="font-semibold text-sm">{stop.title}</h4>
+        {stop.location_name && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+            <MapPin className="w-3 h-3" />
+            {stop.location_name}
+          </p>
+        )}
+      </div>
+
+      {/* Rating & reviews */}
+      {listing?.rating != null && listing.rating > 0 && (
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5">
+            <Star className="w-3.5 h-3.5 fill-accent text-accent" />
+            <span className="text-xs font-semibold tabular-nums">{listing.rating.toFixed(1)}</span>
+          </div>
+          {listing.total_reviews > 0 && (
+            <span className="text-xs text-muted-foreground">
+              ({listing.total_reviews} {listing.total_reviews === 1 ? 'review' : 'reviews'})
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Description */}
+      {(listing?.short_description || listing?.description || stop.description) && (
+        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+          {listing?.short_description || listing?.description || stop.description}
+        </p>
+      )}
+
+      {/* Details row */}
+      <div className="flex items-center gap-3 flex-wrap text-xs">
+        {stop.start_time && (
+          <span className="flex items-center gap-1 text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+            <Clock className="w-3 h-3" />
+            {stop.start_time}{stop.end_time && ` - ${stop.end_time}`}
+          </span>
+        )}
+        {stop.duration_hours && (
+          <span className="bg-muted/50 px-2 py-1 rounded-full text-muted-foreground">
+            {formatDuration(stop.duration_hours)}
+          </span>
+        )}
+        {stop.cost_usd > 0 && (
+          <span className="flex items-center gap-0.5 font-medium text-primary bg-primary/5 px-2 py-1 rounded-full">
+            <DollarSign className="w-3 h-3" />
+            {stop.cost_usd.toFixed(0)}
+          </span>
+        )}
+      </div>
+
+      {/* Notes */}
+      {stop.notes && (
+        <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-2">
+          {stop.notes}
+        </p>
+      )}
+
+      {/* Tags */}
+      {listing?.tags && listing.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {listing.tags.slice(0, 5).map((tag) => (
+            <span key={tag} className="text-[11px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={cn('space-y-1', className)}>
+      {hasDetails ? (
+        <Popover>
+          <PopoverTrigger render={<div />} openOnHover delay={300} closeDelay={150}>
+            {cardContent}
+          </PopoverTrigger>
+          <PopoverContent side="right" sideOffset={12} align="start" className="w-auto p-4 rounded-2xl shadow-lg">
+            {popoverDetail}
+          </PopoverContent>
+        </Popover>
+      ) : (
+        cardContent
+      )}
 
       {/* Transport connector */}
       {showTransport && stop.transport_to_next && (

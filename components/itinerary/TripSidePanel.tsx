@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { MapPin, Bot, ExternalLink } from 'lucide-react';
+import { MapPin, Bot, ExternalLink, Plus, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { useItineraryStore } from '@/stores/itinerary-store';
 import { ItineraryDaySection } from './ItineraryDaySection';
 import { PlanningChatPanel } from './PlanningChatPanel';
 import { TripPanelHeader } from './TripPanelHeader';
 import { cn } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 export function TripSidePanel() {
   const {
@@ -22,9 +24,61 @@ export function TripSidePanel() {
     clearPeek,
     closePanel,
     openPanel,
+    addDay,
+    removeDay,
     removeStop,
     moveStop,
   } = useItineraryStore();
+
+  const [isOrganizing, setIsOrganizing] = useState(false);
+
+  const handleOrganize = useCallback(async () => {
+    const stopCount = days.reduce((sum, d) => sum + d.stops.length, 0);
+    if (stopCount === 0) {
+      toast.error('Add some stops first');
+      return;
+    }
+    setIsOrganizing(true);
+    try {
+      const allStops = days.flatMap((d) =>
+        d.stops.map((s) => ({
+          id: s.id,
+          title: s.title,
+          location_name: s.location_name,
+          latitude: s.latitude,
+          longitude: s.longitude,
+          duration_hours: s.duration_hours,
+          cost_usd: s.cost_usd,
+        }))
+      );
+      const response = await fetch('/api/ai/organize-itinerary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stops: allStops,
+          total_days: days.length,
+          regions: current?.regions || [],
+        }),
+      });
+      if (!response.ok) throw new Error('Organization failed');
+      const { plan } = await response.json();
+      if (!plan || plan.length === 0) {
+        toast.error('Could not organize. Try adding more stops.');
+        return;
+      }
+      // Apply the AI plan: move each stop to its new day/order
+      for (const dayPlan of plan) {
+        for (let order = 0; order < dayPlan.stop_ids.length; order++) {
+          moveStop(dayPlan.stop_ids[order], dayPlan.day, order);
+        }
+      }
+      toast.success('Trip organized! Review the new order.');
+    } catch {
+      toast.error('Could not organize itinerary');
+    } finally {
+      setIsOrganizing(false);
+    }
+  }, [days, current, moveStop]);
 
   const prefersReducedMotion = useReducedMotion();
   const peekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,21 +145,32 @@ export function TripSidePanel() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          ref={panelRef}
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 28, stiffness: 300 }}
-          role="complementary"
-          aria-label="Trip planner"
-          className={cn(
-            'fixed top-0 right-0 h-dvh w-[420px] max-w-[90vw] z-30',
-            'bg-background border-l border-border/50 shadow-2xl',
-            'flex flex-col',
-            'hidden md:flex' // Desktop only — mobile uses MobileTripSheet
-          )}
-        >
+        <>
+          {/* Backdrop — click to close */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[29] hidden md:block"
+            onClick={closePanel}
+            aria-hidden="true"
+          />
+          <motion.div
+            ref={panelRef}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 28, stiffness: 300 }}
+            role="complementary"
+            aria-label="Trip planner"
+            className={cn(
+              'fixed top-0 right-0 h-dvh w-[420px] max-w-[90vw] z-30',
+              'bg-background border-l border-border/50 shadow-2xl',
+              'flex flex-col',
+              'hidden md:flex' // Desktop only — mobile uses MobileTripSheet
+            )}
+          >
           {/* Header */}
           <TripPanelHeader />
 
@@ -194,8 +259,36 @@ export function TripSidePanel() {
                     stops={day.stops}
                     onRemoveStop={removeStop}
                     onMoveStop={moveStop}
+                    onRemoveDay={days.length > 1 ? removeDay : undefined}
                   />
                 ))}
+
+                {/* Day management + AI organize */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={addDay}
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add day
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={handleOrganize}
+                    disabled={isOrganizing}
+                  >
+                    {isOrganizing ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    )}
+                    Organize trip
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -228,6 +321,7 @@ export function TripSidePanel() {
             )}
           </div>
         </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
