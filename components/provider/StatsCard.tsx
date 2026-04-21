@@ -38,11 +38,11 @@ export function StatsCard({
             {change !== undefined && (
               <div className="flex items-center gap-1 text-xs">
                 {isPositive ? (
-                  <TrendingUp className="w-3 h-3 text-green-500" />
+                  <TrendingUp className="w-3 h-3 text-status-confirmed" />
                 ) : (
-                  <TrendingDown className="w-3 h-3 text-red-500" />
+                  <TrendingDown className="w-3 h-3 text-destructive" />
                 )}
-                <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                <span className={isPositive ? 'text-status-confirmed' : 'text-destructive'}>
                   {isPositive ? '+' : ''}{change.toFixed(1)}%
                 </span>
                 <span className="text-muted-foreground">{changeLabel}</span>

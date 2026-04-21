@@ -75,15 +75,15 @@ function todayStr() {
 function dayColor(day: DayData | undefined, today: string): string {
   if (!day) return 'hover:bg-muted/40';
   if (day.booking_id && day.booking_id !== 'booking_hold') {
-    return 'bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50';
+    return 'bg-primary/10 hover:bg-primary/20';
   }
   if (!day.is_available) {
-    return 'bg-gray-100 dark:bg-gray-800/60 hover:bg-gray-200 dark:hover:bg-gray-800';
+    return 'bg-muted hover:bg-muted/70';
   }
   if (day.price !== null) {
-    return 'bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30';
+    return 'bg-accent/10 hover:bg-accent/20';
   }
-  return 'bg-green-50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20';
+  return 'bg-secondary/5 hover:bg-secondary/10';
 }
 
 // ---------------------------------------------------------------------------
@@ -642,22 +642,22 @@ export default function CalendarPage() {
 
                   {/* Indicator chips */}
                   {data?.booking_id && data.booking_id !== 'booking_hold' && (
-                    <div className="text-[10px] bg-blue-500 text-white rounded px-1 truncate">
+                    <div className="text-[10px] bg-primary text-primary-foreground rounded px-1 truncate">
                       Booked
                     </div>
                   )}
                   {data?.booking_id === 'booking_hold' && (
-                    <div className="text-[10px] bg-orange-400 text-white rounded px-1 truncate">
+                    <div className="text-[10px] bg-accent text-accent-foreground rounded px-1 truncate">
                       Hold
                     </div>
                   )}
                   {!data?.booking_id && !data?.is_available && data && (
-                    <div className="text-[10px] bg-gray-400 text-white rounded px-1 truncate">
+                    <div className="text-[10px] bg-muted-foreground/50 text-background rounded px-1 truncate">
                       {data.blocked_reason ?? 'Blocked'}
                     </div>
                   )}
                   {data?.price !== null && data?.price !== undefined && data?.is_available && (
-                    <div className="text-[10px] text-yellow-700 dark:text-yellow-400 font-medium">
+                    <div className="text-[10px] text-accent font-medium">
                       ${data.price}
                     </div>
                   )}
@@ -668,10 +668,10 @@ export default function CalendarPage() {
 
           {/* Legend */}
           <div className="flex gap-4 mt-3 flex-wrap text-xs text-muted-foreground">
-            <LegendItem color="bg-green-100 dark:bg-green-900/30" label="Available" />
-            <LegendItem color="bg-blue-100 dark:bg-blue-900/30" label="Booked" />
-            <LegendItem color="bg-gray-100 dark:bg-gray-800/60" label="Blocked" />
-            <LegendItem color="bg-yellow-50 dark:bg-yellow-900/20" label="Price override" />
+            <LegendItem color="bg-secondary/10" label="Available" />
+            <LegendItem color="bg-primary/10" label="Booked" />
+            <LegendItem color="bg-muted" label="Blocked" />
+            <LegendItem color="bg-accent/10" label="Price override" />
           </div>
         </div>
 

@@ -22,10 +22,10 @@ export default function StatsStrip({ conversations }: StatsStripProps) {
   return (
     <div className="grid grid-cols-4 divide-x border-b">
       {[
-        { label: 'Total',     value: counts.total,     color: 'text-foreground'  },
-        { label: 'AI',        value: counts.ai,        color: 'text-green-600'   },
-        { label: 'Human',     value: counts.human,     color: 'text-blue-600'    },
-        { label: 'Escalated', value: counts.escalated, color: 'text-red-600'     },
+        { label: 'Total',     value: counts.total,     color: 'text-foreground'        },
+        { label: 'AI',        value: counts.ai,        color: 'text-secondary'         },
+        { label: 'Human',     value: counts.human,     color: 'text-primary'           },
+        { label: 'Escalated', value: counts.escalated, color: 'text-destructive'       },
       ].map(({ label, value, color }) => (
         <div key={label} className="py-2.5 text-center">
           <p className={cn('text-base font-bold', color)}>{value}</p>

@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRecentlyViewed } from '@/hooks/use-recently-viewed';
 import { createClient } from '@/lib/supabase/client';
 import { differenceInDays, isPast, isFuture, parseISO, format, formatDistanceToNow } from 'date-fns';
-import { Luggage, MapPin, Calendar, Star, Heart, Cloud, BookOpen, Pencil, Clock } from 'lucide-react';
+import { Luggage, MapPin, Calendar, Star, Heart, Cloud, BookOpen, Pencil, Clock, CheckCircle2, Clock3, CreditCard, XCircle, Award, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -45,12 +45,22 @@ interface SavedPlace {
 type Tab = 'upcoming' | 'past' | 'itineraries' | 'saved';
 
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: 'bg-green-100 text-green-800',
-  pending: 'bg-yellow-100 text-yellow-800',
-  payment_submitted: 'bg-blue-100 text-blue-800',
-  cancelled: 'bg-red-100 text-red-800',
-  completed: 'bg-blue-100 text-blue-800',
-  refunded: 'bg-gray-100 text-gray-700',
+  confirmed: 'bg-status-confirmed/15 text-status-confirmed',
+  pending: 'bg-status-pending/15 text-status-pending',
+  payment_submitted: 'bg-status-payment-submitted/15 text-status-payment-submitted',
+  cancelled: 'bg-destructive/15 text-destructive',
+  completed: 'bg-status-completed/15 text-status-completed',
+  refunded: 'bg-muted text-muted-foreground',
+};
+
+// WCAG: status badges include icon + color (not color-only) — C17
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  confirmed: <CheckCircle2 className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
+  pending: <Clock3 className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
+  payment_submitted: <CreditCard className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
+  cancelled: <XCircle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
+  completed: <Award className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
+  refunded: <RotateCcw className="w-3 h-3 flex-shrink-0" aria-hidden="true" />,
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -102,13 +112,14 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
     <Card className="rounded-xl shadow-sm overflow-hidden">
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-36 h-32 sm:h-auto bg-gradient-to-br from-sky-100 to-amber-100 flex items-center justify-center flex-shrink-0">
-            <Luggage className="w-10 h-10 text-sky-400" />
+          <div className="sm:w-36 h-32 sm:h-auto bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center flex-shrink-0">
+            <Luggage className="w-10 h-10 text-primary/50" />
           </div>
           <div className="flex-1 p-4">
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="font-semibold text-base leading-tight">{booking.listing_name}</h3>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[booking.status] ?? 'bg-gray-100 text-gray-700'}`}>
+              <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[booking.status] ?? 'bg-muted text-muted-foreground'}`}>
+                {STATUS_ICONS[booking.status]}
                 {STATUS_LABELS[booking.status] ?? booking.status}
               </span>
             </div>
@@ -119,38 +130,38 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
               <span className="font-medium text-foreground tabular-nums">${booking.total_usd}</span>
             </div>
             {!past && days !== null && days >= 0 && (
-              <p className="text-xs font-semibold text-sky-600 mb-2 tabular-nums">
+              <p className="text-xs font-semibold text-primary mb-2 tabular-nums">
                 {days === 0 ? 'Today!' : days === 1 ? 'Tomorrow!' : `In ${days} days!`}
               </p>
             )}
             {withinWeek && (
-              <p className="flex items-center gap-1 text-xs text-amber-600 mb-2">
+              <p className="flex items-center gap-1 text-xs text-accent mb-2">
                 <Cloud className="w-3 h-3" /> Pre-trip info available
               </p>
             )}
             <div className="flex gap-2 flex-wrap">
               <Link
                 href={`/bookings/${booking.id}`}
-                className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium hover:bg-sky-600 transition-[background-color] active:scale-[0.96]"
+                className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-[background-color] active:scale-[0.96]"
               >
                 View Booking
               </Link>
               {past && (
-                <button className="text-xs px-3 py-1.5 rounded-lg border text-muted-foreground hover:border-sky-400 hover:text-sky-600 transition-[color,border-color] active:scale-[0.96]">
+                <button className="text-xs px-3 py-1.5 rounded-lg border text-muted-foreground hover:border-primary hover:text-primary transition-[color,border-color] active:scale-[0.96]">
                   <Star className="w-3 h-3 inline mr-1" />Leave Review
                 </button>
               )}
               {canCancel && !showConfirm && (
                 <button
                   onClick={() => setShowConfirm(true)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-[background-color] active:scale-[0.96]"
+                  className="text-xs px-3 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-[background-color] active:scale-[0.96]"
                 >
                   Cancel booking
                 </button>
               )}
               {canCancel && showConfirm && (
                 <div className="flex flex-col gap-1.5 text-xs">
-                  <div className="text-red-600 font-medium">
+                  <div className="text-destructive font-medium">
                     Are you sure?
                     {days !== null && (() => {
                       const refund = getRefundEstimate(days, booking.total_usd);
@@ -163,7 +174,7 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
                     <button
                       onClick={handleCancel}
                       disabled={cancelling}
-                      className="px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-[background-color] disabled:opacity-50 active:scale-[0.96]"
+                      className="px-2.5 py-1 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-[background-color] disabled:opacity-50 active:scale-[0.96]"
                     >
                       {cancelling ? 'Cancelling...' : 'Yes, cancel'}
                     </button>
@@ -187,25 +198,25 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
 function EmptyState({ tab }: { tab: Tab }) {
   const configs: Record<Tab, { icon: React.ReactNode; text: string; cta: string; href: string }> = {
     upcoming: {
-      icon: <Luggage className="w-12 h-12 text-sky-300" />,
+      icon: <Luggage className="w-12 h-12 text-primary/40" />,
       text: "No upcoming trips yet.",
       cta: "Explore Venezuela →",
       href: "/",
     },
     past: {
-      icon: <Star className="w-12 h-12 text-amber-300" />,
+      icon: <Star className="w-12 h-12 text-accent/50" />,
       text: "No past trips to show.",
       cta: "Plan your first adventure →",
       href: "/",
     },
     itineraries: {
-      icon: <BookOpen className="w-12 h-12 text-sky-300" />,
+      icon: <BookOpen className="w-12 h-12 text-primary/40" />,
       text: "No saved itineraries yet.",
       cta: "Build my itinerary with AI →",
-      href: "/library",
+      href: "/plan",
     },
     saved: {
-      icon: <Heart className="w-12 h-12 text-red-300" />,
+      icon: <Heart className="w-12 h-12 text-destructive/40" />,
       text: "No saved places yet.",
       cta: "Explore listings →",
       href: "/",
@@ -217,7 +228,7 @@ function EmptyState({ tab }: { tab: Tab }) {
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="mb-4">{icon}</div>
       <p className="text-muted-foreground mb-3">{text}</p>
-      <Link href={href} className="text-sm font-medium text-sky-500 hover:underline">{cta}</Link>
+      <Link href={href} className="text-sm font-medium text-primary hover:underline">{cta}</Link>
     </div>
   );
 }
@@ -296,8 +307,35 @@ export default function TripsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />
+      <div className="container max-w-3xl mx-auto px-4 py-8 space-y-6">
+        {/* h1 skeleton */}
+        <div className="h-8 w-32 bg-muted rounded-lg animate-pulse" />
+        {/* Tabs skeleton */}
+        <div className="flex gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-9 w-24 bg-muted rounded-full animate-pulse" />
+          ))}
+        </div>
+        {/* Booking card skeletons */}
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="rounded-xl border overflow-hidden">
+            <div className="flex flex-col sm:flex-row">
+              <div className="sm:w-36 h-32 bg-muted/50 animate-pulse flex-shrink-0" />
+              <div className="flex-1 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="h-5 w-2/3 bg-muted rounded animate-pulse" />
+                  <div className="h-5 w-20 bg-muted/60 rounded-full animate-pulse" />
+                </div>
+                <div className="h-3 w-1/3 bg-muted/60 rounded animate-pulse" />
+                <div className="flex gap-3">
+                  <div className="h-3 w-32 bg-muted/50 rounded animate-pulse" />
+                  <div className="h-3 w-16 bg-muted/50 rounded animate-pulse" />
+                </div>
+                <div className="h-7 w-24 bg-muted/40 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -317,7 +355,7 @@ export default function TripsPage() {
 
   return (
     <div className="container px-4 py-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1 text-balance">My Trips</h1>
+      <h1 className="text-2xl font-bold font-heading mb-1 text-balance">My Trips</h1>
       <p className="text-muted-foreground text-sm mb-6 text-pretty">Welcome back, {firstName}! Here&apos;s your travel history.</p>
 
       {/* Tabs */}
@@ -328,13 +366,13 @@ export default function TripsPage() {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
               tab === t.id
-                ? 'border-sky-500 text-sky-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className="ml-1.5 text-xs bg-sky-100 text-sky-700 rounded-full px-1.5 py-0.5 tabular-nums">{t.count}</span>
+              <span className="ml-1.5 text-xs bg-primary/10 text-primary rounded-full px-1.5 py-0.5 tabular-nums">{t.count}</span>
             )}
           </button>
         ))}
@@ -390,8 +428,8 @@ export default function TripsPage() {
                     )}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <Link href={`/itinerary/${it.id}`} className="text-xs px-3 py-1.5 rounded-lg border hover:border-sky-400 hover:text-sky-600 transition-[color,border-color]">View</Link>
-                    <Link href={`/itinerary/${it.id}?edit=1`} className="text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-white hover:bg-sky-600 transition-[background-color]">
+                    <Link href={`/itinerary/${it.id}`} className="text-xs px-3 py-1.5 rounded-lg border hover:border-primary hover:text-primary transition-[color,border-color]">View</Link>
+                    <Link href={`/itinerary/${it.id}?edit=1`} className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-[background-color]">
                       <Pencil className="w-3 h-3 inline mr-1" />Edit
                     </Link>
                   </div>
@@ -415,7 +453,7 @@ export default function TripsPage() {
               <Link key={place.id} href={place.slug ? `/listing/${place.slug}` : '#'}>
                 <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-[box-shadow]">
                   <CardContent className="p-0">
-                    <div className="h-32 bg-gradient-to-br from-sky-100 to-amber-100 relative">
+                    <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 relative">
                       {place.cover_image_url && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={place.cover_image_url} alt={place.title} className="w-full h-full object-cover outline outline-1 -outline-offset-1 outline-black/10" />
@@ -429,7 +467,7 @@ export default function TripsPage() {
                         </p>
                       )}
                       {place.price_usd && (
-                        <p className="text-xs font-medium text-sky-600 mt-1 tabular-nums">From ${place.price_usd}/person</p>
+                        <p className="text-xs font-medium text-primary mt-1 tabular-nums">From ${place.price_usd}/person</p>
                       )}
                     </div>
                   </CardContent>
@@ -454,7 +492,7 @@ export default function TripsPage() {
               <Link key={item.id} href={`/listing/${item.slug}`}>
                 <Card className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-[box-shadow]">
                   <CardContent className="p-0">
-                    <div className="h-28 bg-gradient-to-br from-sky-100 to-amber-100 relative">
+                    <div className="h-28 bg-gradient-to-br from-primary/10 to-accent/10 relative">
                       {item.cover_image_url && (
                         <Image
                           src={item.cover_image_url}
@@ -478,7 +516,7 @@ export default function TripsPage() {
                         </p>
                       </div>
                       {item.price_usd && (
-                        <p className="text-xs font-medium text-sky-600 mt-1 tabular-nums">${item.price_usd} / person</p>
+                        <p className="text-xs font-medium text-primary mt-1 tabular-nums">${item.price_usd} / person</p>
                       )}
                     </div>
                   </CardContent>

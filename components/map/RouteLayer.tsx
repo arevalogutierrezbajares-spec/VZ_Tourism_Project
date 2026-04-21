@@ -15,7 +15,7 @@ export function RouteLayer({ isCalculating = false }: RouteLayerProps) {
 
   return (
     <div
-      className="absolute bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 rounded-lg p-2 shadow text-xs space-y-1 max-w-[200px] z-10"
+      className="absolute bottom-4 left-4 bg-background/90 rounded-lg p-2 shadow border text-xs space-y-1 max-w-[200px] z-10"
       role="region"
       aria-label="Route information"
     >

@@ -196,16 +196,16 @@ export default function AdminBookingsPage() {
   }, [bookings]);
 
   const SortIcon = ({ k }: { k: SortKey }) => {
-    if (sortKey !== k) return <ChevronsUpDown className="w-3.5 h-3.5 text-gray-300" />;
+    if (sortKey !== k) return <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground/40" />;
     return sortDir === 'asc'
-      ? <ChevronUp className="w-3.5 h-3.5 text-blue-500" />
-      : <ChevronDown className="w-3.5 h-3.5 text-blue-500" />;
+      ? <ChevronUp className="w-3.5 h-3.5 text-primary" />
+      : <ChevronDown className="w-3.5 h-3.5 text-primary" />;
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/60" />
       </div>
     );
   }
@@ -226,7 +226,7 @@ export default function AdminBookingsPage() {
         >
           <Filter className="w-4 h-4" />
           Filters
-          {hasFilters && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+          {hasFilters && <span className="w-2 h-2 rounded-full bg-primary" />}
         </button>
       </div>
 
@@ -282,7 +282,7 @@ export default function AdminBookingsPage() {
           {hasFilters && (
             <button
               onClick={() => { setFilterStatus(''); setFilterPayment(''); setFilterDateFrom(''); setFilterDateTo(''); }}
-              className="text-sm text-red-500 hover:underline pb-1.5"
+              className="text-sm text-destructive hover:underline pb-1.5"
             >
               Clear all
             </button>

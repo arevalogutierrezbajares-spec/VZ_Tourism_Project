@@ -119,7 +119,7 @@ function KanbanCard({
           <Clock className="w-3 h-3" />
           {days === 0 ? 'Hoy' : `${days}d`}
           {record.sequence_step > 1 && (
-            <span className="ml-1 bg-purple-100 text-purple-700 rounded-full px-1.5 py-0.5 text-2xs">
+            <span className="ml-1 bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-2xs">
               Paso {record.sequence_step}
             </span>
           )}
@@ -129,7 +129,7 @@ function KanbanCard({
             <button
               onClick={() => onSimulate(record.id)}
               disabled={isSim}
-              className="flex items-center gap-1 text-2xs px-2 py-1 rounded-lg text-purple-600 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 text-2xs px-2 py-1 rounded-lg text-primary bg-primary/10 hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors disabled:opacity-50"
               title="Simular respuesta"
               aria-label={`Simulate response for ${record.business_name}`}
             >
@@ -140,7 +140,7 @@ function KanbanCard({
           {record.status === 'responded' && record.response_classification === 'interested' && (
             <button
               onClick={() => onUpdateStatus(record.id, 'interested')}
-              className="text-2xs px-2 py-1 rounded-lg text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
+              className="text-2xs px-2 py-1 rounded-lg text-secondary bg-secondary/10 hover:bg-secondary/20 transition-colors"
             >
               → Interesado
             </button>
@@ -236,10 +236,10 @@ function InboxItem({
             {record.response_text ?? 'Sin respuesta aún'}
           </p>
         </div>
-        <div className="flex-shrink-0 text-2xs text-gray-400">
+        <div className="flex-shrink-0 text-2xs text-muted-foreground/60">
           {record.responded_at ? new Date(record.responded_at).toLocaleDateString('es-VE') : '—'}
         </div>
-        <ChevronRight className={`w-3.5 h-3.5 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+        <ChevronRight className={`w-3.5 h-3.5 text-muted-foreground/60 transition-transform ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
       {expanded && (
@@ -254,7 +254,7 @@ function InboxItem({
           {record.response_text && (
             <div>
               <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Respuesta recibida</p>
-              <p className="text-xs text-gray-700 bg-blue-50 rounded-lg p-3 border border-blue-100">
+              <p className="text-xs text-foreground bg-primary/10 rounded-lg p-3 border border-primary/20">
                 {record.response_text}
               </p>
             </div>
@@ -262,10 +262,10 @@ function InboxItem({
 
           {suggestedReply && (
             <div>
-              <p className="text-2xs font-semibold text-purple-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <p className="text-2xs font-semibold text-primary uppercase tracking-wide mb-1 flex items-center gap-1">
                 <Bot className="w-3 h-3" /> Respuesta sugerida por IA
               </p>
-              <p className="text-xs text-gray-700 bg-purple-50 rounded-lg p-3 border border-purple-100">
+              <p className="text-xs text-foreground bg-primary/10 rounded-lg p-3 border border-primary/20">
                 {suggestedReply}
               </p>
             </div>
@@ -276,7 +276,7 @@ function InboxItem({
               <button
                 onClick={() => onSimulate(record.id)}
                 disabled={isSim}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {isSim ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bot className="w-3.5 h-3.5" />}
                 Simular Respuesta
@@ -359,7 +359,7 @@ export default function OutreachPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -436,7 +436,7 @@ export default function OutreachPage() {
         >
           <Inbox className="w-3.5 h-3.5" /> Bandeja
           {records.filter((r) => r.status === 'responded').length > 0 && (
-            <span className="bg-red-500 text-white text-2xs rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="bg-destructive text-destructive-foreground text-2xs rounded-full w-4 h-4 flex items-center justify-center">
               {records.filter((r) => r.status === 'responded').length}
             </span>
           )}

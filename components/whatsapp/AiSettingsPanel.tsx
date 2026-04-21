@@ -87,9 +87,9 @@ function StatusTab({ cfg, onChange, onSave, saving }: {
   onSave: (p: Partial<AiConfig>) => Promise<void>; saving: boolean;
 }) {
   const stats = [
-    { label: 'AI-handled today',     value: '—', color: 'text-green-600'  },
-    { label: 'Escalation rate',       value: '—', color: 'text-amber-600'  },
-    { label: 'Avg response time',     value: '—', color: 'text-blue-600'   },
+    { label: 'AI-handled today',     value: '—', color: 'text-secondary'  },
+    { label: 'Escalation rate',       value: '—', color: 'text-accent'     },
+    { label: 'Avg response time',     value: '—', color: 'text-primary'    },
     { label: 'Open conversations',    value: '—', color: 'text-foreground' },
   ];
 
@@ -103,13 +103,13 @@ function StatusTab({ cfg, onChange, onSave, saving }: {
       {/* Big on/off card */}
       <div className={cn(
         'rounded-2xl border-2 p-6 transition-all',
-        cfg.ai_enabled ? 'border-green-300 bg-green-50 dark:bg-green-950/20' : 'border-border bg-muted/30'
+        cfg.ai_enabled ? 'border-secondary/30 bg-secondary/10' : 'border-border bg-muted/30'
       )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={cn(
               'w-14 h-14 rounded-2xl flex items-center justify-center transition-colors',
-              cfg.ai_enabled ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-muted text-muted-foreground'
+              cfg.ai_enabled ? 'bg-secondary text-secondary-foreground shadow-lg shadow-secondary/20' : 'bg-muted text-muted-foreground'
             )}>
               <Bot className="w-7 h-7" />
             </div>
@@ -136,8 +136,8 @@ function StatusTab({ cfg, onChange, onSave, saving }: {
 
         {cfg.ai_enabled && (
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-2.5 py-1 rounded-full font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="flex items-center gap-1 text-xs bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
               Live
             </span>
             <span className="text-xs bg-white/60 dark:bg-black/20 px-2.5 py-1 rounded-full text-muted-foreground">

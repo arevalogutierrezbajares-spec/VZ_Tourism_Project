@@ -52,17 +52,21 @@ export default function NewCreatorItineraryPage() {
         return;
       }
 
-      // Store draft in sessionStorage and go to review
+      // Store draft in localStorage (persists through browser close/refresh — C15 fix)
       const draftId = crypto.randomUUID();
-      sessionStorage.setItem(
-        `creator_draft_${draftId}`,
-        JSON.stringify({
-          spots: data.spots,
-          urls,
-          creator_text: creatorText.trim() || null,
-          created_at: new Date().toISOString(),
-        })
-      );
+      const draftData = JSON.stringify({
+        spots: data.spots,
+        urls,
+        creator_text: creatorText.trim() || null,
+        created_at: new Date().toISOString(),
+        version: 1,
+      });
+      try {
+        localStorage.setItem(`creator_draft_${draftId}`, draftData);
+      } catch {
+        // localStorage quota exceeded — fall back to sessionStorage
+        sessionStorage.setItem(`creator_draft_${draftId}`, draftData);
+      }
 
       router.push(`/creator/itineraries/review/${draftId}`);
     } catch (err) {

@@ -56,7 +56,7 @@ function Section({
             <div className="flex items-center gap-3">
               <div className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center',
-                complete ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
+                complete ? 'bg-secondary/10 text-secondary' : 'bg-muted text-muted-foreground'
               )}>
                 {complete ? <CheckCircle2 className="w-4 h-4" /> : icon}
               </div>
@@ -64,7 +64,7 @@ function Section({
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-sm font-semibold">{title}</CardTitle>
                   {isDirty && open && (
-                    <span className="text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-medium text-accent bg-accent/10 border border-accent/30 px-1.5 py-0.5 rounded">
                       Unsaved
                     </span>
                   )}
@@ -540,7 +540,7 @@ export default function BrainPage() {
         </div>
         <div className="flex items-center gap-2">
           {saved && (
-            <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+            <span className="flex items-center gap-1 text-xs text-status-confirmed font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" /> Saved
             </span>
           )}

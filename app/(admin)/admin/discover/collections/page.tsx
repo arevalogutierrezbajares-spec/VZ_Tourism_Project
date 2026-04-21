@@ -80,8 +80,8 @@ function AIBuildDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-6 mx-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-            <Wand2 className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+            <Wand2 className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
             <h2 className="font-bold text-lg">AI: Build Collection</h2>
@@ -263,7 +263,7 @@ function CollectionModal({
             {!isNew && (
               <button
                 onClick={handleDelete}
-                className="p-2.5 text-red-500 hover:bg-red-50 border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                className="p-2.5 text-destructive hover:bg-destructive/10 border border-destructive/30 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive transition-colors"
                 aria-label="Delete collection"
               >
                 <Trash2 className="w-4 h-4" />
@@ -410,14 +410,14 @@ export default function CollectionsPage() {
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setEditCollection(c)}
-                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+                    className="p-1.5 bg-background/90 rounded-lg shadow text-sm hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                     aria-label={`Edit collection ${c.name}`}
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => togglePublish(c)}
-                    className="p-1.5 bg-white/90 rounded-lg shadow text-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+                    className="p-1.5 bg-background/90 rounded-lg shadow text-sm hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                     aria-label={c.is_published ? `Unpublish ${c.name}` : `Publish ${c.name}`}
                   >
                     {c.is_published ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -425,7 +425,7 @@ export default function CollectionsPage() {
                 </div>
                 {c.is_published && (
                   <div className="absolute top-2 left-2">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Published</span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">Published</span>
                   </div>
                 )}
               </div>

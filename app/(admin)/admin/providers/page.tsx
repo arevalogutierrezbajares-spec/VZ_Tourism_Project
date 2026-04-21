@@ -45,8 +45,8 @@ const STAGES: { id: string; label: string; color: string; activeBg: string; drop
   { id: 'lead',           label: 'Lead',           color: '#6B7280', activeBg: 'bg-muted',         dropBorder: 'border-muted-foreground' },
   { id: 'contacted',      label: 'Contacted',      color: '#2563EB', activeBg: 'bg-primary/10',    dropBorder: 'border-primary' },
   { id: 'interested',     label: 'Interested',     color: '#D97706', activeBg: 'bg-status-pending/10', dropBorder: 'border-status-pending' },
-  { id: 'call_scheduled', label: 'Call Scheduled', color: '#7C3AED', activeBg: 'bg-purple-100',    dropBorder: 'border-purple-400' },
-  { id: 'onboarding',     label: 'Onboarding',     color: '#0891B2', activeBg: 'bg-cyan-50',       dropBorder: 'border-cyan-400' },
+  { id: 'call_scheduled', label: 'Call Scheduled', color: '#7C3AED', activeBg: 'bg-primary/10',    dropBorder: 'border-primary/40' },
+  { id: 'onboarding',     label: 'Onboarding',     color: '#0891B2', activeBg: 'bg-primary/5',     dropBorder: 'border-primary/30' },
   { id: 'live',           label: 'Live',           color: '#059669', activeBg: 'bg-status-confirmed/10', dropBorder: 'border-status-confirmed' },
 ];
 
@@ -151,14 +151,14 @@ function ProviderCard({
                 const url = `${window.location.origin}/join/${slug}`;
                 navigator.clipboard.writeText(url);
               }}
-              className="hover:bg-cyan-100 rounded p-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-colors"
+              className="hover:bg-primary/10 rounded p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
             >
-              <Link2 className="w-3.5 h-3.5 text-cyan-600" />
+              <Link2 className="w-3.5 h-3.5 text-primary" />
             </button>
           </div>
           {provider.avg_rating && (
             <span className="text-2xs text-muted-foreground flex items-center gap-0.5">
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <Star className="w-3 h-3 text-accent fill-accent" />
               {provider.avg_rating.toFixed(1)}
             </span>
           )}
@@ -392,7 +392,7 @@ function ProviderModal({
               <div>
                 <span className="font-medium text-foreground">Rating</span>
                 <p className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  <Star className="w-3 h-3 text-accent fill-accent" />
                   {provider.avg_rating.toFixed(1)}
                 </p>
               </div>

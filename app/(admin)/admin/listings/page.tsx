@@ -455,7 +455,7 @@ function EditPanel({
         {/* Rating display */}
         {listing.avg_rating && (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <Star className="w-4 h-4 text-accent fill-accent" />
             <span className="text-sm font-medium text-foreground">{listing.avg_rating}</span>
             <span className="text-xs text-muted-foreground">({listing.review_count} reviews)</span>
           </div>
@@ -824,7 +824,7 @@ function OutreachModal({
   };
 
   const tabConfig = {
-    whatsapp: { label: 'WhatsApp', icon: <MessageCircle className="w-3.5 h-3.5" />, activeCls: 'border-b-[#25D366] text-[#25D366]', msgCls: 'bg-green-50 border border-green-200' },
+    whatsapp: { label: 'WhatsApp', icon: <MessageCircle className="w-3.5 h-3.5" />, activeCls: 'border-b-[#25D366] text-[#25D366]', msgCls: 'bg-secondary/10 border border-secondary/30' },
     instagram: { label: 'Instagram DM', icon: <AtSign className="w-3.5 h-3.5" />, activeCls: 'border-b-[#E1306C] text-[#E1306C]', msgCls: 'bg-pink-50 border border-pink-200' },
     email: { label: 'Email', icon: <Mail className="w-3.5 h-3.5" />, activeCls: 'border-b-primary text-primary', msgCls: 'bg-primary/5 border border-primary/20' },
   };
@@ -851,7 +851,7 @@ function OutreachModal({
 
           {listing.avg_rating && (
             <div className="flex items-center gap-1 mt-2">
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <Star className="w-3 h-3 text-accent fill-accent" />
               <span className="text-xs font-medium text-foreground">{listing.avg_rating}</span>
               <span className="text-xs text-muted-foreground">({listing.review_count} reseñas)</span>
             </div>
@@ -1654,7 +1654,7 @@ function AdminListingsInner() {
                       <span className="text-sm font-medium text-foreground truncate">{l.name}</span>
                       {warnings.length > 0 && (
                         <span title={`Missing: ${warnings.join(', ')}`}>
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                          <AlertTriangle className="w-3.5 h-3.5 text-accent flex-shrink-0" />
                         </span>
                       )}
                     </div>
@@ -1681,7 +1681,7 @@ function AdminListingsInner() {
                   <td className="px-3 py-2.5">
                     {l.avg_rating ? (
                       <span className="flex items-center gap-1 text-xs">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <Star className="w-3 h-3 text-accent fill-accent" />
                         {l.avg_rating}
                       </span>
                     ) : (
@@ -1702,12 +1702,12 @@ function AdminListingsInner() {
                       {/* AI sparkle */}
                       <div className="relative">
                         <button
-                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                           title="AI Actions"
                           aria-label={`AI actions for ${l.name}`}
                           onClick={(e) => { e.stopPropagation(); setAiPopoverRow(isAiOpen ? null : l.id); }}
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                          <Sparkles className="w-3.5 h-3.5 text-primary" />
                         </button>
                         {isAiOpen && (
                           <AIRowPopover
@@ -1719,16 +1719,16 @@ function AdminListingsInner() {
                       </div>
                       {(!l.platform_status || l.platform_status === 'scraped') && (
                         <button
-                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-secondary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary transition-colors"
                           title="Send Outreach"
                           aria-label={`Send outreach to ${l.name}`}
                           onClick={() => setOutreachListing(l)}
                         >
-                          <Zap className="w-3.5 h-3.5 text-green-500" />
+                          <Zap className="w-3.5 h-3.5 text-secondary" />
                         </button>
                       )}
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                         title="Copy Invite Link"
                         aria-label={`Copy invite link for ${l.name}`}
                         onClick={async (e) => {
@@ -1738,18 +1738,18 @@ function AdminListingsInner() {
                           setToast({ msg: `Invite link copied for "${l.name}"`, type: 'success' });
                         }}
                       >
-                        <Link2 className="w-3.5 h-3.5 text-cyan-600" />
+                        <Link2 className="w-3.5 h-3.5 text-primary" />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                         title="Edit"
                         aria-label={`Edit ${l.name}`}
                         onClick={() => setEditingListing(l)}
                       >
-                        <Edit2 className="w-3.5 h-3.5 text-blue-500" />
+                        <Edit2 className="w-3.5 h-3.5 text-primary" />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors"
                         title={l.status === 'featured' ? 'Unfeature' : 'Feature'}
                         aria-label={l.status === 'featured' ? `Unfeature ${l.name}` : `Feature ${l.name}`}
                         onClick={async () => {
@@ -1761,10 +1761,10 @@ function AdminListingsInner() {
                           setAllListings((prev) => prev.map((x) => x.id === l.id ? { ...x, status: x.status === 'featured' ? 'published' : 'featured' } : x));
                         }}
                       >
-                        <Star className={`w-3.5 h-3.5 ${l.status === 'featured' ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
+                        <Star className={`w-3.5 h-3.5 ${l.status === 'featured' ? 'text-accent fill-accent' : 'text-muted-foreground'}`} />
                       </button>
                       <button
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive transition-colors"
                         title="Archive"
                         aria-label={`Archive ${l.name}`}
                         onClick={async () => {
@@ -1774,7 +1774,7 @@ function AdminListingsInner() {
                           setToast({ msg: `Archived "${l.name}"`, type: 'success' });
                         }}
                       >
-                        <Archive className="w-3.5 h-3.5 text-red-400" />
+                        <Archive className="w-3.5 h-3.5 text-destructive" />
                       </button>
                     </div>
                   </td>

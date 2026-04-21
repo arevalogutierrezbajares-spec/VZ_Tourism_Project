@@ -39,9 +39,9 @@ export interface SpotState {
 }
 
 const CONFIDENCE_COLOR = {
-  high: 'text-green-600 bg-green-50 dark:bg-green-950/30',
-  medium: 'text-amber-600 bg-amber-50 dark:bg-amber-950/30',
-  low: 'text-red-600 bg-red-50 dark:bg-red-950/30',
+  high: 'text-status-confirmed bg-status-confirmed/10',
+  medium: 'text-accent bg-accent/10',
+  low: 'text-destructive bg-destructive/10',
 };
 
 interface SpotReviewCardProps {
@@ -158,7 +158,7 @@ export function SpotReviewCard({
       {/* Matched listing info */}
       {spot.resolved_listing_id && spot.resolved_title && (
         <div className="flex items-center gap-1.5 text-xs bg-muted/50 rounded-md px-2 py-1">
-          <Check className="w-3 h-3 text-green-600 shrink-0" />
+          <Check className="w-3 h-3 text-status-confirmed shrink-0" />
           <span className="truncate">{spot.resolved_title}</span>
         </div>
       )}

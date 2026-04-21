@@ -110,11 +110,11 @@ export default function LandingPage() {
         {HERO_IMAGES.map((src, i) => (
           <div
             key={src}
-            className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
+            className="absolute inset-0 motion-reduce:!transition-none"
             style={{
               opacity: activeImage === i ? 1 : 0,
               transform: activeImage === i ? 'scale(1.05)' : 'scale(1)',
-              transition: 'opacity 2000ms ease-in-out, transform 12000ms ease-out',
+              transition: 'opacity 2000ms ease-in-out, transform 800ms ease-out',
             }}
             aria-hidden={activeImage !== i}
           >

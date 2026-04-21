@@ -71,7 +71,7 @@ export function HeroSection() {
               fill
               sizes="100vw"
               priority={i === 0}
-              className="object-cover transition-transform duration-[12000ms] ease-out"
+              className="object-cover transition-transform duration-[800ms] ease-out motion-reduce:transition-none"
               style={{ transform: i === imageIndex ? 'scale(1.08)' : 'scale(1)' }}
             />
           </div>
@@ -84,7 +84,7 @@ export function HeroSection() {
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
           {/* Headline */}
           <h1
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-tight"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-heading text-white tracking-tight leading-tight"
             style={{ textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}
           >
             <span className="block">

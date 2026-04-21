@@ -87,7 +87,7 @@ export default async function CreatorPage({ params }: Props) {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-balance">{creator.display_name || creator.user?.full_name}</h1>
-            <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">Creator</Badge>
+            <Badge variant="secondary" className="text-xs bg-accent/10 text-accent-foreground dark:bg-accent/20 dark:text-accent border-accent/30">Creator</Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-0.5">@{creator.username}</p>
 

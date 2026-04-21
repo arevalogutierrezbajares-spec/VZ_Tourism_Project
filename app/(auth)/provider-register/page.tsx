@@ -257,13 +257,13 @@ export default function ProviderRegisterPage() {
           </div>
 
           {providerInsertError && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3 space-y-2" role="alert">
-              <p className="text-sm text-red-700">{providerInsertError}</p>
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 p-3 space-y-2" role="alert">
+              <p className="text-sm text-destructive">{providerInsertError}</p>
               <button
                 type="button"
                 onClick={handleRetry}
                 disabled={isLoading}
-                className="text-sm font-medium text-red-700 underline hover:no-underline disabled:opacity-50"
+                className="text-sm font-medium text-destructive underline hover:no-underline disabled:opacity-50"
               >
                 {isLoading ? 'Retrying…' : 'Retry saving profile'}
               </button>

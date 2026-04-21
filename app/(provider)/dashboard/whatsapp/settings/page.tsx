@@ -102,7 +102,7 @@ export default function AiSettingsPage() {
   return (
     <div className="space-y-4">
       {plaintextFallback && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+        <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 text-sm text-accent">
           Token stored in plaintext — Vault unavailable. Configure Supabase Vault for production security.
         </div>
       )}

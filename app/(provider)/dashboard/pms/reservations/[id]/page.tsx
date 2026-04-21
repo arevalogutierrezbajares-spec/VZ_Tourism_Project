@@ -279,7 +279,7 @@ export default function ReservationDetailPage() {
                     {payments.map((li) => (
                       <div
                         key={li.id}
-                        className="flex items-center justify-between py-1 text-sm text-green-600"
+                        className="flex items-center justify-between py-1 text-sm text-status-confirmed"
                       >
                         <span>{li.description}</span>
                         <span className="font-mono">
@@ -295,7 +295,7 @@ export default function ReservationDetailPage() {
                   <span
                     className={cn(
                       'font-mono',
-                      balance > 0 ? 'text-destructive' : 'text-green-600',
+                      balance > 0 ? 'text-destructive' : 'text-status-confirmed',
                     )}
                   >
                     ${(balance / 100).toFixed(2)}

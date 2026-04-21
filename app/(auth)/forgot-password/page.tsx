@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
 
   if (submitted) {
     return (
-      <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
+      <Card className="shadow-border border-0">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-2xl text-balance">Check your email</CardTitle>
           <CardDescription className="text-pretty">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
+    <Card className="shadow-border border-0">
       <CardHeader className="text-center pb-2">
         <CardTitle className="text-2xl text-balance">Forgot password?</CardTitle>
         <CardDescription className="text-pretty">Enter your email and we&apos;ll send you a reset link.</CardDescription>

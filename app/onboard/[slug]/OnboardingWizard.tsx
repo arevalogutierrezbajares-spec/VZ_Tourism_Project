@@ -317,14 +317,14 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+      <div className="bg-background border-b sticky top-0 z-10 shadow-sm">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           {step > 1 && (
             <button
               onClick={goBack}
-              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Go back to previous step"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -332,14 +332,14 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
           )}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Step {step} of {TOTAL_STEPS}
               </span>
-              <span className="text-xs text-gray-400">{Math.round(progress)}% complete</span>
+              <span className="text-xs text-muted-foreground/60">{Math.round(progress)}% complete</span>
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -349,7 +349,7 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
                 <div
                   key={s}
                   className={`h-1.5 flex-1 rounded-full transition-colors ${
-                    s < step ? 'bg-blue-600' : s === step ? 'bg-blue-400' : 'bg-gray-200'
+                    s < step ? 'bg-primary' : s === step ? 'bg-primary/50' : 'bg-muted'
                   }`}
                   aria-hidden="true"
                 />
@@ -362,7 +362,7 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
       {/* Step content */}
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-sm text-red-700" role="alert">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-xl flex items-start gap-2 text-sm text-destructive" role="alert">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
             {error}
           </div>
@@ -409,11 +409,11 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
 
       {/* Footer CTA */}
       {step < 6 && (
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-4 max-w-lg mx-auto w-full">
+        <div className="sticky bottom-0 bg-background border-t px-4 py-4 max-w-lg mx-auto w-full">
           <button
             onClick={goNext}
             disabled={saving || !canProceed(step, data, verifyResult)}
-            className="w-full bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-blue-700 active:bg-blue-800"
+            className="w-full bg-primary disabled:bg-muted disabled:cursor-not-allowed text-primary-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-primary/90 active:bg-primary/80"
           >
             {saving ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -425,16 +425,16 @@ export function OnboardingWizard({ listing, initialSession, priceSuggestion }: P
             )}
           </button>
           {step === 5 && data.payment_methods.length === 0 && (
-            <p className="text-center text-xs text-gray-400 mt-2">Add at least one payment method to continue</p>
+            <p className="text-center text-xs text-muted-foreground/60 mt-2">Add at least one payment method to continue</p>
           )}
         </div>
       )}
       {step === 6 && (
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-4 max-w-lg mx-auto w-full">
+        <div className="sticky bottom-0 bg-background border-t px-4 py-4 max-w-lg mx-auto w-full">
           <button
             onClick={completeListing}
             disabled={saving}
-            className="w-full bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-green-700"
+            className="w-full bg-secondary disabled:bg-muted disabled:cursor-not-allowed text-secondary-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-secondary/90"
           >
             {saving ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -545,28 +545,28 @@ function Step1Verify({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Verify Your Business</h2>
-        <p className="text-sm text-gray-500 mt-1">Confirm this is your business to claim your listing.</p>
+        <h2 className="text-xl font-bold text-foreground">Verify Your Business</h2>
+        <p className="text-sm text-muted-foreground mt-1">Confirm this is your business to claim your listing.</p>
       </div>
 
       {/* Business card */}
-      <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex items-center gap-3 p-4 bg-background rounded-xl border shadow-sm">
         {listing.cover_image_url && (
           <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
             <Image src={listing.cover_image_url} alt={listing.name} fill sizes="56px" className="object-cover" />
           </div>
         )}
         <div>
-          <div className="font-semibold text-gray-900 text-sm">{capitalize(listing.name)}</div>
+          <div className="font-semibold text-foreground text-sm">{capitalize(listing.name)}</div>
           {listing.city && (
-            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
               <MapPin className="w-3 h-3" />
               {listing.city}, Venezuela
             </div>
           )}
           {listing.avg_rating && (
-            <div className="text-xs text-amber-500 flex items-center gap-1 mt-0.5">
-              <Star className="w-3 h-3 fill-amber-500" />
+            <div className="text-xs text-accent flex items-center gap-1 mt-0.5">
+              <Star className="w-3 h-3 fill-accent" />
               {listing.avg_rating} ({listing.review_count.toLocaleString()} reviews)
             </div>
           )}
@@ -575,7 +575,7 @@ function Step1Verify({
 
       {/* Name */}
       <div>
-        <label htmlFor="onboard-owner-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Your name *</label>
+        <label htmlFor="onboard-owner-name" className="block text-sm font-semibold text-foreground mb-1.5">Your name *</label>
         <input
           id="onboard-owner-name"
           type="text"
@@ -584,13 +584,13 @@ function Step1Verify({
           onChange={(e) => update('owner_name', e.target.value)}
           autoComplete="name"
           aria-required="true"
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-input rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
         />
       </div>
 
       {/* Method tabs */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Verify with</label>
+        <label className="block text-sm font-semibold text-foreground mb-2">Verify with</label>
         <div className="flex gap-2 mb-4">
           {(['phone', 'instagram', 'photo'] as const).map((m) => (
             <button
@@ -598,8 +598,8 @@ function Step1Verify({
               onClick={() => update('verification_method', m)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${
                 data.verification_method === m
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-foreground border-input hover:border-primary/40'
               }`}
             >
               {m === 'phone' ? (
@@ -615,10 +615,10 @@ function Step1Verify({
 
         {data.verification_method === 'phone' && (
           <div>
-            <label htmlFor="onboard-phone" className="block text-xs text-gray-500 mb-1.5">
+            <label htmlFor="onboard-phone" className="block text-xs text-muted-foreground mb-1.5">
               Enter your WhatsApp number
               {listing.phone && (
-                <span className="ml-2 text-gray-400">(We&apos;ll check if it matches {listing.phone.slice(0, 6)}...)</span>
+                <span className="ml-2 text-muted-foreground/60">(We&apos;ll check if it matches {listing.phone.slice(0, 6)}...)</span>
               )}
             </label>
             <input
@@ -629,30 +629,30 @@ function Step1Verify({
               value={data.owner_phone}
               onChange={(e) => update('owner_phone', e.target.value)}
               autoComplete="tel"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-input rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
             />
           </div>
         )}
 
         {data.verification_method === 'instagram' && (
           <div>
-            <label htmlFor="onboard-instagram" className="block text-xs text-gray-500 mb-1.5">Enter your Instagram handle</label>
+            <label htmlFor="onboard-instagram" className="block text-xs text-muted-foreground mb-1.5">Enter your Instagram handle</label>
             <input
               id="onboard-instagram"
               type="text"
               placeholder="@yourhandle"
               value={data.owner_instagram}
               onChange={(e) => update('owner_instagram', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-input rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
             />
           </div>
         )}
 
         {data.verification_method === 'photo' && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+          <div className="p-4 bg-accent/10 border border-accent/30 rounded-xl text-sm text-accent">
             <Camera className="w-4 h-4 inline mr-1" />
             Upload a photo of yourself at the business. Our team will verify within 24h.
-            <p className="text-xs mt-1 text-amber-600">You can continue setting up your listing in the meantime.</p>
+            <p className="text-xs mt-1 text-accent/80">You can continue setting up your listing in the meantime.</p>
           </div>
         )}
       </div>
@@ -664,7 +664,7 @@ function Step1Verify({
           data.verification_method === 'phone' ? !data.owner_phone.trim() :
           data.verification_method === 'instagram' ? !data.owner_instagram.trim() : false
         )}
-        className="w-full bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 min-h-[44px] rounded-xl flex items-center justify-center gap-2 transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="w-full bg-primary disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold py-3 min-h-[44px] rounded-xl flex items-center justify-center gap-2 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         {verifyLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -675,8 +675,8 @@ function Step1Verify({
       {verifyResult && (
         <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${
           verifyResult.verified
-            ? 'bg-green-50 text-green-700 border border-green-200'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-secondary/10 text-secondary border border-secondary/30'
+            : 'bg-accent/10 text-accent border border-accent/30'
         }`}>
           {verifyResult.verified ? (
             <><Check className="w-4 h-4" /> Identity verified! You can continue.</>
@@ -727,14 +727,14 @@ function Step2Review({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Review Your Listing</h2>
-        <p className="text-sm text-gray-500 mt-1">We pre-filled everything from Google. Just confirm or edit.</p>
+        <h2 className="text-xl font-bold text-foreground">Review Your Listing</h2>
+        <p className="text-sm text-muted-foreground mt-1">We pre-filled everything from Google. Just confirm or edit.</p>
       </div>
 
       {/* Photos */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Photos <span className="text-gray-400 font-normal">({data.selected_photos.length} selected)</span>
+        <label className="block text-sm font-semibold text-foreground mb-2">
+          Photos <span className="text-muted-foreground/60 font-normal">({data.selected_photos.length} selected)</span>
         </label>
         <div className="grid grid-cols-3 gap-2">
           {allPhotos.slice(0, 6).map((url, i) => {
@@ -744,12 +744,12 @@ function Step2Review({
                 key={i}
                 onClick={() => togglePhoto(url)}
                 className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                  selected ? 'border-blue-500' : 'border-transparent opacity-60'
+                  selected ? 'border-primary' : 'border-transparent opacity-60'
                 }`}
               >
                 <Image src={url} alt="Verification photo" fill sizes="(max-width: 640px) 33vw, 120px" className="object-cover" />
                 {selected && (
-                  <div className="absolute top-1 right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
@@ -758,7 +758,7 @@ function Step2Review({
           })}
         </div>
         {allPhotos.length === 0 && (
-          <div className="h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+          <div className="h-24 bg-muted rounded-xl flex items-center justify-center text-muted-foreground/60 text-sm">
             No photos available
           </div>
         )}
@@ -766,25 +766,25 @@ function Step2Review({
 
       {/* Name */}
       <section>
-        <label htmlFor="onboard-biz-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Business Name</label>
+        <label htmlFor="onboard-biz-name" className="block text-sm font-semibold text-foreground mb-1.5">Business Name</label>
         <input
           id="onboard-biz-name"
           type="text"
           value={data.listing_name}
           onChange={(e) => update('listing_name', e.target.value)}
           autoComplete="organization"
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-input rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
         />
       </section>
 
       {/* Category */}
       <section>
-        <label htmlFor="onboard-category" className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
+        <label htmlFor="onboard-category" className="block text-sm font-semibold text-foreground mb-1.5">Category</label>
         <select
           id="onboard-category"
           value={data.listing_category}
           onChange={(e) => update('listing_category', e.target.value)}
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 border border-input rounded-xl text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <option value="hotel">Hotel</option>
           <option value="posada">Posada</option>
@@ -798,11 +798,11 @@ function Step2Review({
       {/* Description */}
       <section>
         <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="onboard-description" className="text-sm font-semibold text-gray-700">Description</label>
+          <label htmlFor="onboard-description" className="text-sm font-semibold text-foreground">Description</label>
           <button
             onClick={onGenerateDescription}
             disabled={aiLoading}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+            className="flex items-center gap-1 text-xs text-primary hover:text-primary/90 font-medium disabled:opacity-50"
           >
             {aiLoading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -818,15 +818,15 @@ function Step2Review({
           onChange={(e) => update('listing_description', e.target.value)}
           rows={5}
           placeholder="Describe your property..."
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-input rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent resize-none"
         />
       </section>
 
       {/* Amenities */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-foreground mb-2">
           Amenities
-          <span className="ml-1 text-xs text-gray-400 font-normal">(Venezuela essentials highlighted)</span>
+          <span className="ml-1 text-xs text-muted-foreground/60 font-normal">(Venezuela essentials highlighted)</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
           {AMENITIES.map(({ id, label, icon: Icon, critical }) => {
@@ -838,14 +838,14 @@ function Step2Review({
                 className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all ${
                   active
                     ? critical
-                      ? 'bg-blue-50 border-blue-300 text-blue-700'
-                      : 'bg-green-50 border-green-300 text-green-700'
-                    : 'bg-white border-gray-200 text-gray-500'
+                      ? 'bg-primary/10 border-primary/40 text-primary'
+                      : 'bg-secondary/10 border-secondary/40 text-secondary'
+                    : 'bg-background border-input text-muted-foreground'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 <span className="flex-1 text-left text-xs">{label}</span>
-                {critical && active && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">VZ</span>}
+                {critical && active && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">VZ</span>}
                 {active && <Check className="w-3.5 h-3.5 shrink-0" />}
               </button>
             );
@@ -855,7 +855,7 @@ function Step2Review({
 
       {/* Contact */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Contact Info</label>
+        <label className="block text-sm font-semibold text-foreground mb-3">Contact Info</label>
         <div className="space-y-2">
           {[
             { key: 'contact_phone' as const, label: 'Phone', placeholder: '+58 212 555 1234' },
@@ -865,13 +865,13 @@ function Step2Review({
             { key: 'contact_instagram' as const, label: 'Instagram', placeholder: '@hotelname' },
           ].map(({ key, label, placeholder }) => (
             <div key={key} className="flex items-center gap-3">
-              <span className="text-xs text-gray-500 w-20 shrink-0 text-right">{label}</span>
+              <span className="text-xs text-muted-foreground w-20 shrink-0 text-right">{label}</span>
               <input
                 type="text"
                 placeholder={placeholder}
                 value={data[key] as string}
                 onChange={(e) => update(key, e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
               />
             </div>
           ))}
@@ -923,32 +923,32 @@ function Step3Rooms({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Rooms & Pricing</h2>
-        <p className="text-sm text-gray-500 mt-1">Set up your room types and nightly rates.</p>
+        <h2 className="text-xl font-bold text-foreground">Rooms & Pricing</h2>
+        <p className="text-sm text-muted-foreground mt-1">Set up your room types and nightly rates.</p>
       </div>
 
       {/* Price suggestion */}
-      <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
-        <DollarSign className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 p-4 bg-primary/10 rounded-xl border border-primary/30">
+        <DollarSign className="w-4 h-4 text-primary mt-0.5 shrink-0" />
         <div className="text-sm">
-          <span className="font-semibold text-blue-800">Market rate in {region}:</span>
-          <span className="text-blue-700 ml-1">
+          <span className="font-semibold text-foreground">Market rate in {region}:</span>
+          <span className="text-primary ml-1">
             ${priceSuggestion.min}–${priceSuggestion.max}/night
           </span>
-          <p className="text-xs text-blue-500 mt-0.5">Based on similar properties in the area</p>
+          <p className="text-xs text-primary/70 mt-0.5">Based on similar properties in the area</p>
         </div>
       </div>
 
       {/* Rooms */}
       <div className="space-y-4">
         {data.rooms.map((room, idx) => (
-          <div key={room.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <div key={room.id} className="bg-background rounded-xl border p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-700">Room {idx + 1}</span>
+              <span className="text-sm font-semibold text-foreground">Room {idx + 1}</span>
               {data.rooms.length > 1 && (
                 <button
                   onClick={() => removeRoom(room.id)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                   aria-label={`Remove room ${idx + 1}`}
                 >
                   <X className="w-4 h-4" />
@@ -964,23 +964,23 @@ function Step3Rooms({
                 value={room.name}
                 onChange={(e) => updateRoom(room.id, 'name', e.target.value)}
                 aria-label={`Name for room ${idx + 1}`}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 border border-input rounded-lg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
               />
               <div className="grid grid-cols-2 gap-3">
                 {/* Max guests */}
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1.5">Max guests</label>
-                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                  <label className="block text-xs text-muted-foreground mb-1.5">Max guests</label>
+                  <div className="flex items-center border border-input rounded-lg overflow-hidden">
                     <button
                       onClick={() => updateRoom(room.id, 'max_guests', Math.max(1, room.max_guests - 1))}
-                      className="px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                      className="px-3 py-2.5 bg-muted hover:bg-muted/70 text-foreground transition-colors"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="flex-1 text-center text-sm font-medium">{room.max_guests}</span>
                     <button
                       onClick={() => updateRoom(room.id, 'max_guests', Math.min(8, room.max_guests + 1))}
-                      className="px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                      className="px-3 py-2.5 bg-muted hover:bg-muted/70 text-foreground transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -988,9 +988,9 @@ function Step3Rooms({
                 </div>
                 {/* Price */}
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1.5">Price per night (USD)</label>
+                  <label className="block text-xs text-muted-foreground mb-1.5">Price per night (USD)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 text-sm">$</span>
                     <input
                       type="number"
                       min="1"
@@ -998,16 +998,16 @@ function Step3Rooms({
                       placeholder="50"
                       value={room.price_usd || ''}
                       onChange={(e) => updateRoom(room.id, 'price_usd', Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full pl-7 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-7 pr-3 py-2.5 border border-input rounded-lg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
                     />
                   </div>
                 </div>
               </div>
               {room.price_usd > 0 && (
-                <div className="text-xs text-gray-400 flex items-center gap-1">
-                  Price level: <span className="text-amber-500 font-bold">{getPriceLevel(room.price_usd)}</span>
+                <div className="text-xs text-muted-foreground/60 flex items-center gap-1">
+                  Price level: <span className="text-accent font-bold">{getPriceLevel(room.price_usd)}</span>
                   {room.price_usd >= priceSuggestion.min && room.price_usd <= priceSuggestion.max && (
-                    <span className="text-green-500 ml-1">✓ In market range</span>
+                    <span className="text-status-confirmed ml-1">✓ In market range</span>
                   )}
                 </div>
               )}
@@ -1018,16 +1018,16 @@ function Step3Rooms({
 
       <button
         onClick={addRoom}
-        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm font-medium"
+        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-muted-foreground/30 rounded-xl text-muted-foreground hover:border-primary/60 hover:text-primary transition-colors text-sm font-medium"
       >
         <Plus className="w-4 h-4" />
         Add Another Room Type
       </button>
 
       {avgPrice > 0 && (
-        <div className="p-3 bg-gray-50 rounded-xl text-center text-sm text-gray-600">
-          Average nightly rate: <span className="font-bold text-gray-900">${avgPrice}</span>
-          <span className="ml-2 text-amber-500 font-bold">{getPriceLevel(avgPrice)}</span>
+        <div className="p-3 bg-muted/30 rounded-xl text-center text-sm text-muted-foreground">
+          Average nightly rate: <span className="font-bold text-foreground">${avgPrice}</span>
+          <span className="ml-2 text-accent font-bold">{getPriceLevel(avgPrice)}</span>
         </div>
       )}
     </div>
@@ -1087,8 +1087,8 @@ function Step4Availability({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Availability & Calendar</h2>
-        <p className="text-sm text-gray-500 mt-1">When are you available for bookings?</p>
+        <h2 className="text-xl font-bold text-foreground">Availability & Calendar</h2>
+        <p className="text-sm text-muted-foreground mt-1">When are you available for bookings?</p>
       </div>
 
       {/* Toggle */}
@@ -1102,20 +1102,20 @@ function Step4Availability({
             onClick={() => update('availability_type', opt.id)}
             className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
               data.availability_type === opt.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+                ? 'border-primary bg-primary/5'
+                : 'border-input bg-background hover:border-primary/40'
             }`}
           >
             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-              data.availability_type === opt.id ? 'border-blue-500' : 'border-gray-300'
+              data.availability_type === opt.id ? 'border-primary' : 'border-muted-foreground/40'
             }`}>
               {data.availability_type === opt.id && (
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <div className="w-2.5 h-2.5 rounded-full bg-primary" />
               )}
             </div>
             <div>
-              <div className="text-sm font-semibold text-gray-900">{opt.label}</div>
-              <div className="text-xs text-gray-500">{opt.sub}</div>
+              <div className="text-sm font-semibold text-foreground">{opt.label}</div>
+              <div className="text-xs text-muted-foreground">{opt.sub}</div>
             </div>
           </button>
         ))}
@@ -1123,19 +1123,19 @@ function Step4Availability({
 
       {/* Calendar */}
       {data.availability_type === 'specific' && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
+        <div className="bg-background border rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={goPrevMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={goPrevMonth} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm font-semibold text-gray-900">{monthName}</span>
-            <button onClick={goNextMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <span className="text-sm font-semibold text-foreground">{monthName}</span>
+            <button onClick={goNextMonth} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-              <div key={d} className="text-center text-xs text-gray-400 font-medium py-1">{d}</div>
+              <div key={d} className="text-center text-xs text-muted-foreground/60 font-medium py-1">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -1154,10 +1154,10 @@ function Step4Availability({
                   onClick={() => !isPast && toggleDate(dateStr)}
                   className={`aspect-square rounded-lg text-xs font-medium transition-colors ${
                     isPast
-                      ? 'text-gray-200 cursor-not-allowed'
+                      ? 'text-muted-foreground/30 cursor-not-allowed'
                       : isBlocked
-                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                      : 'hover:bg-muted text-foreground'
                   }`}
                 >
                   {day}
@@ -1166,10 +1166,10 @@ function Step4Availability({
             })}
           </div>
           {data.blocked_dates.length > 0 && (
-            <div className="mt-3 text-xs text-gray-500 text-center">
+            <div className="mt-3 text-xs text-muted-foreground text-center">
               {data.blocked_dates.length} date{data.blocked_dates.length !== 1 ? 's' : ''} blocked
               {data.blocked_dates.slice(0, 3).map((d) => (
-                <span key={d} className="ml-1 bg-red-50 text-red-600 px-1.5 py-0.5 rounded">{formatDate(d)}</span>
+                <span key={d} className="ml-1 bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">{formatDate(d)}</span>
               ))}
               {data.blocked_dates.length > 3 && <span className="ml-1">+{data.blocked_dates.length - 3} more</span>}
             </div>
@@ -1180,11 +1180,11 @@ function Step4Availability({
       {/* Min stay & max guests */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Min stay</label>
+          <label className="block text-sm font-semibold text-foreground mb-1.5">Min stay</label>
           <select
             value={data.min_stay}
             onChange={(e) => update('min_stay', parseInt(e.target.value))}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2.5 border border-input rounded-xl text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <option value={1}>1 night</option>
             <option value={2}>2 nights</option>
@@ -1193,18 +1193,18 @@ function Step4Availability({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max guests total</label>
-          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+          <label className="block text-sm font-semibold text-foreground mb-1.5">Max guests total</label>
+          <div className="flex items-center border border-input rounded-xl overflow-hidden">
             <button
               onClick={() => update('max_guests_total', Math.max(1, data.max_guests_total - 1))}
-              className="px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+              className="px-3 py-2.5 bg-muted hover:bg-muted/70 text-foreground transition-colors"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
             <span className="flex-1 text-center text-sm font-medium">{data.max_guests_total}</span>
             <button
               onClick={() => update('max_guests_total', Math.min(100, data.max_guests_total + 1))}
-              className="px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+              className="px-3 py-2.5 bg-muted hover:bg-muted/70 text-foreground transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -1270,13 +1270,13 @@ function Step5Booking({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Booking & Payment</h2>
-        <p className="text-sm text-gray-500 mt-1">Set how guests book and how you get paid.</p>
+        <h2 className="text-xl font-bold text-foreground">Booking & Payment</h2>
+        <p className="text-sm text-muted-foreground mt-1">Set how guests book and how you get paid.</p>
       </div>
 
       {/* Booking type */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">How should guests book?</label>
+        <label className="block text-sm font-semibold text-foreground mb-2">How should guests book?</label>
         <div className="space-y-2">
           {[
             { id: 'instant' as const, label: 'Instant Book', sub: 'Guests book immediately — no approval needed', badge: 'Recommended' },
@@ -1287,25 +1287,25 @@ function Step5Booking({
               onClick={() => update('booking_type', opt.id)}
               className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
                 data.booking_type === opt.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-input bg-background hover:border-primary/40'
               }`}
             >
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                data.booking_type === opt.id ? 'border-blue-500' : 'border-gray-300'
+                data.booking_type === opt.id ? 'border-primary' : 'border-muted-foreground/40'
               }`}>
-                {data.booking_type === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
+                {data.booking_type === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
               </div>
               <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                   {opt.label}
                   {opt.badge && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium">
                       {opt.badge}
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500">{opt.sub}</div>
+                <div className="text-xs text-muted-foreground">{opt.sub}</div>
               </div>
             </button>
           ))}
@@ -1314,7 +1314,7 @@ function Step5Booking({
 
       {/* Cancellation policy */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Cancellation Policy</label>
+        <label className="block text-sm font-semibold text-foreground mb-2">Cancellation Policy</label>
         <div className="grid grid-cols-3 gap-2">
           {CANCELLATION_POLICIES.map((pol) => (
             <button
@@ -1322,13 +1322,13 @@ function Step5Booking({
               onClick={() => update('cancellation_policy', pol.id)}
               className={`flex flex-col items-center p-3 rounded-xl border-2 text-center transition-all ${
                 data.cancellation_policy === pol.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-input bg-background hover:border-primary/40'
               }`}
             >
               <span className="text-xl mb-1">{pol.icon}</span>
-              <span className="text-xs font-bold text-gray-900">{pol.label}</span>
-              <span className="text-[10px] text-gray-400 mt-1 leading-tight">{pol.desc}</span>
+              <span className="text-xs font-bold text-foreground">{pol.label}</span>
+              <span className="text-[10px] text-muted-foreground/60 mt-1 leading-tight">{pol.desc}</span>
             </button>
           ))}
         </div>
@@ -1336,14 +1336,14 @@ function Step5Booking({
 
       {/* Check-in / Check-out */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Check-in & Check-out</label>
+        <label className="block text-sm font-semibold text-foreground mb-2">Check-in & Check-out</label>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Check-in</label>
+            <label className="block text-xs text-muted-foreground mb-1">Check-in</label>
             <select
               value={data.checkin_time}
               onChange={(e) => update('checkin_time', e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-input rounded-xl text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -1351,11 +1351,11 @@ function Step5Booking({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Check-out</label>
+            <label className="block text-xs text-muted-foreground mb-1">Check-out</label>
             <select
               value={data.checkout_time}
               onChange={(e) => update('checkout_time', e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-input rounded-xl text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'].map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -1367,10 +1367,10 @@ function Step5Booking({
 
       {/* Payment methods */}
       <section>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Payment Methods <span className="text-red-500">*</span>
+        <label className="block text-sm font-semibold text-foreground mb-1">
+          Payment Methods <span className="text-destructive">*</span>
         </label>
-        <p className="text-xs text-gray-400 mb-3">Select at least one method and enter your details.</p>
+        <p className="text-xs text-muted-foreground/60 mb-3">Select at least one method and enter your details.</p>
         <div className="space-y-2">
           {PAYMENT_OPTIONS.map(({ type, label, icon, placeholder, needsInput }) => {
             const active = isMethodActive(type);
@@ -1378,7 +1378,7 @@ function Step5Booking({
               <div
                 key={type}
                 className={`rounded-xl border-2 overflow-hidden transition-all ${
-                  active ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
+                  active ? 'border-secondary/50 bg-secondary/10' : 'border-input bg-background'
                 }`}
               >
                 <button
@@ -1386,9 +1386,9 @@ function Step5Booking({
                   className="w-full flex items-center gap-3 p-3 text-left"
                 >
                   <span className="text-lg">{icon}</span>
-                  <span className="text-sm font-semibold text-gray-900 flex-1">{label}</span>
+                  <span className="text-sm font-semibold text-foreground flex-1">{label}</span>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    active ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                    active ? 'border-secondary bg-secondary' : 'border-muted-foreground/40'
                   }`}>
                     {active && <Check className="w-3 h-3 text-white" />}
                   </div>
@@ -1406,7 +1406,7 @@ function Step5Booking({
                           update('payment_methods', [...data.payment_methods, { type, details: val.trim() }]);
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:border-transparent"
                     />
                   </div>
                 )}
@@ -1438,12 +1438,12 @@ function Step6Review({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Review & Confirm</h2>
-        <p className="text-sm text-gray-500 mt-1">Everything looks good? Hit publish to go live.</p>
+        <h2 className="text-xl font-bold text-foreground">Review & Confirm</h2>
+        <p className="text-sm text-muted-foreground mt-1">Everything looks good? Hit publish to go live.</p>
       </div>
 
       {/* Listing preview card */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-background rounded-xl border overflow-hidden shadow-sm">
         {displayPhotos[0] && (
           <div className="relative h-40">
             <Image src={displayPhotos[0]} alt={data.listing_name} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
@@ -1455,15 +1455,15 @@ function Step6Review({
         )}
         <div className="p-4 space-y-3">
           <div>
-            <h3 className="font-bold text-gray-900">{data.listing_name}</h3>
+            <h3 className="font-bold text-foreground">{data.listing_name}</h3>
             {listing.city && (
-              <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3" />
                 {listing.city}, Venezuela
               </p>
             )}
           </div>
-          <p className="text-sm text-gray-600 line-clamp-2">{data.listing_description}</p>
+          <p className="text-sm text-foreground line-clamp-2">{data.listing_description}</p>
         </div>
       </div>
 
@@ -1490,7 +1490,7 @@ function Step6Review({
         />
       </div>
 
-      <div className="p-4 bg-green-50 rounded-xl border border-green-200 text-sm text-green-800">
+      <div className="p-4 bg-secondary/10 rounded-xl border border-secondary/30 text-sm text-secondary">
         <Check className="w-4 h-4 inline mr-1" />
         Your listing is ready to publish. You can edit it anytime from your dashboard after going live.
       </div>
@@ -1500,9 +1500,9 @@ function Step6Review({
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900 capitalize">{value}</span>
+    <div className="flex items-center justify-between py-2 border-b last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground capitalize">{value}</span>
     </div>
   );
 }
@@ -1547,7 +1547,7 @@ function StepGoLive({
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Confetti overlay */}
       <div
         ref={confettiRef}
@@ -1572,10 +1572,10 @@ function StepGoLive({
 
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Hero */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white px-6 py-10 text-center">
+        <div className="bg-gradient-to-br from-primary to-primary/90 text-primary-foreground px-6 py-10 text-center">
           <div className="text-5xl mb-3">🎉</div>
           <h1 className="text-2xl font-bold mb-2">Your listing is live!</h1>
-          <p className="text-blue-100 text-sm">{name} is now on VZ Explorer</p>
+          <p className="text-primary-foreground/80 text-sm">{name} is now on VZ Explorer</p>
         </div>
 
         {/* Founding Partner badge */}
@@ -1589,23 +1589,23 @@ function StepGoLive({
         </div>
 
         {/* Listing preview card */}
-        <div className="mx-4 mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="mx-4 mt-4 bg-background border rounded-2xl overflow-hidden shadow-sm">
           {listing.cover_image_url && (
             <div className="relative h-36">
               <Image src={listing.cover_image_url} alt={listing.name} fill sizes="(max-width: 640px) 100vw, 500px" className="object-cover" />
             </div>
           )}
           <div className="p-4">
-            <div className="font-semibold text-gray-900">{name}</div>
+            <div className="font-semibold text-foreground">{name}</div>
             {listing.city && (
-              <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                 <MapPin className="w-3 h-3" />
                 {listing.city}, Venezuela
               </div>
             )}
             {listing.avg_rating && (
-              <div className="text-xs text-amber-500 flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 fill-amber-500" />
+              <div className="text-xs text-accent flex items-center gap-1 mt-1">
+                <Star className="w-3 h-3 fill-accent" />
                 {listing.avg_rating} · {listing.review_count.toLocaleString()} reviews
               </div>
             )}
@@ -1616,14 +1616,14 @@ function StepGoLive({
         <div className="mx-4 mt-4 space-y-3">
           <Link
             href={`/listing/${slug}`}
-            className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             View My Listing
           </Link>
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-foreground text-background font-bold py-3.5 rounded-xl hover:bg-foreground/90 transition-colors"
           >
             Go to Dashboard
           </Link>
@@ -1631,8 +1631,8 @@ function StepGoLive({
             onClick={copyLink}
             className={`flex items-center justify-center gap-2 w-full border-2 font-bold py-3.5 rounded-xl transition-all ${
               copied
-                ? 'border-green-400 text-green-600 bg-green-50'
-                : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                ? 'border-status-confirmed text-status-confirmed bg-status-confirmed/10'
+                : 'border-input text-foreground hover:border-muted-foreground/40'
             }`}
           >
             {copied ? (
@@ -1653,7 +1653,7 @@ function StepGoLive({
         </div>
 
         {/* QR Code placeholder */}
-        <div className="mx-4 mt-4 p-5 bg-gray-50 rounded-2xl text-center border border-gray-200">
+        <div className="mx-4 mt-4 p-5 bg-muted rounded-2xl text-center border">
           <div className="w-32 h-32 bg-gray-900 rounded-xl mx-auto flex items-center justify-center mb-3">
             <div className="grid grid-cols-5 gap-0.5">
               {Array.from({ length: 25 }, (_, i) => (
@@ -1668,16 +1668,16 @@ function StepGoLive({
               ))}
             </div>
           </div>
-          <div className="text-sm font-semibold text-gray-700 mb-1">QR Code for your property</div>
-          <div className="text-xs text-gray-400 mb-3">Print and display at your reception</div>
-          <button className="text-sm text-blue-600 font-medium hover:text-blue-700">
+          <div className="text-sm font-semibold text-foreground mb-1">QR Code for your property</div>
+          <div className="text-xs text-muted-foreground/60 mb-3">Print and display at your reception</div>
+          <button className="text-sm text-primary font-medium hover:text-primary/90">
             Download QR Code (PNG)
           </button>
         </div>
 
         {/* What happens next */}
-        <div className="mx-4 mt-4 mb-8 p-5 bg-blue-50 rounded-2xl border border-blue-100">
-          <h3 className="font-bold text-blue-900 mb-3 text-sm">What happens next</h3>
+        <div className="mx-4 mt-4 mb-8 p-5 bg-primary/5 rounded-2xl border border-primary/10">
+          <h3 className="font-bold text-foreground mb-3 text-sm">What happens next</h3>
           <div className="space-y-3">
             {[
               { emoji: '📱', time: 'Today', text: 'Welcome WhatsApp message with your dashboard link' },
@@ -1688,8 +1688,8 @@ function StepGoLive({
               <div key={item.text} className="flex items-start gap-3">
                 <span className="text-lg shrink-0">{item.emoji}</span>
                 <div>
-                  <span className="text-xs font-bold text-blue-800">{item.time}: </span>
-                  <span className="text-xs text-blue-700">{item.text}</span>
+                  <span className="text-xs font-bold text-primary">{item.time}: </span>
+                  <span className="text-xs text-muted-foreground">{item.text}</span>
                 </div>
               </div>
             ))}

@@ -137,7 +137,7 @@ function PriceSummary({
         <span className="tabular-nums">${fee.toFixed(2)}</span>
       </div>
       {discountAmount && discountAmount > 0 && (
-        <div className="flex justify-between text-green-600 font-medium">
+        <div className="flex justify-between text-secondary font-medium">
           <span className="flex items-center gap-1"><Tag className="w-3 h-3" />Promo discount</span>
           <span className="tabular-nums">&minus;${discountAmount.toFixed(2)}</span>
         </div>
@@ -553,7 +553,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                 <div className="px-3 pb-3 pt-2 border-t space-y-2">
                   {promoSuccess ? (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-green-600 font-medium flex items-center gap-1">
+                      <span className="text-secondary font-medium flex items-center gap-1">
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span className="tabular-nums">Code applied — &minus;${promoSuccess.discountAmount.toFixed(2)} off</span>
                       </span>
@@ -683,8 +683,8 @@ export function BookingForm({ listing }: BookingFormProps) {
             {/* Manual payment details (Zelle / USDT) */}
             {paymentDetails &&
               (formData.payment_method === 'zelle' || formData.payment_method === 'usdt') && (
-                <div className="border rounded-lg p-3 bg-blue-50 space-y-2 text-sm">
-                  <p className="font-semibold text-blue-800">Send payment to:</p>
+                <div className="border border-primary/20 rounded-lg p-3 bg-primary/5 space-y-2 text-sm">
+                  <p className="font-semibold text-foreground">Send payment to:</p>
                   {paymentDetails.email && (
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Email (Zelle)</span>
@@ -736,7 +736,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                     <span className="text-muted-foreground">Memo / Reference</span>
                     <span className="font-mono font-semibold">{paymentDetails.reference}</span>
                   </div>
-                  <p className="text-xs text-blue-700 border-t border-blue-200 pt-2">
+                  <p className="text-xs text-muted-foreground border-t border-border pt-2">
                     {paymentDetails.instructions}
                   </p>
                 </div>

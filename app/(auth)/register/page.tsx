@@ -24,11 +24,11 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   if (/\d/.test(password)) score++;
   if (/[^a-zA-Z0-9]/.test(password)) score++;
 
-  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' };
-  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-orange-500' };
-  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-yellow-500' };
-  if (score <= 4) return { score: 4, label: 'Strong', color: 'bg-green-500' };
-  return { score: 5, label: 'Very strong', color: 'bg-green-600' };
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-destructive' };
+  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-status-pending' };
+  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-accent' };
+  if (score <= 4) return { score: 4, label: 'Strong', color: 'bg-secondary' };
+  return { score: 5, label: 'Very strong', color: 'bg-status-confirmed' };
 }
 
 export default function RegisterPage() {
@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
   if (registered) {
     return (
-      <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
+      <Card className="shadow-border border-0">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-2xl text-balance">Account created!</CardTitle>
           <CardDescription className="text-pretty">One more step to get started</CardDescription>
@@ -111,7 +111,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_2px_-1px_rgba(0,0,0,0.06),0px_2px_4px_0px_rgba(0,0,0,0.04)] border-0">
+    <Card className="shadow-border border-0">
       <CardHeader className="text-center pb-2">
         <CardTitle className="text-2xl text-balance">Create account</CardTitle>
         <CardDescription className="text-pretty">Join VZ Explorer and discover Venezuela</CardDescription>
@@ -293,7 +293,7 @@ function PasswordStrengthBar({ password }: { password: string }) {
           <div
             key={level}
             className={`h-1 flex-1 rounded-full transition-[background-color] ${
-              level <= strength.score ? strength.color : 'bg-gray-200'
+              level <= strength.score ? strength.color : 'bg-border'
             }`}
           />
         ))}

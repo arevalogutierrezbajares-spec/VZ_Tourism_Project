@@ -26,7 +26,7 @@ export function MapLegend({ pins }: MapLegendProps) {
 
   return (
     <div
-      className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-[180px] max-w-[220px]"
+      className="bg-background/90 backdrop-blur-sm rounded-xl shadow-lg border p-3 min-w-[180px] max-w-[220px]"
       role="region"
       aria-label="Map category legend"
     >
@@ -36,13 +36,13 @@ export function MapLegend({ pins }: MapLegendProps) {
         aria-expanded={!isCollapsed}
         aria-controls="legend-categories"
       >
-        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Categories ({visibleCategories.length})
         </span>
         {isCollapsed ? (
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         ) : (
-          <ChevronUp className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+          <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         )}
       </button>
       {!isCollapsed && (
@@ -54,7 +54,7 @@ export function MapLegend({ pins }: MapLegendProps) {
               <button
                 key={key}
                 onClick={() => toggleCategory(key)}
-                className={`flex items-center gap-2 w-full text-left rounded-lg px-2 py-1.5 min-h-[36px] transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex items-center gap-2 w-full text-left rounded-lg px-2 py-1.5 min-h-[36px] transition-opacity hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary ${
                   hidden ? 'opacity-40' : 'opacity-100'
                 }`}
                 aria-pressed={!hidden}
@@ -65,10 +65,10 @@ export function MapLegend({ pins }: MapLegendProps) {
                   style={{ backgroundColor: color }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 leading-none">
+                <span className="text-xs text-foreground flex-1 leading-none">
                   {label}
                 </span>
-                <span className="text-xs text-gray-400 tabular-nums">{count.toLocaleString()}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">{count.toLocaleString()}</span>
               </button>
             );
           })}

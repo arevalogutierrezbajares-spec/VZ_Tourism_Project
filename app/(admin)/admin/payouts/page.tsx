@@ -57,9 +57,9 @@ export default async function AdminPayoutsPage() {
                           {provider.is_verified ? 'Verified' : 'Unverified'}
                         </Badge>
                         {provider.stripe_account_id ? (
-                          <Badge variant="outline" className="text-xs text-green-600">Stripe Connected</Badge>
+                          <Badge variant="outline" className="text-xs text-status-confirmed">Stripe Connected</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-orange-600">No Stripe</Badge>
+                          <Badge variant="outline" className="text-xs text-accent">No Stripe</Badge>
                         )}
                       </div>
                     </div>

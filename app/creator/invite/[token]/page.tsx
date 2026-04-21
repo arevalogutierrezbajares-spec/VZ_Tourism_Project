@@ -113,7 +113,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
       <div className="max-w-lg mx-auto px-6 py-12">
         {/* Invite headline */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-1.5 bg-status-pending/10 text-status-pending text-xs font-medium px-3 py-1 rounded-full mb-4 border border-status-pending/30">
+          <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full mb-4 border border-primary/30">
             Creator Invite — Exclusive Access
           </div>
           <h1 className="text-3xl font-heading font-bold leading-tight text-balance">

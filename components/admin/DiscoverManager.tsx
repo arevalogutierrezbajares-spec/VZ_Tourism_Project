@@ -45,10 +45,10 @@ const REGIONS = [
 
 const STATUSES = [
   { id: 'all', label: 'All Status' },
-  { id: 'published', label: 'Published', color: 'bg-green-100 text-green-700' },
-  { id: 'featured', label: 'Featured', color: 'bg-amber-100 text-amber-700' },
-  { id: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-600' },
-  { id: 'archived', label: 'Archived', color: 'bg-red-100 text-red-600' },
+  { id: 'published', label: 'Published', color: 'bg-secondary/10 text-secondary' },
+  { id: 'featured', label: 'Featured', color: 'bg-accent/10 text-accent' },
+  { id: 'draft', label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  { id: 'archived', label: 'Archived', color: 'bg-destructive/10 text-destructive' },
 ];
 
 const LOCATION_TYPES = [
@@ -148,7 +148,7 @@ function InstagramImportDialog({
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -317,7 +317,7 @@ function ContentEditModal({
             {!isNew && (
               <button
                 onClick={handleDelete}
-                className="p-2 text-red-500 hover:bg-red-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                className="p-2 text-destructive hover:bg-destructive/10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive transition-colors"
                 aria-label="Delete this content"
               >
                 <Trash2 className="w-4 h-4" />
@@ -575,7 +575,7 @@ function ContentEditModal({
             <button
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium border-2 border-secondary text-secondary hover:bg-secondary/10 transition-colors disabled:opacity-50"
             >
               <Eye className="w-4 h-4" />
               Publish

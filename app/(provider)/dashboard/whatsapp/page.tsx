@@ -26,9 +26,9 @@ import { WA_STATUS_CONFIG as STATUS_CONFIG } from '@/lib/status-config';
 
 const STAGE_CONFIG: Record<WaBookingStage, { label: string; color: string }> = {
   lead:       { label: 'Lead',       color: 'text-muted-foreground' },
-  quoted:     { label: 'Quoted',     color: 'text-yellow-700'       },
-  confirmed:  { label: 'Confirmed',  color: 'text-green-700'        },
-  checked_in: { label: 'Checked In', color: 'text-blue-700'         },
+  quoted:     { label: 'Quoted',     color: 'text-accent'           },
+  confirmed:  { label: 'Confirmed',  color: 'text-status-confirmed' },
+  checked_in: { label: 'Checked In', color: 'text-primary'          },
   closed:     { label: 'Closed',     color: 'text-muted-foreground' },
 };
 
@@ -190,7 +190,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           {isOut && !msg.is_ai && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
           {msg.flagged && <AlertTriangle className="w-2.5 h-2.5 text-destructive" />}
           {hasTranslation && !showTranslation && (
-            <Globe className="w-2.5 h-2.5 text-blue-400" aria-label={`Message in ${msg.detected_lang}`} />
+            <Globe className="w-2.5 h-2.5 text-primary/60" aria-label={`Message in ${msg.detected_lang}`} />
           )}
         </div>
       </div>

@@ -175,7 +175,7 @@ function AuthModalContent({ onClose, onSuccess, title, subtitle }: Omit<AuthModa
       {/* Modal — respects prefers-reduced-motion */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-sm bg-background rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-200 [&_button]:active:scale-[0.96] [&_button]:transition-[transform,background-color,color,border-color] [&_button]:duration-150 [&_button]:ease-out"
+        className="relative z-10 w-full max-w-sm bg-background rounded-xl shadow-2xl border max-h-[90vh] overflow-y-auto motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-200 [&_button]:active:scale-[0.96] [&_button]:transition-[transform,background-color,color,border-color] [&_button]:duration-150 [&_button]:ease-out"
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-4">

@@ -23,7 +23,7 @@ export function DemoFooter() {
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/library"
+                  href="/explore"
                   className="hover:text-foreground transition-colors"
                 >
                   Browse Experiences

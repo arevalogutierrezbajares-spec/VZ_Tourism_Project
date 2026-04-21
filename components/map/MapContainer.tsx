@@ -473,7 +473,7 @@ export function MapContainer({
       {/* Loading skeleton */}
       {!mapLoaded && !mapError && (
         <div
-          className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900"
+          className="absolute inset-0 flex items-center justify-center bg-muted"
           role="status"
           aria-live="polite"
         >
@@ -514,9 +514,9 @@ export function MapContainer({
               Configure NEXT_PUBLIC_MAPBOX_TOKEN to enable the interactive map
             </p>
             <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Los Roques</div>
-              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Merida</div>
-              <div className="p-2 bg-white/50 dark:bg-gray-800/50 rounded">Margarita</div>
+              <div className="p-2 bg-background/50 rounded">Los Roques</div>
+              <div className="p-2 bg-background/50 rounded">Merida</div>
+              <div className="p-2 bg-background/50 rounded">Margarita</div>
             </div>
           </div>
         </div>

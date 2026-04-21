@@ -179,7 +179,7 @@ function MonthGrid({
                   <span
                     className={cn(
                       'text-[9px] leading-none',
-                      isSelected ? 'text-primary-foreground/70' : 'text-yellow-600 dark:text-yellow-400'
+                      isSelected ? 'text-primary-foreground/70' : 'text-accent'
                     )}
                   >
                     ${data.price}
@@ -362,7 +362,7 @@ export function AvailabilityCalendar({
 
   return (
     <div className={cn('space-y-3', className)}>
-      <div className="rounded-xl border bg-background overflow-hidden">
+      <div className="rounded-2xl border bg-background overflow-hidden">
         {/* Instruction bar */}
         <div
           className={cn(
@@ -370,7 +370,7 @@ export function AvailabilityCalendar({
             checkIn && checkOut
               ? 'bg-primary/5'
               : checkIn
-                ? 'bg-amber-50 dark:bg-amber-950/30'
+                ? 'bg-accent/10 dark:bg-accent/20'
                 : 'bg-muted/30'
           )}
         >
@@ -466,7 +466,7 @@ export function AvailabilityCalendar({
               Unavailable
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block" />
               Special price
             </span>
           </div>

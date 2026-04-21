@@ -71,7 +71,7 @@ export default async function AdminAnalyticsPage() {
             </div>
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-sm text-muted-foreground">Platform Fee ({(PLATFORM_COMMISSION_RATE * 100).toFixed(0)}%)</span>
-              <span className="font-semibold text-green-600">{formatCurrency(platformRevenue)}</span>
+              <span className="font-semibold text-status-confirmed">{formatCurrency(platformRevenue)}</span>
             </div>
             <div className="flex justify-between items-center py-2">
               <span className="text-sm text-muted-foreground">Provider Payouts</span>

@@ -191,19 +191,19 @@ export default function AccountPage() {
       <div className="flex items-center gap-4 mb-8">
         <Avatar className="w-16 h-16 shadow-md outline outline-1 -outline-offset-1 outline-black/10">
           <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="text-xl bg-sky-500 text-white">
+          <AvatarFallback className="text-xl bg-primary text-primary-foreground">
             {getInitials(profile?.full_name || 'U')}
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-2xl font-bold text-balance">Welcome back, {firstName}!</h1>
+          <h1 className="text-2xl font-bold font-heading text-balance">Welcome back, {firstName}!</h1>
           <p className="text-muted-foreground text-sm">{profile?.email}</p>
         </div>
         <Badge variant="secondary" className="ml-auto capitalize">{profile?.role}</Badge>
       </div>
 
       {!serviceAvailable && (
-        <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <div className="mb-6 rounded-xl bg-accent/10 border border-accent/30 px-4 py-3 text-sm text-accent-foreground">
           Profile service is temporarily unavailable. Your changes cannot be saved right now.
         </div>
       )}
@@ -285,8 +285,8 @@ export default function AccountPage() {
                   onClick={() => toggleInterest(value)}
                   className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors text-left ${
                     form.interests.includes(value)
-                      ? 'bg-amber-400 border-amber-400 text-white'
-                      : 'bg-white border-border hover:border-amber-300'
+                      ? 'bg-accent border-accent text-accent-foreground'
+                      : 'bg-background border-border hover:border-accent/50'
                   }`}
                 >
                   {label}

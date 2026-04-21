@@ -91,26 +91,26 @@ export default function AdminPage() {
             <h2 className="font-semibold text-foreground text-sm">AI Opportunities</h2>
           </div>
           <div className="p-4 space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border border-accent/20">
               <div>
-                <div className="text-sm font-medium text-amber-900">{withoutDesc} missing descriptions</div>
-                <div className="text-xs text-amber-600 mt-0.5">AI can generate instantly</div>
+                <div className="text-sm font-medium text-foreground">{withoutDesc} missing descriptions</div>
+                <div className="text-xs text-muted-foreground mt-0.5">AI can generate instantly</div>
               </div>
               <Link
                 href="/admin/listings?missingData=description"
-                className="text-xs px-2.5 py-1.5 rounded-lg font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 transition-colors"
+                className="text-xs px-2.5 py-1.5 rounded-lg font-medium text-accent bg-accent/20 hover:bg-accent/30 transition-colors"
               >
                 Fix →
               </Link>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
               <div>
-                <div className="text-sm font-medium text-blue-900">{withoutTags} without tags</div>
-                <div className="text-xs text-blue-600 mt-0.5">Auto-tag with AI</div>
+                <div className="text-sm font-medium text-foreground">{withoutTags} without tags</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Auto-tag with AI</div>
               </div>
               <Link
                 href="/admin/listings?missingData=tags"
-                className="text-xs px-2.5 py-1.5 rounded-lg font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors"
+                className="text-xs px-2.5 py-1.5 rounded-lg font-medium text-primary bg-primary/20 hover:bg-primary/30 transition-colors"
               >
                 Fix →
               </Link>

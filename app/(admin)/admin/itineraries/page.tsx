@@ -53,7 +53,7 @@ export default function AdminItinerariesPage() {
         <h1 className="text-2xl font-bold mb-4">Itineraries</h1>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function AdminItinerariesPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Itineraries</h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Manage itineraries and influencer picks. {itineraries.length} total.
         </p>
       </div>
@@ -81,7 +81,7 @@ export default function AdminItinerariesPage() {
               {itineraries.map((it) => (
                 <div
                   key={it.id}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -90,10 +90,10 @@ export default function AdminItinerariesPage() {
                         <Badge variant="default" className="text-[10px]">Public</Badge>
                       )}
                       {it.is_influencer_pick && (
-                        <Badge className="text-[10px] bg-amber-500">Influencer Pick</Badge>
+                        <Badge className="text-[10px] bg-accent text-accent-foreground">Influencer Pick</Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                       <span>{it.user?.full_name || 'Unknown'}</span>
                       <span>{it.total_days}d</span>
                       <span>{it.regions.join(', ')}</span>
@@ -115,7 +115,7 @@ export default function AdminItinerariesPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 text-center py-8">
+            <p className="text-sm text-muted-foreground text-center py-8">
               No itineraries found.
             </p>
           )}

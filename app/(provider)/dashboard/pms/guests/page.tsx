@@ -20,12 +20,12 @@ import { AlertCircle, Search, Users } from 'lucide-react';
 // Deterministic tag color from string hash
 function tagColor(tag: string): string {
   const colors = [
-    'bg-blue-100 text-blue-700',
-    'bg-green-100 text-green-700',
-    'bg-purple-100 text-purple-700',
-    'bg-orange-100 text-orange-700',
-    'bg-pink-100 text-pink-700',
-    'bg-cyan-100 text-cyan-700',
+    'bg-primary/10 text-primary',
+    'bg-secondary/10 text-secondary',
+    'bg-primary/15 text-primary',
+    'bg-accent/10 text-accent',
+    'bg-accent/15 text-accent',
+    'bg-primary/20 text-primary',
   ];
   let hash = 0;
   for (let i = 0; i < tag.length; i++) {

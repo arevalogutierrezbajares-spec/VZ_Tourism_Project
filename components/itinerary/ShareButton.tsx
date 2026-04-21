@@ -49,7 +49,7 @@ export function ShareButton({ title, url }: ShareButtonProps) {
     >
       <AnimatePresence mode="wait" initial={false}>
         {copied ? (
-          <motion.span key="copied" className="inline-flex items-center gap-2 text-green-600" {...iconSwap}>
+          <motion.span key="copied" className="inline-flex items-center gap-2 text-status-confirmed" {...iconSwap}>
             <Check className="w-4 h-4" />
             <span>Link copied!</span>
           </motion.span>

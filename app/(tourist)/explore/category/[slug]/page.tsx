@@ -109,10 +109,10 @@ export default async function CategoryPage({ params }: Props) {
 
         {/* Hero content — bottom left */}
         <div className="absolute bottom-0 left-0 w-full px-6 sm:px-10 pb-8 sm:pb-10">
-          <span className="inline-block text-xs font-mono tracking-widest text-amber-400 uppercase mb-3">
-            {category.icon} {category.label}
+          <span className="inline-block text-xs font-mono tracking-widest text-accent uppercase mb-3">
+            <span aria-hidden="true">{category.icon} </span>{category.label}
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight max-w-2xl mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white leading-tight max-w-2xl mb-2">
             {content?.headline ?? category.label}
           </h1>
           {content?.tagline && (
@@ -201,7 +201,7 @@ export default async function CategoryPage({ params }: Props) {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      <span className="absolute bottom-3 left-3 text-xs px-2.5 py-1 rounded-full bg-white/90 text-gray-800 font-medium">
+                      <span className="absolute bottom-3 left-3 text-xs px-2.5 py-1 rounded-full bg-background/90 text-foreground font-medium">
                         {guide.tag}
                       </span>
                     </div>
@@ -252,12 +252,12 @@ export default async function CategoryPage({ params }: Props) {
             </div>
           ) : (
             <div className="py-20 text-center rounded-2xl border border-dashed">
-              <span className="text-4xl">{category.icon}</span>
+              <span className="text-4xl" aria-hidden="true">{category.icon}</span>
               <h3 className="font-semibold text-base mt-4">No listings yet for {category.label}</h3>
               <p className="text-sm text-muted-foreground mt-1">We add new experiences every week — check back soon.</p>
               <Link
                 href="/map?mode=ai"
-                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <Sparkles className="w-4 h-4" />
                 Ask the AI for ideas

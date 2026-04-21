@@ -214,7 +214,7 @@ export function CopyField({ value, label, masked }: { value: string; label: stri
           </Button>
         )}
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" onClick={copy}>
-          {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-status-confirmed" /> : <Copy className="w-3.5 h-3.5" />}
         </Button>
       </div>
     </div>

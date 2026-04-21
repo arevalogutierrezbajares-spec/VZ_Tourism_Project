@@ -31,10 +31,10 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  card: 'bg-blue-100 text-blue-800',
-  zelle: 'bg-purple-100 text-purple-800',
-  usdt: 'bg-yellow-100 text-yellow-800',
-  arrival: 'bg-green-100 text-green-800',
+  card: 'bg-primary/10 text-primary',
+  zelle: 'bg-primary/10 text-primary',
+  usdt: 'bg-accent/10 text-accent',
+  arrival: 'bg-secondary/10 text-secondary',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -47,11 +47,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 function Trend({ value, prev }: { value: number; prev: number }) {
   if (prev === 0 && value === 0) return null;
-  if (prev === 0) return <span className="text-xs text-green-600 flex items-center gap-0.5"><TrendingUp className="w-3 h-3" /> New</span>;
+  if (prev === 0) return <span className="text-xs text-status-confirmed flex items-center gap-0.5"><TrendingUp className="w-3 h-3" /> New</span>;
   const pct = ((value - prev) / prev) * 100;
   const up = pct >= 0;
   return (
-    <span className={`text-xs flex items-center gap-0.5 ${up ? 'text-green-600' : 'text-red-500'}`}>
+    <span className={`text-xs flex items-center gap-0.5 ${up ? 'text-status-confirmed' : 'text-destructive'}`}>
       {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
       {Math.abs(pct).toFixed(0)}%
     </span>
@@ -201,7 +201,7 @@ export default async function RevenuePage() {
                 <p className="text-2xl font-bold mt-1">{formatCurrency(todayRevenue)}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Gross {formatCurrency(todayGross)}</p>
               </div>
-              <DollarSign className="w-7 h-7 text-green-500 opacity-60 shrink-0" />
+              <DollarSign className="w-7 h-7 text-secondary opacity-60 shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -214,7 +214,7 @@ export default async function RevenuePage() {
                 <p className="text-2xl font-bold mt-1">{formatCurrency(weekRevenue)}</p>
                 <Trend value={weekRevenue} prev={prevWeekRevenue} />
               </div>
-              <TrendingUp className="w-7 h-7 text-blue-500 opacity-60 shrink-0" />
+              <TrendingUp className="w-7 h-7 text-primary opacity-60 shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -240,7 +240,7 @@ export default async function RevenuePage() {
                 <p className="text-2xl font-bold mt-1">{formatCurrency(pendingRevenue)}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Confirmed, unpaid</p>
               </div>
-              <Clock className="w-7 h-7 text-yellow-500 opacity-60 shrink-0" />
+              <Clock className="w-7 h-7 text-accent opacity-60 shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -298,7 +298,7 @@ export default async function RevenuePage() {
                         <span className="text-muted-foreground">{formatCurrency(l.revenue)}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pct}%` }} />
+                        <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{l.bookings} booking{l.bookings !== 1 ? 's' : ''}</p>
                     </div>
@@ -381,7 +381,7 @@ export default async function RevenuePage() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-green-600">
+                    <p className="text-sm font-semibold text-status-confirmed">
                       +{formatCurrency(booking.net_provider_usd)}
                     </p>
                     <p className="text-xs text-muted-foreground">Gross {formatCurrency(booking.total_usd)}</p>

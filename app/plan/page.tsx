@@ -15,13 +15,43 @@ import type { AIGeneratedDay } from '@/types/database';
 import { buildStopFromAI } from '@/types/database';
 import toast from 'react-hot-toast';
 
+function PlanPageSkeleton() {
+  return (
+    <div className="h-screen flex flex-col bg-background">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b">
+        <div className="h-4 w-28 bg-muted rounded-md animate-pulse" />
+        <div className="h-4 w-24 bg-muted rounded-md animate-pulse" />
+        <div className="h-7 w-14 bg-muted rounded-lg animate-pulse" />
+      </div>
+      {/* Two-column layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Chat area */}
+        <div className="flex-1 md:w-[55%] md:border-r flex flex-col p-4 gap-3">
+          <div className="h-10 bg-muted rounded-xl animate-pulse" />
+          <div className="h-16 bg-muted/60 rounded-xl animate-pulse w-3/4" />
+          <div className="h-10 bg-muted/40 rounded-xl animate-pulse w-1/2 self-end" />
+          <div className="h-16 bg-muted/60 rounded-xl animate-pulse w-4/5" />
+          <div className="flex-1" />
+          <div className="h-11 bg-muted rounded-xl animate-pulse" />
+        </div>
+        {/* Right panel */}
+        <div className="hidden md:flex md:w-[45%] flex-col">
+          <div className="h-[40%] border-b bg-muted/30 animate-pulse" />
+          <div className="flex-1 p-4 space-y-3">
+            <div className="h-8 bg-muted rounded-xl animate-pulse" />
+            <div className="h-16 bg-muted/60 rounded-xl animate-pulse" />
+            <div className="h-16 bg-muted/60 rounded-xl animate-pulse" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PlanPageWrapper() {
   return (
-    <Suspense fallback={
-      <div className="h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    }>
+    <Suspense fallback={<PlanPageSkeleton />}>
       <PlanPage />
     </Suspense>
   );

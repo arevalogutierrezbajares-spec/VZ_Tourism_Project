@@ -255,8 +255,8 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
               </li>
             ))}
           </ul>
-          <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900 p-3">
-            <p className="text-xs text-blue-700 dark:text-blue-300">
+          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/10 p-3">
+            <p className="text-xs text-primary">
               <strong>No necesitas una cuenta de Meta Developer.</strong> El proceso de conexión crea automáticamente una cuenta de Meta Business si no tienes una.
             </p>
           </div>
@@ -431,14 +431,14 @@ function StepConnect({ state, dispatch }: { state: WizardState; dispatch: React.
 
       {/* ── Connected success state ────────────────────────────────────────── */}
       {isConnected && (
-        <Card className="border-green-200 dark:border-green-900">
+        <Card className="border-secondary/30">
           <CardContent className="py-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-secondary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-green-700 dark:text-green-400">WhatsApp conectado</p>
+                <p className="text-sm font-semibold text-secondary">WhatsApp conectado</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Phone ID: {state.phone_number_id}
                   {state.connected_via === 'embedded' && ' · Webhook configurado automáticamente'}
@@ -467,8 +467,8 @@ function StepConnect({ state, dispatch }: { state: WizardState; dispatch: React.
             </div>
 
             {state.connect_error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-3 text-left">
-                <p className="text-xs text-red-700 dark:text-red-300 flex items-start gap-1.5">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-left">
+                <p className="text-xs text-destructive flex items-start gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   {state.connect_error}
                 </p>
@@ -489,8 +489,8 @@ function StepConnect({ state, dispatch }: { state: WizardState; dispatch: React.
               {state.connecting ? 'Conectando…' : 'Conectar WhatsApp'}
             </Button>
 
-            <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900 p-3 text-left">
-              <p className="text-xs text-blue-700 dark:text-blue-300">
+            <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-left">
+              <p className="text-xs text-primary">
                 <strong>No necesitas una cuenta de desarrollador.</strong> Solo tu cuenta de Facebook personal y un número de teléfono para WhatsApp Business. Si no tienes una cuenta Meta Business, se crea automáticamente durante el proceso.
               </p>
             </div>
@@ -500,8 +500,8 @@ function StepConnect({ state, dispatch }: { state: WizardState; dispatch: React.
 
       {/* ── No Embedded Signup configured — show manual only ──────────────── */}
       {!isConnected && !embeddedSignupAvailable && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-4">
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+        <div className="rounded-lg border border-accent/30 bg-accent/10 p-4">
+          <p className="text-xs text-accent">
             La conexión automática no está configurada todavía. Usa la configuración manual abajo para conectar tu número de WhatsApp.
           </p>
         </div>
@@ -727,8 +727,8 @@ function StepKnowledge({ state, dispatch }: { state: WizardState; dispatch: Reac
       </div>
 
       {state.pms_imported && (
-        <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-900 p-3">
-          <p className="text-xs text-green-700 dark:text-green-300 flex items-center gap-1.5">
+        <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-3">
+          <p className="text-xs text-secondary flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Datos importados desde tu PMS. Puedes editarlos abajo.
           </p>
@@ -976,8 +976,8 @@ function StepTest({ state, dispatch }: { state: WizardState; dispatch: React.Dis
         )}
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-3">
-        <p className="text-xs text-amber-700 dark:text-amber-300">
+      <div className="rounded-lg border border-accent/30 bg-accent/10 p-3">
+        <p className="text-xs text-accent">
           La respuesta se genera con la configuración actual del wizard. Puedes ajustar la personalidad o la base de conocimiento volviendo a los pasos anteriores.
         </p>
       </div>
@@ -995,8 +995,8 @@ function StepGoLive({ state, dispatch, onSave }: {
   if (state.completed) {
     return (
       <div className="text-center space-y-6 py-8">
-        <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center mx-auto">
-          <PartyPopper className="w-10 h-10 text-green-600" />
+        <div className="w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
+          <PartyPopper className="w-10 h-10 text-secondary" />
         </div>
         <div>
           <h2 className="text-2xl font-bold">¡Tu agente está activo!</h2>
@@ -1046,7 +1046,7 @@ function StepGoLive({ state, dispatch, onSave }: {
           {summaryItems.map(({ label, value, ok }) => (
             <div key={label} className="flex items-center justify-between py-1.5">
               <span className="text-sm text-muted-foreground">{label}</span>
-              <span className={cn('text-sm font-medium', ok ? 'text-foreground' : 'text-amber-600')}>
+              <span className={cn('text-sm font-medium', ok ? 'text-foreground' : 'text-accent')}>
                 {value}
               </span>
             </div>
@@ -1066,8 +1066,8 @@ function StepGoLive({ state, dispatch, onSave }: {
       </div>
 
       {state.error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-3">
-          <p className="text-xs text-red-700 dark:text-red-300">{state.error}</p>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+          <p className="text-xs text-destructive">{state.error}</p>
         </div>
       )}
 

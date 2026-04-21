@@ -116,7 +116,7 @@ export default async function SafetyPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Phone className="w-5 h-5 text-red-500" />
+            <Phone className="w-5 h-5 text-destructive" />
             Emergency Contacts
           </CardTitle>
         </CardHeader>

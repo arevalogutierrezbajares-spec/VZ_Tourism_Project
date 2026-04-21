@@ -22,7 +22,7 @@ export function LocationRadius({
 }: LocationRadiusProps) {
   return (
     <div
-      className="absolute bottom-20 right-4 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center gap-2"
+      className="absolute bottom-20 right-4 z-10 bg-background/90 backdrop-blur-sm rounded-lg shadow-md border px-3 py-2 flex items-center gap-2"
       role="status"
       aria-label={`Search radius: ${radiusKm} kilometers`}
     >

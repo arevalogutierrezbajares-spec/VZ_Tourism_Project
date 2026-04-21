@@ -62,7 +62,7 @@ export function PayoutCard({ pendingBalance, nextPayoutDate }: PayoutCardProps) 
         <div className="flex items-center justify-between py-3 border-b">
           <div>
             <p className="text-sm text-muted-foreground">Pending Balance</p>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(pendingBalance)}</p>
+            <p className="text-2xl font-bold text-status-confirmed">{formatCurrency(pendingBalance)}</p>
           </div>
           <Badge variant="secondary" className="text-xs">
             <Clock className="w-3 h-3 mr-1" />
@@ -83,15 +83,15 @@ export function PayoutCard({ pendingBalance, nextPayoutDate }: PayoutCardProps) 
         {pendingBalance > 0 && (
           <div className="pt-2 space-y-2">
             {confirming ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm space-y-3">
+              <div className="rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm space-y-3">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <AlertCircle className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-amber-800">Confirm instant payout</p>
-                    <p className="text-amber-700 mt-1">
+                    <p className="font-medium text-foreground">Confirm instant payout</p>
+                    <p className="text-muted-foreground mt-1">
                       Amount: <span className="font-semibold">{formatCurrency(pendingBalance)}</span><br />
-                      Fee (1.5%): <span className="font-semibold text-red-600">−{formatCurrency(fee)}</span><br />
-                      You receive: <span className="font-semibold text-green-700">{formatCurrency(net)}</span>
+                      Fee (1.5%): <span className="font-semibold text-destructive">−{formatCurrency(fee)}</span><br />
+                      You receive: <span className="font-semibold text-status-confirmed">{formatCurrency(net)}</span>
                     </p>
                   </div>
                 </div>

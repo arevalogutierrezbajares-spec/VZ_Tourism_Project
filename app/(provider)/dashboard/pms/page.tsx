@@ -21,12 +21,12 @@ type ViewDays = 7 | 14 | 30;
 
 const STATE_COLORS: Record<ReservationState, string> = {
   draft: 'bg-muted-foreground/60',
-  pending_payment: 'bg-yellow-500',
-  confirmed: 'bg-green-500',
-  checked_in: 'bg-blue-500',
-  checked_out: 'bg-slate-400',
-  cancelled: 'bg-red-400',
-  no_show: 'bg-orange-400',
+  pending_payment: 'bg-accent',
+  confirmed: 'bg-secondary',
+  checked_in: 'bg-primary',
+  checked_out: 'bg-muted-foreground/40',
+  cancelled: 'bg-destructive',
+  no_show: 'bg-accent/80',
 };
 
 function formatDate(d: Date): string {

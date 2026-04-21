@@ -14,7 +14,7 @@ export function CostEstimator({ totalCost, breakdown, className }: CostEstimator
   return (
     <div className={cn('bg-muted/30 rounded-lg p-4 space-y-3', className)}>
       <div className="flex items-center gap-2">
-        <DollarSign className="w-4 h-4 text-green-500" />
+        <DollarSign className="w-4 h-4 text-primary" />
         <span className="font-semibold text-sm">Estimated Cost</span>
       </div>
 

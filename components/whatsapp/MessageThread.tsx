@@ -87,7 +87,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           {isOut && !msg.is_ai && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
           {msg.flagged && <AlertTriangle className="w-2.5 h-2.5 text-destructive" />}
           {hasTranslation && !showTranslation && (
-            <Globe className="w-2.5 h-2.5 text-blue-400" aria-label={`Message in ${msg.detected_lang}`} />
+            <Globe className="w-2.5 h-2.5 text-primary/60" aria-label={`Message in ${msg.detected_lang}`} />
           )}
         </div>
       </div>

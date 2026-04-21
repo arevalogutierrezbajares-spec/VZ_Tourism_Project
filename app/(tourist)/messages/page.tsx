@@ -55,7 +55,7 @@ export default function MessagesPage() {
   if (fetching) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function MessagesPage() {
 
   return (
     <div className="container px-4 py-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1 text-balance">Messages</h1>
+      <h1 className="text-2xl font-bold font-heading mb-1 text-balance">Messages</h1>
       <p className="text-muted-foreground text-sm mb-6 text-pretty">
         Hi {firstName}! Contact hosts via WhatsApp for your bookings.
       </p>
@@ -88,9 +88,9 @@ export default function MessagesPage() {
         </div>
       ) : bookings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <MessageCircle className="w-12 h-12 text-sky-300 mb-4" />
+          <MessageCircle className="w-12 h-12 text-primary/40 mb-4" />
           <p className="text-muted-foreground mb-3 text-pretty">No bookings to message about yet.</p>
-          <Link href="/" className="text-sm font-medium text-sky-500 hover:underline">
+          <Link href="/" className="text-sm font-medium text-primary hover:underline">
             Book your first stay to message hosts →
           </Link>
         </div>
@@ -141,7 +141,7 @@ export default function MessagesPage() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs px-3 py-1.5 min-h-[36px] flex items-center rounded-full border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 active:scale-[0.96] transition-[background-color,transform] duration-150"
+                          className="text-xs px-3 py-1.5 min-h-[36px] flex items-center rounded-full border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 active:scale-[0.96] transition-[background-color,transform] duration-150"
                         >
                           {label}
                         </a>

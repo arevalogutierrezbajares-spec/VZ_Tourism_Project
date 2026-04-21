@@ -67,9 +67,11 @@ export default function ReviewItineraryPage({ params }: { params: Promise<{ draf
   const [publishing, setPublishing] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  // Load draft from sessionStorage
+  // Load draft from localStorage (primary) with sessionStorage fallback (C15/H25 fix)
   useEffect(() => {
-    const raw = sessionStorage.getItem(`creator_draft_${draftId}`);
+    const raw =
+      localStorage.getItem(`creator_draft_${draftId}`) ||
+      sessionStorage.getItem(`creator_draft_${draftId}`);
     if (!raw) {
       setNotFound(true);
       return;
@@ -204,7 +206,8 @@ export default function ReviewItineraryPage({ params }: { params: Promise<{ draf
 
       const { itinerary_id, slug } = await response.json();
 
-      // Clean up draft
+      // Clean up draft from both storage locations
+      localStorage.removeItem(`creator_draft_${draftId}`);
       sessionStorage.removeItem(`creator_draft_${draftId}`);
 
       toast.success('Itinerary published!');
@@ -341,7 +344,7 @@ export default function ReviewItineraryPage({ params }: { params: Promise<{ draf
         {/* Discount code */}
         <section className="rounded-xl border bg-card p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-accent-foreground" />
+            <Tag className="w-4 h-4 text-accent" />
             <h2 className="text-sm font-semibold">Attach a discount code</h2>
             <Badge variant="outline" className="text-xs ml-auto">optional</Badge>
           </div>

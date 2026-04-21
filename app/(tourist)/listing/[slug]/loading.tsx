@@ -13,10 +13,10 @@ export default function ListingLoading() {
 
       {/* Gallery skeleton */}
       <div className="mb-8 grid grid-cols-2 gap-2">
-        <div className="aspect-square rounded-xl bg-muted row-span-2" />
+        <div className="aspect-square rounded-2xl bg-muted row-span-2" />
         <div className="grid grid-rows-2 gap-2">
-          <div className="aspect-square rounded-xl bg-muted" />
-          <div className="aspect-square rounded-xl bg-muted" />
+          <div className="aspect-square rounded-2xl bg-muted" />
+          <div className="aspect-square rounded-2xl bg-muted" />
         </div>
       </div>
 
@@ -25,7 +25,7 @@ export default function ListingLoading() {
         <div className="lg:col-span-2 space-y-6">
           <div className="grid grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-xl bg-muted" />
+              <div key={i} className="h-20 rounded-2xl bg-muted" />
             ))}
           </div>
           <div className="space-y-3">
@@ -38,9 +38,9 @@ export default function ListingLoading() {
 
         {/* Sidebar skeleton */}
         <div className="space-y-4">
-          <div className="h-96 rounded-xl bg-muted border" />
-          <div className="h-12 rounded-xl bg-muted" />
-          <div className="h-48 rounded-xl bg-muted" />
+          <div className="h-96 rounded-2xl bg-muted border" />
+          <div className="h-12 rounded-lg bg-muted" />
+          <div className="h-48 rounded-2xl bg-muted" />
         </div>
       </div>
     </div>

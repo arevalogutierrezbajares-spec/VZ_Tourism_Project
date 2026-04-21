@@ -119,15 +119,38 @@ export function TripMap({ onStopClick, className }: TripMapProps) {
   };
 
   const hasStops = stopPins.length > 0;
+  const daysWithStops = days.filter((d) => d.stops.some((s) => s.latitude != null && s.longitude != null));
 
   return (
     <div className={cn('relative w-full h-full', className)}>
       {hasStops ? (
-        <MapContainer
-          className="w-full h-full"
-          showControls={false}
-          onPinClick={handlePinClick}
-        />
+        <>
+          <MapContainer
+            className="w-full h-full"
+            showControls={false}
+            onPinClick={handlePinClick}
+          />
+          {/* Day color legend — only shown when there are 2+ days with stops */}
+          {daysWithStops.length >= 2 && (
+            <div
+              className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm rounded-xl border shadow-sm px-3 py-2 space-y-1 z-10"
+              role="region"
+              aria-label="Day color legend"
+            >
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Days</p>
+              {daysWithStops.map((day) => (
+                <div key={day.day} className="flex items-center gap-2">
+                  <span
+                    className="w-4 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: DAY_COLORS[(day.day - 1) % DAY_COLORS.length] }}
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs text-foreground/80">Day {day.day}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       ) : (
         <div className="w-full h-full bg-muted/20 flex items-center justify-center" role="status">
           <div className="flex flex-col items-center gap-2 text-muted-foreground">

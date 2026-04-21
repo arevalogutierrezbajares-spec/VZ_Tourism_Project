@@ -58,7 +58,7 @@ export default function DemoSidebar() {
               {icon}
               {label}
               {label === 'Messages' && (
-                <span className="ml-auto inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">3</span>
+                <span className="ml-auto inline-flex items-center justify-center w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold">3</span>
               )}
             </Link>
           );

@@ -22,10 +22,10 @@ import { cn } from '@/lib/utils';
 type Tab = 'pending' | 'all';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: 'Pendiente', color: 'text-yellow-700', bg: 'bg-yellow-100' },
-  matched: { label: 'Conciliado', color: 'text-green-700', bg: 'bg-green-100' },
-  unmatched: { label: 'Sin conciliar', color: 'text-red-700', bg: 'bg-red-100' },
-  reversed: { label: 'Reversado', color: 'text-slate-700', bg: 'bg-slate-100' },
+  pending: { label: 'Pendiente', color: 'text-accent', bg: 'bg-accent/10' },
+  matched: { label: 'Conciliado', color: 'text-status-confirmed', bg: 'bg-status-confirmed/10' },
+  unmatched: { label: 'Sin conciliar', color: 'text-destructive', bg: 'bg-destructive/10' },
+  reversed: { label: 'Reversado', color: 'text-muted-foreground', bg: 'bg-muted' },
 };
 
 function PaymentStatusBadge({ status }: { status: string }) {
@@ -43,7 +43,7 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
     <span
       className={cn(
         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-        pct >= 90 ? 'bg-green-100 text-green-700' : pct >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-700',
+        pct >= 90 ? 'bg-secondary/10 text-secondary' : pct >= 70 ? 'bg-accent/10 text-accent' : 'bg-muted text-muted-foreground',
       )}
     >
       {pct}%
@@ -154,7 +154,7 @@ export default function PaymentsPage() {
         /* Pending Payments */
         pending.length === 0 ? (
           <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-12 text-center">
-            <Check className="h-8 w-8 text-green-500" />
+            <Check className="h-8 w-8 text-status-confirmed" />
             <p className="text-sm text-muted-foreground">
               No hay pagos pendientes de conciliar.
             </p>
@@ -220,7 +220,7 @@ export default function PaymentsPage() {
                               {actionLoading === p.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Check className="h-4 w-4 text-green-600" />
+                                <Check className="h-4 w-4 text-status-confirmed" />
                               )}
                             </Button>
                             <Button

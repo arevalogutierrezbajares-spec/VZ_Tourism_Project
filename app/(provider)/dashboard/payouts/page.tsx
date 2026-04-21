@@ -11,10 +11,10 @@ import { CheckCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 export const metadata: Metadata = { title: 'Payouts' };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-  processing: { label: 'Processing', color: 'bg-blue-100 text-blue-800', icon: RefreshCw },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  failed: { label: 'Failed', color: 'bg-red-100 text-red-800', icon: AlertCircle },
+  pending: { label: 'Pending', color: 'bg-accent/10 text-accent', icon: Clock },
+  processing: { label: 'Processing', color: 'bg-primary/10 text-primary', icon: RefreshCw },
+  completed: { label: 'Completed', color: 'bg-secondary/10 text-secondary', icon: CheckCircle },
+  failed: { label: 'Failed', color: 'bg-destructive/10 text-destructive', icon: AlertCircle },
 };
 
 const METHOD_LABELS: Record<string, string> = {
@@ -68,7 +68,7 @@ export default function PayoutsPage() {
         <Card>
           <CardContent className="p-5 space-y-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Paid Out</p>
-            <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalPaidOut)}</p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(totalPaidOut)}</p>
             <p className="text-xs text-muted-foreground">{payouts.filter((p) => p.status === 'completed').length} completed payouts</p>
           </CardContent>
         </Card>
@@ -78,7 +78,7 @@ export default function PayoutsPage() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Payout Schedule</p>
             <p className="text-lg font-bold">Every Friday</p>
             <p className="text-xs text-muted-foreground">Net-7 after booking completion</p>
-            <p className="text-xs font-medium text-green-700">Next: {nextFriday}</p>
+            <p className="text-xs font-medium text-status-confirmed">Next: {nextFriday}</p>
           </CardContent>
         </Card>
       </div>
@@ -122,7 +122,7 @@ export default function PayoutsPage() {
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-semibold text-green-600">{formatCurrency(payout.net_amount)}</p>
+                      <p className="text-sm font-semibold text-status-confirmed">{formatCurrency(payout.net_amount)}</p>
                       {payout.fee_usd > 0 && (
                         <p className="text-xs text-muted-foreground">
                           Fee: −{formatCurrency(payout.fee_usd)}

@@ -144,15 +144,14 @@ function PhotoCard({
         </span>
       </div>
 
-      {/* Save button top-right — appears on hover */}
+      {/* Save button top-right — always visible on touch, hover-reveal on desktop */}
       <button
-        className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+        className={`absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white ${
+          saved ? 'opacity-100 scale-100' : 'opacity-100 scale-100 md:opacity-0 md:scale-90 md:group-hover:opacity-100 md:group-hover:scale-100'
+        }`}
         style={{
           background: saved ? '#ef4444' : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(6px)',
-          opacity: hovered || saved ? 1 : 0,
-          transform: hovered || saved ? 'scale(1)' : 'scale(0.8)',
-          transition: 'opacity 200ms ease-out, transform 200ms ease-out, background 150ms',
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -310,18 +309,16 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
           }}
         />
         <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
-          <div className="inline-flex items-center gap-2 text-blue-300 text-sm font-medium mb-4 px-4 py-1.5 rounded-full"
-            style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>
+          <div className="inline-flex items-center gap-2 text-white/80 text-sm font-medium mb-4 px-4 py-1.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
             <span aria-hidden="true">✦</span>
             <span>Visual Discovery</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold font-display text-white mb-4 tracking-tight text-balance">
+          <h1 className="text-5xl md:text-6xl font-bold font-heading text-white mb-4 tracking-tight text-balance">
             Discover{' '}
-            <span style={{ background: 'linear-gradient(135deg, #60a5fa, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Venezuela
-            </span>
+            <span className="text-accent">Venezuela</span>
           </h1>
-          <p className="text-lg text-blue-100/80 max-w-xl mx-auto text-pretty">
+          <p className="text-lg text-white/70 max-w-xl mx-auto text-pretty">
             Let the beauty inspire your next adventure
           </p>
         </div>
@@ -361,12 +358,7 @@ export function DiscoverGrid({ items }: DiscoverGridProps) {
 
       {/* Masonry grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
-        <div
-          style={{
-            columns: '4 280px',
-            columnGap: '16px',
-          }}
-        >
+        <div className="columns-1 sm:columns-2 md:columns-3 xl:columns-4 gap-4">
           {filtered.map((item) => (
             <PhotoCard
               key={item.id}

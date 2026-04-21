@@ -98,8 +98,8 @@ export function PayoutMethodForm({ providerId }: PayoutMethodFormProps) {
               onClick={() => setSelected(m.value)}
               className={`rounded-lg border p-3 text-left transition-colors ${
                 selected === m.value
-                  ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                  : 'border-border hover:border-blue-300'
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border hover:border-primary/40'
               }`}
             >
               <p className="text-sm font-semibold">{m.label}</p>

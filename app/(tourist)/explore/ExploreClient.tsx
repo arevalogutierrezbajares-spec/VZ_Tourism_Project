@@ -255,7 +255,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
 
       {/* Category tabs + sort row */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex gap-1 bg-muted/50 rounded-lg p-1 w-fit" role="tablist" aria-label="Filter by category">
+        <div className="flex gap-1 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-hide" role="tablist" aria-label="Filter by category" style={{ scrollbarWidth: 'none' }}>
           {CATEGORIES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -263,7 +263,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
               role="tab"
               aria-selected={category === id}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary',
+                'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] duration-150 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                 category === id
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -283,7 +283,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
             id="explore-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="appearance-none pl-1 pr-6 py-1.5 bg-transparent text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 rounded-md cursor-pointer"
+            className="appearance-none pl-1 pr-6 py-1.5 bg-transparent text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-md cursor-pointer"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>{opt.label}</option>
@@ -334,7 +334,7 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="px-6 py-2.5 rounded-lg border font-medium text-sm hover:bg-muted transition-[background-color] duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-6 py-2.5 rounded-lg border font-medium text-sm hover:bg-muted transition-[background-color] duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   {loadingMore ? 'Loading…' : `Load more (${count - offset} remaining)`}
                 </button>

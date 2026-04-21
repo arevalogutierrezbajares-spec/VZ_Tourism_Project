@@ -22,9 +22,9 @@ const VE_STATES = [
 ];
 
 const ROLE_LABELS: Record<TenantRole, { label: string; color: string }> = {
-  owner: { label: 'Propietario', color: 'bg-blue-100 text-blue-700' },
-  front_desk: { label: 'Recepción', color: 'bg-green-100 text-green-700' },
-  housekeeper: { label: 'Limpieza', color: 'bg-orange-100 text-orange-700' },
+  owner: { label: 'Propietario', color: 'bg-primary/10 text-primary' },
+  front_desk: { label: 'Recepción', color: 'bg-secondary/10 text-secondary' },
+  housekeeper: { label: 'Limpieza', color: 'bg-accent/10 text-accent' },
 };
 
 export default function PmsSettingsPage() {
@@ -227,7 +227,7 @@ export default function PmsSettingsPage() {
                 Guardar
               </Button>
               {saveMsg && (
-                <span className="flex items-center gap-1 text-sm text-green-600">
+                <span className="flex items-center gap-1 text-sm text-status-confirmed">
                   <Check className="h-4 w-4" />
                   {saveMsg}
                 </span>

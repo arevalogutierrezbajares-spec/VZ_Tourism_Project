@@ -61,7 +61,7 @@ export function BookActions({ itineraryId, itineraryTitle }: BookActionsProps) {
           className="cursor-pointer"
         >
           {cloneState === 'loading' && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
-          {cloneState === 'success' && <CheckCircle className="w-4 h-4 mr-1.5 text-green-500" />}
+          {cloneState === 'success' && <CheckCircle className="w-4 h-4 mr-1.5 text-status-confirmed" />}
           {cloneState === 'success' ? 'Copied!' : 'Customize'}
         </Button>
       </div>

@@ -35,8 +35,8 @@ export function CopyLinkButton({ url }: { url: string }) {
     >
       {copied ? (
         <>
-          <Check className="w-3.5 h-3.5 text-green-600" />
-          <span className="text-green-600">Copied!</span>
+          <Check className="w-3.5 h-3.5 text-status-confirmed" />
+          <span className="text-status-confirmed">Copied!</span>
         </>
       ) : (
         <>

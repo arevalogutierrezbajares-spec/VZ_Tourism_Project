@@ -489,8 +489,8 @@ export default function PmsOnboardingPage() {
       {step === 4 && (
         <Card>
           <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <PartyPopper className="h-8 w-8 text-green-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10">
+              <PartyPopper className="h-8 w-8 text-secondary" />
             </div>
             <h3 className="text-xl font-semibold">¡Listo!</h3>
             <p className="text-sm text-muted-foreground max-w-sm">

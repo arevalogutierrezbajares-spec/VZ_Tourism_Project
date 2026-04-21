@@ -76,23 +76,23 @@ export default async function JoinPage({ params }: Props) {
       </div>
 
       {/* Stats row */}
-      <div className="bg-blue-600 text-white">
+      <div className="bg-primary text-primary-foreground">
         <div className="max-w-lg mx-auto px-6 py-4 flex items-center justify-around gap-4">
           {listing.avg_rating && (
             <div className="text-center">
               <div className="text-xl font-bold flex items-center gap-1 justify-center">
-                <Star className="w-4 h-4 fill-white" />
+                <Star className="w-4 h-4 fill-current" />
                 {listing.avg_rating}
               </div>
-              <div className="text-xs text-blue-100 mt-0.5">{listing.review_count.toLocaleString()} Google reviews</div>
+              <div className="text-xs text-primary-foreground/70 mt-0.5">{listing.review_count.toLocaleString()} Google reviews</div>
             </div>
           )}
           {listing.avg_rating && (
-            <div className="w-px h-10 bg-blue-500" />
+            <div className="w-px h-10 bg-primary-foreground/20" />
           )}
           <div className="text-center">
             <div className="text-xl font-bold">{regionCount}</div>
-            <div className="text-xs text-blue-100 mt-0.5">businesses in your region</div>
+            <div className="text-xs text-primary-foreground/70 mt-0.5">businesses in your region</div>
           </div>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default async function JoinPage({ params }: Props) {
               { step: '6', label: 'Go live!', detail: 'Start receiving bookings' },
             ].map((item) => (
               <div key={item.step} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center shrink-0">
+                <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                   {item.step}
                 </div>
                 <div>
@@ -177,7 +177,7 @@ export default async function JoinPage({ params }: Props) {
         {/* CTA */}
         <Link
           href={`/onboard/${slug}`}
-          className="block w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-center font-bold text-lg py-4 rounded-2xl transition-colors shadow-lg shadow-blue-200"
+          className="block w-full bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground text-center font-bold text-lg py-4 rounded-2xl transition-colors shadow-lg shadow-primary/20"
         >
           Get Started →
         </Link>

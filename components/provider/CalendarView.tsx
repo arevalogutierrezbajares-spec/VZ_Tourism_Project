@@ -103,7 +103,7 @@ export function CalendarView({ bookings, onDateClick }: CalendarViewProps) {
                     key={booking.id}
                     className={cn(
                       'text-xs px-1.5 py-0.5 rounded truncate',
-                      statusConfig?.color || 'bg-blue-100 text-blue-800'
+                      statusConfig?.color || 'bg-primary/10 text-primary'
                     )}
                   >
                     {booking.tourist?.full_name?.split(' ')[0] || 'Guest'}

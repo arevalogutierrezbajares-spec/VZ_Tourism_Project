@@ -105,7 +105,7 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground border border-border">
             {typeLabel}
           </span>
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent/10 text-accent-foreground border border-accent/30">
             Not yet on platform
           </span>
         </div>
@@ -232,13 +232,13 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
           </div>
 
           {/* Notify me form */}
-          <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5">
+          <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Bell className="w-4 h-4 text-blue-600" />
-              <h3 className="font-semibold text-blue-900 text-sm">Get notified when they join</h3>
+              <Bell className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-foreground text-sm">Get notified when they join</h3>
             </div>
             {submitted ? (
-              <p className="text-sm text-blue-700 font-medium">
+              <p className="text-sm text-primary font-medium">
                 ✓ You're on the list! We'll email you when they join.
               </p>
             ) : (
@@ -256,7 +256,7 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {submitting ? 'Saving…' : 'Notify Me'}
                 </button>

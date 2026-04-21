@@ -152,7 +152,7 @@ function MapPageContent() {
               <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary shadow-lg">
                 <Avatar className="w-10 h-10 border-2 border-white shadow-md">
                   <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-sky-500 text-white text-sm font-medium">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
                     {getInitials(profile?.full_name || user?.full_name || 'U')}
                   </AvatarFallback>
                 </Avatar>
@@ -176,7 +176,7 @@ function MapPageContent() {
                   Saved Places
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-red-600">
+                <DropdownMenuItem onClick={signOut} className="text-destructive">
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -184,7 +184,7 @@ function MapPageContent() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 bg-white dark:bg-gray-900 shadow-lg border border-gray-200 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 bg-background shadow-lg border rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted/50 transition-colors"
             >
               <LogIn className="w-4 h-4" />
               Sign in
@@ -204,7 +204,7 @@ function MapPageContent() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-12 w-12 rounded-2xl bg-white dark:bg-gray-900 shadow-lg border border-gray-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="h-12 w-12 rounded-2xl bg-background shadow-lg border focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={toggleFilterPanel}
                 aria-label="Open filters"
                 aria-expanded={isFilterOpen}
@@ -222,8 +222,8 @@ function MapPageContent() {
                   aria-checked={activeCategory === CATEGORY_FILTER_ALL}
                   className={`flex-shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     activeCategory === CATEGORY_FILTER_ALL
-                      ? 'bg-gray-900 text-white border-gray-900'
-                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-background text-muted-foreground border hover:bg-muted/50'
                   }`}
                 >
                   All ({totalCount.toLocaleString()})
@@ -237,7 +237,7 @@ function MapPageContent() {
                     className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       activeCategory === key
                         ? 'text-white border-transparent'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                        : 'bg-background text-muted-foreground border hover:bg-muted/50'
                     }`}
                     style={
                       activeCategory === key ? { backgroundColor: color, borderColor: color } : {}
@@ -268,7 +268,7 @@ function MapPageContent() {
         {/* Personalized greeting (authenticated, no active search) */}
         {isAuthenticated && !hasSearched && (
           <div className="pointer-events-none absolute top-24 left-4 z-20">
-            <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-2xl px-3 py-1.5 shadow-sm border border-gray-100 text-sm text-gray-700">
+            <div className="inline-flex items-center gap-2 bg-background/90 backdrop-blur-sm rounded-2xl px-3 py-1.5 shadow-sm border text-sm text-foreground">
               <span>👋</span>
               <span>Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!</span>
             </div>
@@ -288,7 +288,7 @@ function MapPageContent() {
             <Button
               variant="secondary"
               size="sm"
-              className="bg-white dark:bg-gray-900 shadow-lg border border-gray-200 rounded-2xl gap-2"
+              className="bg-background shadow-lg border rounded-2xl gap-2"
               onClick={() => createNew()}
             >
               <Route className="w-4 h-4" />
@@ -297,7 +297,7 @@ function MapPageContent() {
           )}
           <a
             href="/explore"
-            className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 shadow-lg border border-gray-200 rounded-2xl px-2.5 py-1.5 text-sm font-medium hover:bg-gray-50"
+            className="inline-flex items-center gap-2 bg-background shadow-lg border rounded-2xl px-2.5 py-1.5 text-sm font-medium hover:bg-muted/50 transition-colors"
           >
             <MapPin className="w-4 h-4" />
             Browse all

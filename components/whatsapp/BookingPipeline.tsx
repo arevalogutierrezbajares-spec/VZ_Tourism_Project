@@ -12,11 +12,11 @@ import type {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STAGE_CONFIG: Record<WaBookingStage, { label: string; color: string }> = {
-  lead:       { label: 'Lead',       color: 'text-muted-foreground' },
-  quoted:     { label: 'Quoted',     color: 'text-yellow-700'       },
-  confirmed:  { label: 'Confirmed',  color: 'text-green-700'        },
-  checked_in: { label: 'Checked In', color: 'text-blue-700'         },
-  closed:     { label: 'Closed',     color: 'text-muted-foreground' },
+  lead:       { label: 'Lead',       color: 'text-muted-foreground'  },
+  quoted:     { label: 'Quoted',     color: 'text-accent'            },
+  confirmed:  { label: 'Confirmed',  color: 'text-status-confirmed'  },
+  checked_in: { label: 'Checked In', color: 'text-primary'           },
+  closed:     { label: 'Closed',     color: 'text-muted-foreground'  },
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────

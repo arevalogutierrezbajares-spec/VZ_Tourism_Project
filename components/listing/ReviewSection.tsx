@@ -93,7 +93,7 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 bg-muted/30 rounded-xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 bg-muted/30 rounded-xl border">
           <h4 className="font-semibold">Your Review</h4>
           <div>
             <label className="text-sm font-medium">Rating</label>

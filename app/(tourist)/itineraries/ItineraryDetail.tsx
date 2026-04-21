@@ -316,7 +316,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
               }}
             >
               {templateCopied ? (
-                <span className="inline-flex items-center"><CheckCircle className="w-4 h-4 mr-1.5 text-green-500" /> Copied!</span>
+                <span className="inline-flex items-center"><CheckCircle className="w-4 h-4 mr-1.5 text-status-confirmed" /> Copied!</span>
               ) : (
                 <span className="inline-flex items-center"><Copy className="w-4 h-4 mr-1.5" /> Use as Template</span>
               )}

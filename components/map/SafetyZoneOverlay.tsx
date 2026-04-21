@@ -25,7 +25,7 @@ export function SafetyZoneOverlay() {
 
   return (
     <div
-      className="absolute top-4 left-4 bg-white/95 dark:bg-gray-900/95 rounded-lg shadow-lg p-3 max-w-[260px] space-y-2 z-10"
+      className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border p-3 max-w-[260px] space-y-2 z-10"
       role="region"
       aria-label="Safety zone information"
     >
@@ -49,7 +49,7 @@ export function SafetyZoneOverlay() {
       {isExpanded && (
         <div id="safety-zone-list" className="space-y-1.5">
           {/* Legend key — always visible so users understand color + text mapping */}
-          <div className="grid grid-cols-2 gap-1 pb-1.5 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-2 gap-1 pb-1.5 border-b">
             {(['green', 'yellow', 'orange', 'red'] as const).map((level) => (
               <div key={level} className="flex items-center gap-1.5">
                 <span
