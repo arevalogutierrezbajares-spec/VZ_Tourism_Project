@@ -5,9 +5,9 @@ import { Plus, PauseCircle, PlayCircle, Tag, Loader2 } from 'lucide-react';
 import type { DiscountCode } from '@/types/database';
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  paused: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  expired: 'bg-muted text-muted-foreground',
+  active: 'bg-status-confirmed/10 text-status-confirmed border border-status-confirmed/20',
+  paused: 'bg-status-pending/10 text-status-pending border border-status-pending/20',
+  expired: 'bg-muted text-muted-foreground border border-transparent',
 };
 
 function suggestCode(username: string, count: number) {
@@ -114,14 +114,14 @@ export default function DiscountCodesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Discount Codes</h1>
+          <h1 className="text-2xl font-heading font-bold">Discount Codes</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Share codes with your followers for a discount on bookings.
           </p>
         </div>
         <button
           onClick={() => setShowForm((s) => !s)}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all"
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           New code
@@ -130,7 +130,7 @@ export default function DiscountCodesPage() {
 
       {/* Create form */}
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-xl border bg-card p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-2xl border bg-card p-5 space-y-4">
           <h2 className="text-sm font-semibold">Create a new code</h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -142,7 +142,7 @@ export default function DiscountCodesPage() {
                 value={form.code}
                 onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15) }))}
                 placeholder="ADRIANA10"
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
               <p className="text-xs text-muted-foreground mt-1">3–15 uppercase letters/numbers</p>
             </div>
@@ -152,7 +152,7 @@ export default function DiscountCodesPage() {
               <select
                 value={form.type}
                 onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as 'percentage' | 'fixed' }))}
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               >
                 <option value="percentage">% discount</option>
                 <option value="fixed">Fixed USD off</option>
@@ -172,7 +172,7 @@ export default function DiscountCodesPage() {
                 value={form.value}
                 onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
                 placeholder={form.type === 'percentage' ? '10' : '20.00'}
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
             </div>
 
@@ -182,7 +182,7 @@ export default function DiscountCodesPage() {
                 type="date"
                 value={form.expires_at}
                 onChange={(e) => setForm((f) => ({ ...f, expires_at: e.target.value }))}
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
             </div>
           </div>
@@ -195,14 +195,14 @@ export default function DiscountCodesPage() {
             <button
               type="button"
               onClick={() => { setShowForm(false); setFormError(null); }}
-              className="flex-1 bg-muted text-foreground text-sm font-medium py-2.5 rounded-xl hover:bg-muted/80 transition-all"
+              className="flex-1 bg-muted text-foreground text-sm font-medium py-2.5 rounded-lg hover:bg-muted/80 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-[2] bg-primary text-primary-foreground text-sm font-medium py-2.5 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60"
+              className="flex-[2] bg-primary text-primary-foreground text-sm font-medium py-2.5 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer"
             >
               {saving ? 'Creating...' : 'Create code'}
             </button>
@@ -217,18 +217,19 @@ export default function DiscountCodesPage() {
           Loading codes...
         </div>
       ) : codes.length === 0 ? (
-        <div className="rounded-xl border bg-card p-8 text-center">
-          <Tag className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No discount codes yet.</p>
+        <div className="rounded-2xl border bg-card p-8 text-center space-y-2">
+          <Tag className="w-8 h-8 text-muted-foreground/30 mx-auto mb-1" aria-hidden="true" />
+          <p className="text-sm font-medium">No discount codes yet</p>
+          <p className="text-xs text-muted-foreground">Create a code to share with your followers.</p>
           <button
             onClick={() => setShowForm(true)}
-            className="mt-3 text-xs text-primary hover:underline"
+            className="mt-1 text-xs text-primary hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 rounded"
           >
             Create your first code →
           </button>
         </div>
       ) : (
-        <div className="rounded-xl border bg-card divide-y">
+        <div className="rounded-2xl border bg-card divide-y">
           {codes.map((code) => (
             <div key={code.id} className="flex items-center gap-4 px-4 py-3">
               <div className="flex-1 min-w-0">

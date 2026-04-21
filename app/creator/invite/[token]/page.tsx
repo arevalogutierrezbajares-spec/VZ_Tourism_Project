@@ -113,10 +113,10 @@ export default function CreatorInvitePage({ params }: PageProps) {
       <div className="max-w-lg mx-auto px-6 py-12">
         {/* Invite headline */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-1.5 bg-accent/15 text-amber-700 dark:text-amber-400 text-xs font-medium px-3 py-1 rounded-full mb-4 border border-amber-200 dark:border-amber-800">
+          <div className="inline-flex items-center gap-1.5 bg-status-pending/10 text-status-pending text-xs font-medium px-3 py-1 rounded-full mb-4 border border-status-pending/30">
             Creator Invite — Exclusive Access
           </div>
-          <h1 className="text-3xl font-bold leading-tight text-balance">
+          <h1 className="text-3xl font-heading font-bold leading-tight text-balance">
             {firstName ? `${firstName}, you're invited to the VAV Creator Program` : "You're invited to the VAV Creator Program"}
           </h1>
           <p className="mt-3 text-muted-foreground text-sm text-pretty">
@@ -143,7 +143,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
               body: 'When a follower books through your link, you earn. Tracked automatically, paid monthly.',
             },
           ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="flex items-start gap-3 p-4 rounded-xl border bg-card">
+            <div key={title} className="flex items-start gap-3 p-4 rounded-2xl border bg-card">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Icon className="w-4 h-4 text-primary" />
               </div>
@@ -157,7 +157,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
 
         {/* Sign-up form */}
         <div className="rounded-2xl border bg-card p-6 shadow-sm">
-          <h2 className="font-semibold text-base mb-4">Claim your invite</h2>
+          <h2 className="font-heading font-semibold text-base mb-4">Claim your invite</h2>
           <form onSubmit={handleClaim} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-muted-foreground mb-1.5">
@@ -170,7 +170,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
             </div>
             <div>
@@ -185,7 +185,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min. 8 characters"
-                className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
             </div>
 
@@ -196,7 +196,7 @@ export default function CreatorInvitePage({ params }: PageProps) {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-primary text-primary-foreground font-medium text-sm py-3 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full bg-primary text-primary-foreground font-medium text-sm py-3 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? 'Creating your account...' : 'Claim your invite →'}
             </button>

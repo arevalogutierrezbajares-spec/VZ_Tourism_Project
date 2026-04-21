@@ -185,7 +185,7 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold">Set up your profile</h1>
+                <h1 className="text-2xl font-heading font-bold">Set up your profile</h1>
                 <p className="text-sm text-muted-foreground mt-1">This is what followers see when they click your link.</p>
               </div>
 
@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                   onChange={(e) => update('display_name', e.target.value)}
                   placeholder="Adriana Betancourt"
                   maxLength={60}
-                  className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                 />
               </div>
 
@@ -210,7 +210,7 @@ export default function OnboardingPage() {
                   onChange={(e) => update('bio', e.target.value.slice(0, 150))}
                   placeholder="Venezuela travel creator. I find the spots you won't see in a guidebook."
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none"
+                  className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none"
                 />
               </div>
 
@@ -225,13 +225,13 @@ export default function OnboardingPage() {
                     value={state.username}
                     onChange={(e) => handleUsernameChange(e.target.value)}
                     placeholder="adriana"
-                    className={`w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 transition-colors
-                      ${usernameStatus === 'taken' ? 'border-destructive focus:ring-destructive/50' : usernameStatus === 'available' ? 'border-green-500 focus:ring-green-500/50' : 'focus:ring-primary/50 focus:border-primary'}`}
+                    className={`w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 transition-colors
+                      ${usernameStatus === 'taken' ? 'border-destructive focus:ring-destructive/50' : usernameStatus === 'available' ? 'border-status-confirmed focus:ring-status-confirmed/50' : 'focus:ring-primary/50 focus:border-primary'}`}
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
                     {usernameStatus === 'checking' && <span className="text-muted-foreground" role="status" aria-live="polite">checking...</span>}
                     {usernameStatus === 'taken' && <span className="text-destructive">taken</span>}
-                    {usernameStatus === 'available' && <span className="text-green-600">available ✓</span>}
+                    {usernameStatus === 'available' && <span className="text-status-confirmed">available ✓</span>}
                   </div>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => setStep(2)}
                 disabled={!canAdvanceStep1}
-                className="w-full bg-primary text-primary-foreground font-medium text-sm py-3 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-primary-foreground font-medium text-sm py-3 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Continue →
               </button>
@@ -250,7 +250,7 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold">Link your socials</h1>
+                <h1 className="text-2xl font-heading font-bold">Link your socials</h1>
                 <p className="text-sm text-muted-foreground mt-1">Optional. Adds social links to your public creator profile.</p>
               </div>
 
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                     value={state[key]}
                     onChange={(e) => update(key, e.target.value)}
                     placeholder={placeholder}
-                    className="w-full px-3 py-2.5 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                    className="w-full px-3 py-2.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   />
                 </div>
               ))}
@@ -299,13 +299,13 @@ export default function OnboardingPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 bg-muted text-foreground font-medium text-sm py-3 rounded-xl hover:bg-muted/80 active:scale-[0.98] transition-all"
+                  className="flex-1 bg-muted text-foreground font-medium text-sm py-3 rounded-lg hover:bg-muted/80 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-[2] bg-primary text-primary-foreground font-medium text-sm py-3 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all"
+                  className="flex-[2] bg-primary text-primary-foreground font-medium text-sm py-3 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Preview your profile →
                 </button>
@@ -317,7 +317,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold">Your creator profile</h1>
+                <h1 className="text-2xl font-heading font-bold">Your creator profile</h1>
                 <p className="text-sm text-muted-foreground mt-1">This is what followers see at your link. Ready to go live?</p>
               </div>
 
@@ -330,14 +330,14 @@ export default function OnboardingPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(2)}
-                  className="flex-1 bg-muted text-foreground font-medium text-sm py-3 rounded-xl hover:bg-muted/80 active:scale-[0.98] transition-all"
+                  className="flex-1 bg-muted text-foreground font-medium text-sm py-3 rounded-lg hover:bg-muted/80 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   ← Edit
                 </button>
                 <button
                   onClick={handleGoLive}
                   disabled={submitting || !canGoLive}
-                  className="flex-[2] bg-primary text-primary-foreground font-medium text-sm py-3 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex-[2] bg-primary text-primary-foreground font-medium text-sm py-3 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {submitting ? 'Going live...' : 'Go live →'}
                 </button>

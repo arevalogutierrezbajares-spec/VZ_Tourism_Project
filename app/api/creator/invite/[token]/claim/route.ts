@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 const claimSchema = z.object({
@@ -25,10 +25,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   }
   const { email, password } = parsed.data;
 
-  const supabase = await createServiceClient();
-  if (!supabase) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
     return NextResponse.json({ error: 'Service unavailable.' }, { status: 503 });
   }
+  const supabase = createClient(url, key);
 
   // ── Step 1: Atomic claim ──────────────────────────────────────────────────
   // UPDATE ... WHERE claimed_at IS NULL returns 0 rows if already claimed.

@@ -92,13 +92,13 @@ export default async function EarningsPage() {
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Earnings</h1>
+        <h1 className="text-2xl font-heading font-bold">Earnings</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Your referral link and discount code commissions.</p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-xl border bg-card p-4 space-y-1">
+        <div className="rounded-2xl border bg-card p-4 space-y-1">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <DollarSign className="w-3.5 h-3.5" />
             Pending payout
@@ -106,7 +106,7 @@ export default async function EarningsPage() {
           <p className="text-3xl font-bold tabular-nums">${pendingTotal.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">Paid on the 1st of each month via Zelle or USDT</p>
         </div>
-        <div className="rounded-xl border bg-card p-4 space-y-1">
+        <div className="rounded-2xl border bg-card p-4 space-y-1">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ArrowUpRight className="w-3.5 h-3.5" />
             Total paid out
@@ -120,11 +120,13 @@ export default async function EarningsPage() {
       <div>
         <h2 className="text-base font-semibold mb-3">Conversion history</h2>
         {earnings.length === 0 ? (
-          <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-            No conversions yet. Share your creator link or discount codes to start earning.
+          <div className="rounded-2xl border bg-card p-8 text-center space-y-2">
+            <DollarSign className="w-8 h-8 text-muted-foreground/30 mx-auto mb-1" aria-hidden="true" />
+            <p className="text-sm font-medium">No conversions yet</p>
+            <p className="text-xs text-muted-foreground">Share your creator link or discount codes to start earning.</p>
           </div>
         ) : (
-          <div className="rounded-xl border bg-card divide-y">
+          <div className="rounded-2xl border bg-card divide-y">
             {earnings.map((e) => (
               <div key={e.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="flex-1 min-w-0">
@@ -139,8 +141,8 @@ export default async function EarningsPage() {
                   <p className="text-sm font-semibold tabular-nums">${e.amount.toFixed(2)}</p>
                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                     e.paid
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      ? 'bg-status-confirmed/10 text-status-confirmed border border-status-confirmed/20'
+                      : 'bg-status-pending/10 text-status-pending border border-status-pending/20'
                   }`}>
                     {e.paid ? 'paid' : 'pending'}
                   </span>
@@ -152,7 +154,7 @@ export default async function EarningsPage() {
       </div>
 
       {/* Payout info */}
-      <div className="rounded-xl border border-dashed bg-muted/20 p-4 text-xs text-muted-foreground space-y-1">
+      <div className="rounded-2xl border border-dashed bg-muted/20 p-4 text-xs text-muted-foreground space-y-1">
         <p className="font-medium text-foreground">Payout schedule</p>
         <p>Pending earnings are paid on the 1st of each month via Zelle or USDT.</p>
         <p>To update your payout method, contact the VAV team via WhatsApp.</p>

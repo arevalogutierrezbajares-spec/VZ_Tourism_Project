@@ -111,12 +111,12 @@ export default async function CreatorDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Welcome back, {displayName}</p>
         </div>
         <Link
           href="/creator/itineraries/new"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all"
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           New Itinerary
@@ -125,7 +125,7 @@ export default async function CreatorDashboardPage() {
 
       {/* Your link */}
       {username && (
-        <div className="flex items-center gap-3 p-4 rounded-xl border bg-card">
+        <div className="flex items-center gap-3 p-4 rounded-2xl border bg-card">
           <div className="flex-1 min-w-0">
             <p className="text-xs text-muted-foreground mb-0.5">Your creator link</p>
             <p className="text-sm font-mono font-medium truncate">{profileUrl}</p>
@@ -137,7 +137,7 @@ export default async function CreatorDashboardPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, sub }) => (
-          <div key={label} className="rounded-xl border bg-card p-4 space-y-2">
+          <div key={label} className="rounded-2xl border bg-card p-4 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{label}</p>
               <Icon className="w-4 h-4 text-muted-foreground/60" />
@@ -151,20 +151,21 @@ export default async function CreatorDashboardPage() {
       {/* Recent itineraries */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold">Recent itineraries</h2>
+          <h2 className="text-base font-heading font-semibold">Recent itineraries</h2>
           <Link href="/creator/itineraries/new" className="text-xs text-primary hover:underline">
             + New
           </Link>
         </div>
         {!recentItineraries?.length ? (
-          <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-            No published itineraries yet.{' '}
-            <Link href="/creator/itineraries/new" className="text-primary hover:underline">
+          <div className="rounded-2xl border bg-card p-8 text-center space-y-3">
+            <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">No published itineraries yet.</p>
+            <Link href="/creator/itineraries/new" className="inline-block text-xs text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/50 rounded">
               Create your first one →
             </Link>
           </div>
         ) : (
-          <div className="rounded-xl border bg-card divide-y">
+          <div className="rounded-2xl border bg-card divide-y">
             {recentItineraries.map((it) => (
               <div key={it.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="flex-1 min-w-0">
