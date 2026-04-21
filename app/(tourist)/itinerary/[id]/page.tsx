@@ -1,17 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
-import { MapPin, Calendar, DollarSign, Tag, Compass, MessageSquare, CalendarCheck } from 'lucide-react';
-import { ShareButton } from '@/components/itinerary/ShareButton';
-import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/server';
-import { ItineraryStopCard } from '@/components/itinerary/ItineraryStopCard';
 import { ReferralTracker } from '@/components/itinerary/ReferralTracker';
-import { BookActions } from '@/components/itinerary/BookActions';
-import { ReactionBar } from '@/components/social/ReactionBar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatDate, formatCurrency, getInitials } from '@/lib/utils';
+import { ItineraryViewPanel } from './ItineraryViewPanel';
 import type { Itinerary } from '@/types/database';
 
 interface Props {
@@ -30,27 +22,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Itinerary Not Found' };
   }
 }
-
-const PLAN_STEPS = [
-  {
-    icon: Compass,
-    title: 'Explore',
-    description: 'Browse curated stops and local gems',
-    gradient: 'from-primary/70 to-primary',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Plan with AI',
-    description: 'Chat to customize your perfect trip',
-    gradient: 'from-accent/70 to-accent',
-  },
-  {
-    icon: CalendarCheck,
-    title: 'Book',
-    description: 'Reserve directly with verified partners',
-    gradient: 'from-secondary/70 to-secondary',
-  },
-];
 
 // Demo data for previewing the design
 const DEMO_ITINERARY = {
@@ -92,7 +63,6 @@ export default async function ItineraryPage({ params }: Props) {
   let itinerary = null;
   let discountDisplay: { code: string; label: string } | null = null;
 
-  // Use demo data for design preview
   if (id === 'demo') {
     itinerary = DEMO_ITINERARY;
   } else {
@@ -106,7 +76,6 @@ export default async function ItineraryPage({ params }: Props) {
           .single();
         itinerary = data;
 
-        // If itinerary has a referral_code, look up the discount details for display
         if (data?.referral_code) {
           const { data: codeData } = await supabase
             .from('discount_codes')
@@ -130,146 +99,31 @@ export default async function ItineraryPage({ params }: Props) {
   if (!itinerary || !itinerary.is_public) notFound();
 
   const it = itinerary as Itinerary;
-  const stops = (itinerary.stops || []).sort((a: { day: number; order: number }, b: { day: number; order: number }) => a.day - b.day || a.order - b.order);
-  const totalDays = it.total_days || 1;
+  const stops = (itinerary.stops || []).sort(
+    (a: { day: number; order: number }, b: { day: number; order: number }) => a.day - b.day || a.order - b.order
+  );
 
   return (
-    <div className="container px-4 py-8 max-w-4xl mx-auto">
+    <>
       <Suspense fallback={null}>
         <ReferralTracker itineraryId={it.id} />
       </Suspense>
-
-      {/* Header card */}
-      <div className="rounded-2xl border bg-background shadow-sm p-6 sm:p-8 mb-8">
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-balance">{it.title}</h1>
-          {it.description && (
-            <p className="text-muted-foreground text-lg text-pretty">{it.description}</p>
-          )}
-
-          {/* Author */}
-          {it.user && (
-            <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={it.user.avatar_url || undefined} alt={`${it.user.full_name}'s avatar`} />
-                <AvatarFallback className="text-xs">{getInitials(it.user.full_name)}</AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-muted-foreground">by</span>
-              <span className="text-sm font-medium">{it.user.full_name}</span>
-              {it.user.role === 'creator' && (
-                <Badge variant="secondary" className="text-xs bg-status-pending/10 text-status-pending border-status-pending/20">Creator</Badge>
-              )}
-            </div>
-          )}
-
-          {/* Stats row */}
-          <div className="flex items-center gap-4 flex-wrap text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
-              <Calendar className="w-4 h-4" />
-              {totalDays} day{totalDays !== 1 ? 's' : ''}
-            </span>
-            {it.start_date && (
-              <span className="bg-muted/50 px-3 py-1.5 rounded-full">{formatDate(it.start_date)}</span>
-            )}
-            {it.estimated_cost_usd > 0 && (
-              <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
-                <DollarSign className="w-4 h-4" />
-                From {formatCurrency(it.estimated_cost_usd)}
-              </span>
-            )}
-            {it.regions.length > 0 && (
-              <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
-                <MapPin className="w-4 h-4" />
-                {it.regions.join(', ')}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <ReactionBar likes={it.likes} saves={it.saves} className="-ml-2" />
-            <ShareButton title={it.title} />
-          </div>
-
-          {/* Discount code callout */}
-          {discountDisplay && (
-            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-status-pending/10 border border-status-pending/20">
-              <Tag className="w-4 h-4 text-status-pending flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="text-sm text-foreground">
-                  Use code{' '}
-                  <span className="font-mono font-bold">{discountDisplay.code}</span>
-                  {' '}for <span className="font-semibold">{discountDisplay.label}</span> on any booking from this itinerary
-                </span>
-              </div>
-              <Badge variant="outline" className="text-xs border-status-pending/40 text-status-pending flex-shrink-0">
-                {discountDisplay.label}
-              </Badge>
-            </div>
-          )}
-
-          {/* Book CTA */}
-          <BookActions itineraryId={it.id} itineraryTitle={it.title} />
-        </div>
-      </div>
-
-      {/* 3-step "How to plan" card */}
-      <div className="rounded-2xl border bg-gradient-to-br from-primary/5 via-background to-primary/5 p-6 mb-8">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Want your own trip?</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {PLAN_STEPS.map((step, idx) => (
-            <div key={step.title} className="relative flex flex-col items-center text-center p-4 rounded-xl bg-background border shadow-sm hover:shadow-md motion-safe:hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-3 shadow-sm`}>
-                <step.icon className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium text-muted-foreground mb-1">Step {idx + 1}</span>
-              <h4 className="font-semibold text-sm">{step.title}</h4>
-              <p className="text-xs text-muted-foreground mt-1 text-pretty">{step.description}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 text-center">
-          <Link
-            href="/plan"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
-          >
-            <Compass className="w-4 h-4" />
-            Start Planning
-          </Link>
-        </div>
-      </div>
-
-      {/* Days */}
-      <div className="space-y-6">
-        {Array.from({ length: totalDays }).map((_, dayIdx) => {
-          const day = dayIdx + 1;
-          const dayStops = stops.filter((s: { day: number }) => s.day === day);
-
-          return (
-            <div key={day} className="rounded-2xl border bg-background shadow-sm overflow-hidden">
-              {/* Day header */}
-              <div className="flex items-center gap-3 px-5 py-4 border-b bg-muted/30">
-                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shadow-sm">
-                  {day}
-                </div>
-                <h2 className="font-bold text-lg">Day {day}</h2>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {dayStops.length} {dayStops.length === 1 ? 'stop' : 'stops'}
-                </span>
-              </div>
-
-              {/* Stops */}
-              <div className="p-4 space-y-3">
-                {dayStops.map((stop: Parameters<typeof ItineraryStopCard>[0]['stop']) => (
-                  <ItineraryStopCard key={stop.id} stop={stop} showPhoto />
-                ))}
-                {dayStops.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic py-4 text-center">No stops planned for this day</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+      <ItineraryViewPanel
+        itinerary={{
+          id: it.id,
+          title: it.title,
+          description: it.description,
+          user: it.user || null,
+          regions: it.regions,
+          total_days: it.total_days,
+          estimated_cost_usd: it.estimated_cost_usd,
+          start_date: it.start_date,
+          likes: it.likes,
+          saves: it.saves,
+        }}
+        stops={stops}
+        discountDisplay={discountDisplay}
+      />
+    </>
   );
 }
