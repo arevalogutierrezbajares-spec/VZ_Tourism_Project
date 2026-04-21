@@ -236,8 +236,9 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 }}
               />
             ) : (
-              <div className={cn('w-full h-full bg-gradient-to-br flex items-center justify-center', gradient)}>
-                <span className="text-4xl">{catIcon}</span>
+              <div className="w-full h-full bg-muted/80 flex items-center justify-center relative overflow-hidden">
+                <span className="text-[80px] opacity-[0.08] absolute select-none">🇻🇪</span>
+                <span className="text-2xl relative z-10">{catIcon}</span>
               </div>
             )}
           </div>
@@ -296,9 +297,10 @@ export function BrowseListingCard({ listing, variant = 'default' }: BrowseListin
                 }}
               />
             ) : (
-              <div className={cn('w-full h-full bg-gradient-to-br flex flex-col items-center justify-center', gradient)}>
-                <span className="text-5xl mb-2 drop-shadow">{catIcon}</span>
-                <span className="text-white/70 text-sm font-medium uppercase tracking-wider">{typeLabel}</span>
+              <div className="w-full h-full bg-muted/80 flex flex-col items-center justify-center relative overflow-hidden">
+                <span className="text-[100px] opacity-[0.08] absolute select-none">🇻🇪</span>
+                <span className="text-3xl mb-1.5 relative z-10 drop-shadow">{catIcon}</span>
+                <span className="text-muted-foreground/60 text-xs font-medium uppercase tracking-wider relative z-10">{typeLabel}</span>
               </div>
             )}
 
