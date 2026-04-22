@@ -53,7 +53,7 @@ function MapPageContent() {
   const { isOpen: itineraryOpen, createNew } = useItinerary();
   const { isAuthenticated, user, profile, signOut } = useAuth();
   const router = useRouter();
-  const { setPins, setCenter, setZoom, selectedPin, setSelectedPin, hiddenCategories, toggleCategory, setTargetBounds } = useMapStore();
+  const { setPins, setCenter, setZoom, selectedPin, setSelectedPin, setHiddenCategories, setTargetBounds } = useMapStore();
   const searchFilters = useSearchStore((s) => s.filters);
   const [activeCategory, setActiveCategory] = useState(CATEGORY_FILTER_ALL);
   const [totalCount, setTotalCount] = useState(0);
@@ -95,6 +95,7 @@ function MapPageContent() {
         const listings: {
           id: string;
           title: string;
+          slug: string;
           latitude: number;
           longitude: number;
           category: string;
@@ -109,6 +110,7 @@ function MapPageContent() {
           lat: l.latitude,
           lng: l.longitude,
           title: l.title,
+          slug: l.slug,
           category: l.category,
           rating: l.rating ?? undefined,
           reviewCount: l.review_count,
@@ -141,23 +143,17 @@ function MapPageContent() {
     // No filters active → restore full pin set and show all categories
     if (!hasAnyFilter) {
       setPins(allPins);
-      // Reset category chip to "All"
-      if (activeCategory !== CATEGORY_FILTER_ALL) {
-        BUSINESS_CATEGORIES.forEach(({ key }) => {
-          if (hiddenCategories.has(key)) toggleCategory(key);
-        });
-        setActiveCategory(CATEGORY_FILTER_ALL);
-      }
+      setHiddenCategories(new Set());
+      setActiveCategory(CATEGORY_FILTER_ALL);
       return;
     }
 
-    // Category filter from overlay → hide non-matching categories
+    // Category filter from overlay → hide non-matching categories (atomic)
     if (searchFilters.category) {
-      BUSINESS_CATEGORIES.forEach(({ key }) => {
-        const shouldBeHidden = key !== searchFilters.category;
-        const isHidden = hiddenCategories.has(key);
-        if (shouldBeHidden !== isHidden) toggleCategory(key);
-      });
+      const hidden = new Set(
+        BUSINESS_CATEGORIES.map((c) => c.key).filter((k) => k !== searchFilters.category)
+      );
+      setHiddenCategories(hidden);
       setActiveCategory(searchFilters.category);
     }
 
@@ -183,17 +179,14 @@ function MapPageContent() {
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat);
     if (cat === CATEGORY_FILTER_ALL) {
-      // Show all — remove all hidden categories
-      BUSINESS_CATEGORIES.forEach(({ key }) => {
-        if (hiddenCategories.has(key)) toggleCategory(key);
-      });
+      // Show all — single atomic update
+      setHiddenCategories(new Set());
     } else {
-      // Hide all except selected
-      BUSINESS_CATEGORIES.forEach(({ key }) => {
-        const shouldBeHidden = key !== cat;
-        const isHidden = hiddenCategories.has(key);
-        if (shouldBeHidden !== isHidden) toggleCategory(key);
-      });
+      // Hide all except selected — single atomic update
+      const hidden = new Set(
+        BUSINESS_CATEGORIES.map((c) => c.key).filter((k) => k !== cat)
+      );
+      setHiddenCategories(hidden);
     }
   };
 

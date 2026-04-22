@@ -23,8 +23,8 @@ type MapboxMap = {
   getLayer: (id: string) => unknown;
   removeLayer: (id: string) => void;
   removeSource: (id: string) => void;
-  addImage: (id: string, image: ImageData, opts?: { pixelRatio?: number; sdf?: boolean }) => void;
-  hasImage: (id: string) => boolean;
+  addImage?: (id: string, image: ImageData, opts?: { pixelRatio?: number; sdf?: boolean }) => void;
+  hasImage?: (id: string) => boolean;
   flyTo: (opts: unknown) => void;
   easeTo: (opts: unknown) => void;
   fitBounds: (bounds: [[number, number], [number, number]], opts?: unknown) => void;
@@ -68,110 +68,60 @@ const CLUSTER_COUNT_LAYER = 'cluster-count';
 const POINT_LAYER = 'unclustered-point';
 const GLOW_LAYER = 'pin-glow';
 
-// Google Maps-style category markers
-const CATEGORY_MARKERS: Record<string, { color: string; label: string }> = {
-  accommodation: { color: '#3B82F6', label: 'H' },
-  gastronomy:    { color: '#F97316', label: 'R' },
-  restaurants:   { color: '#F97316', label: 'R' },
-  adventure:     { color: '#EF4444', label: 'A' },
-  cultural:      { color: '#F59E0B', label: 'C' },
-  culture:       { color: '#F59E0B', label: 'C' },
-  'eco-tours':   { color: '#22C55E', label: 'E' },
-  beaches:       { color: '#0EA5E9', label: 'B' },
-  wellness:      { color: '#EC4899', label: 'W' },
-  mountains:     { color: '#8B5CF6', label: 'M' },
-  cities:        { color: '#6B7280', label: 'P' },
+// ── Category color map (used by Mapbox expressions + tooltip) ──────────
+const CATEGORY_COLORS: Record<string, string> = {
+  accommodation: '#3B82F6',
+  gastronomy:    '#F97316',
+  restaurants:   '#F97316',
+  adventure:     '#EF4444',
+  cultural:      '#F59E0B',
+  culture:       '#F59E0B',
+  'eco-tours':   '#22C55E',
+  beaches:       '#0EA5E9',
+  wellness:      '#EC4899',
+  mountains:     '#8B5CF6',
+  cities:        '#3B82F6',  // scraped hotels — same color as accommodation
 };
-const DEFAULT_MARKER = { color: '#6B7280', label: '●' };
+const DEFAULT_COLOR = '#6B7280';
 
-/** Generate a Google Maps-style teardrop pin marker on canvas */
-function createPinMarker(color: string, label: string, verified = false): ImageData {
-  const scale = 2; // retina
-  const r = 14;
-  const w = r * 2;
-  const h = w + 10;
-  const canvas = document.createElement('canvas');
-  canvas.width = w * scale;
-  canvas.height = h * scale;
-  const ctx = canvas.getContext('2d')!;
-  ctx.scale(scale, scale);
-
-  // Drop shadow
-  ctx.shadowColor = 'rgba(0,0,0,0.3)';
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetY = 2;
-
-  // Pin shape: circle top + triangle point bottom
-  ctx.beginPath();
-  ctx.arc(r, r, r - 1.5, Math.PI * 1.15, -Math.PI * 0.15);
-  ctx.lineTo(r, h - 2);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-
-  // White border
-  ctx.shadowColor = 'transparent';
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // White label
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `bold ${r - 2}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, r, r - 0.5);
-
-  // Verified checkmark badge (small green circle in bottom-right of the pin head)
-  if (verified) {
-    const bx = r + 7, by = r + 5, br = 5;
-    ctx.beginPath();
-    ctx.arc(bx, by, br, 0, Math.PI * 2);
-    ctx.fillStyle = '#22C55E';
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 7px sans-serif';
-    ctx.fillText('✓', bx, by + 0.5);
-  }
-
-  return ctx.getImageData(0, 0, canvas.width, canvas.height);
+/** Normalize category aliases to canonical BUSINESS_CATEGORIES keys */
+function normalizeCategory(category: string | undefined): string {
+  const cat = category ?? 'other';
+  if (cat === 'restaurants') return 'gastronomy';
+  if (cat === 'culture') return 'cultural';
+  if (cat === 'cities') return 'accommodation';
+  return cat;
 }
 
-/** Load all category pin marker images into the map style */
-function loadMarkerImages(map: MapboxMap) {
-  const cats = Object.entries(CATEGORY_MARKERS);
-  for (const [key, { color, label }] of cats) {
-    const id = `pin-${key}`;
-    if (!map.hasImage(id)) {
-      map.addImage(id, createPinMarker(color, label), { pixelRatio: 2 });
-    }
-    const vid = `pin-${key}-verified`;
-    if (!map.hasImage(vid)) {
-      map.addImage(vid, createPinMarker(color, label, true), { pixelRatio: 2 });
-    }
-  }
-  if (!map.hasImage('pin-default')) {
-    map.addImage('pin-default', createPinMarker(DEFAULT_MARKER.color, DEFAULT_MARKER.label), { pixelRatio: 2 });
-  }
-  if (!map.hasImage('pin-default-verified')) {
-    map.addImage('pin-default-verified', createPinMarker(DEFAULT_MARKER.color, DEFAULT_MARKER.label, true), { pixelRatio: 2 });
-  }
-}
+/** Mapbox match expression: category → color (used by multiple layers) */
+const CATEGORY_COLOR_EXPR = [
+  'match', ['get', 'category'],
+  'accommodation', '#3B82F6',
+  'cities', '#3B82F6',         // scraped hotels — same as accommodation
+  'gastronomy', '#F97316',
+  'restaurants', '#F97316',
+  'adventure', '#EF4444',
+  'cultural', '#F59E0B',
+  'culture', '#F59E0B',
+  'eco-tours', '#22C55E',
+  'beaches', '#0EA5E9',
+  'wellness', '#EC4899',
+  'mountains', '#8B5CF6',
+  DEFAULT_COLOR,
+];
 
 function buildGeoJSON(pins: MapPin[], hiddenCategories: Set<string>) {
   return {
     type: 'FeatureCollection',
     features: pins
-      .filter((pin) => !hiddenCategories.has(pin.category ?? 'other'))
+      .filter((pin) => !hiddenCategories.has(normalizeCategory(pin.category)))
       .map((pin) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [pin.lng, pin.lat] },
         properties: {
           id: pin.id,
           title: pin.title,
+          slug: pin.slug ?? '',
           category: pin.category ?? 'other',
           rating: pin.rating ?? null,
           reviewCount: pin.reviewCount ?? 0,
@@ -274,6 +224,22 @@ export function MapContainer({
         promoteId: 'id',
       });
 
+      // Cluster outer ring (soft halo behind cluster bubble)
+      map.addLayer({
+        id: 'cluster-ring',
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step', ['get', 'point_count'],
+            '#3B82F6', 50, '#2563EB', 200, '#1D4ED8',
+          ],
+          'circle-radius': ['step', ['get', 'point_count'], 24, 50, 32, 200, 40],
+          'circle-opacity': 0.15,
+        },
+      });
+
       // Cluster bubbles
       map.addLayer({
         id: CLUSTER_LAYER,
@@ -282,18 +248,13 @@ export function MapContainer({
         filter: ['has', 'point_count'],
         paint: {
           'circle-color': [
-            'step',
-            ['get', 'point_count'],
-            '#60A5FA',
-            50,
-            '#3B82F6',
-            200,
-            '#1D4ED8',
+            'step', ['get', 'point_count'],
+            '#3B82F6', 50, '#2563EB', 200, '#1D4ED8',
           ],
           'circle-radius': ['step', ['get', 'point_count'], 18, 50, 24, 200, 32],
-          'circle-stroke-width': 2,
+          'circle-stroke-width': 3,
           'circle-stroke-color': '#ffffff',
-          'circle-opacity': 0.9,
+          'circle-opacity': 0.92,
         },
       });
 
@@ -305,118 +266,131 @@ export function MapContainer({
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          'text-size': 12,
+          'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+          'text-size': ['step', ['get', 'point_count'], 13, 50, 15, 200, 17],
         },
         paint: { 'text-color': '#ffffff' },
       });
 
-      // Load Google Maps-style pin marker images for each category
-      loadMarkerImages(map);
+      // ── Pin layers (GPU-accelerated circles — crisp at any DPI) ──
 
-      // Hover/selected glow ring (behind markers, driven by feature-state)
+      // Layer 1: Shadow beneath each pin
+      map.addLayer({
+        id: 'pin-shadow',
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'],
+            4, 5, 7, 7, 10, 9, 14, 12,
+          ],
+          'circle-color': '#000000',
+          'circle-blur': 0.7,
+          'circle-opacity': 0.2,
+          'circle-translate': [0, 2],
+        },
+      });
+
+      // Layer 2: Hover/selected glow ring (feature-state driven)
       map.addLayer({
         id: GLOW_LAYER,
         type: 'circle',
         source: SOURCE_ID,
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 14, 12, 20, 16, 26],
-          'circle-color': [
-            'match', ['get', 'category'],
-            'accommodation', '#3B82F6',
-            'gastronomy', '#F97316',
-            'restaurants', '#F97316',
-            'adventure', '#EF4444',
-            'cultural', '#F59E0B',
-            'culture', '#F59E0B',
-            'eco-tours', '#22C55E',
-            'beaches', '#0EA5E9',
-            'wellness', '#EC4899',
-            'mountains', '#8B5CF6',
-            '#6B7280',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'],
+            4, 12, 7, 16, 10, 20, 14, 26,
           ],
+          'circle-blur': 0.5,
+          'circle-color': CATEGORY_COLOR_EXPR,
           'circle-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.35,
-            ['boolean', ['feature-state', 'hover'], false], 0.2,
+            ['boolean', ['feature-state', 'selected'], false], 0.5,
+            ['boolean', ['feature-state', 'hover'], false], 0.35,
             0,
           ],
           'circle-opacity-transition': { duration: 150, delay: 0 },
         },
       });
 
-      // Category pin markers (symbol layer — Google Maps style)
-      // Uses verified variant when isVerified=1, normal otherwise
-      const categoryMatch = [
-        'match', ['get', 'category'],
-        'accommodation', 'accommodation',
-        'gastronomy', 'gastronomy',
-        'restaurants', 'gastronomy',
-        'adventure', 'adventure',
-        'cultural', 'cultural',
-        'culture', 'cultural',
-        'eco-tours', 'eco-tours',
-        'beaches', 'beaches',
-        'wellness', 'wellness',
-        'mountains', 'mountains',
-        'cities', 'cities',
-        'default',
-      ];
+      // Layer 3: White border ring
       map.addLayer({
-        id: POINT_LAYER,
-        type: 'symbol',
+        id: 'pin-border',
+        type: 'circle',
         source: SOURCE_ID,
         filter: ['!', ['has', 'point_count']],
-        layout: {
-          'icon-image': [
-            'case',
-            ['==', ['get', 'isVerified'], 1],
-            ['concat', 'pin-', categoryMatch, '-verified'],
-            ['concat', 'pin-', categoryMatch],
-          ],
-          'icon-size': ['interpolate', ['linear'], ['zoom'],
-            5, 0.55,
-            8, 0.75,
-            12, 1.0,
-            16, 1.15,
-          ],
-          'icon-allow-overlap': true,
-          'icon-anchor': 'bottom',
-          'icon-padding': 0,
-          // Show listing title at zoom >= 12
-          'text-field': ['step', ['zoom'], '', 12, ['get', 'title']],
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 16, 13],
-          'text-offset': [0, 0.3],
-          'text-anchor': 'top',
-          'text-max-width': 8,
-          'text-optional': true,
-        },
         paint: {
-          'icon-opacity': [
+          'circle-radius': ['interpolate', ['linear'], ['zoom'],
+            4, 5.5, 7, 7.5, 10, 10, 14, 13,
+          ],
+          'circle-color': '#ffffff',
+          'circle-opacity': 1,
+        },
+      });
+
+      // Layer 4: Main colored circle (the pin itself)
+      map.addLayer({
+        id: POINT_LAYER,
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'],
+            4, 4, 7, 6, 10, 8.5, 14, 11,
+          ],
+          'circle-color': CATEGORY_COLOR_EXPR,
+          'circle-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 1,
             ['boolean', ['feature-state', 'hover'], false], 1,
             0.92,
           ],
-          'text-color': dark ? '#e2e8f0' : '#1e293b',
-          'text-halo-color': dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
-          'text-halo-width': 1.5,
-          'text-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 12.5, 1],
+          'circle-stroke-width': [
+            'case',
+            ['==', ['get', 'isVerified'], 1], 2,
+            0,
+          ],
+          'circle-stroke-color': '#22C55E',
         },
       });
 
-      // Transparent hit-area circle for WCAG 2.5.5 touch targets (min 44px)
+      // Layer 5: Small white inner dot (gives the pin a bullseye look)
       map.addLayer({
-        id: 'listing-pins-hitarea',
+        id: 'pin-inner-dot',
         type: 'circle',
         source: SOURCE_ID,
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 14, 12, 22],
-          'circle-opacity': 0,
-          'circle-color': 'transparent',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'],
+            4, 1.2, 7, 2, 10, 3, 14, 4,
+          ],
+          'circle-color': '#ffffff',
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0, 7, 0.7, 10, 0.9],
+        },
+      });
+
+      // Layer 6: Title labels (visible at zoom >= 12)
+      map.addLayer({
+        id: 'pin-labels',
+        type: 'symbol',
+        source: SOURCE_ID,
+        filter: ['!', ['has', 'point_count']],
+        minzoom: 11.5,
+        layout: {
+          'text-field': ['get', 'title'],
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 16, 13],
+          'text-offset': [0, 1.4],
+          'text-anchor': 'top',
+          'text-max-width': 9,
+          'text-optional': true,
+          'symbol-sort-key': ['case', ['==', ['get', 'isVerified'], 1], 0, 1],
+        },
+        paint: {
+          'text-color': dark ? '#e2e8f0' : '#1e293b',
+          'text-halo-color': dark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.92)',
+          'text-halo-width': 1.8,
+          'text-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0, 12, 1],
         },
       });
 
@@ -467,9 +441,8 @@ export function MapContainer({
         }
       }
 
-      // Click: individual point → preview card (both visible pin and expanded hit-area)
+      // Click: individual point → preview card
       map.on('click', POINT_LAYER, handlePinLayerClick);
-      map.on('click', 'listing-pins-hitarea', handlePinLayerClick);
 
       // Cluster hover: cursor + tooltip showing count
       map.on('mouseenter', CLUSTER_LAYER, (e) => {
@@ -505,24 +478,54 @@ export function MapContainer({
         }
 
         if (!tooltipRef.current) return;
-        const { title, city, region } = e.features[0].properties as {
+        const { title, city, region, category, rating } = e.features[0].properties as {
           title: string;
           city: string;
           region: string;
+          category: string;
+          rating: number | null;
         };
         const subtitle = [city, region].filter(Boolean).join(', ');
-        // Build tooltip DOM to avoid XSS via setHTML
-      const container = document.createElement('div');
-      const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:13px;font-weight:600;white-space:nowrap';
-      titleEl.textContent = title;
-      container.appendChild(titleEl);
-      if (subtitle) {
-        const subtitleEl = document.createElement('div');
-        subtitleEl.style.cssText = 'font-size:11px;color:#6B7280;margin-top:2px';
-        subtitleEl.textContent = subtitle;
-        container.appendChild(subtitleEl);
-      }
+        const catColor = CATEGORY_COLORS[category] ?? DEFAULT_COLOR;
+
+        // Build tooltip DOM (avoids XSS via setHTML)
+        const container = document.createElement('div');
+        container.style.cssText = 'display:flex;align-items:flex-start;gap:8px';
+
+        // Color dot
+        const dot = document.createElement('span');
+        dot.style.cssText = `width:8px;height:8px;border-radius:50%;background:${catColor};flex-shrink:0;margin-top:4px`;
+        container.appendChild(dot);
+
+        const textWrap = document.createElement('div');
+        const titleEl = document.createElement('div');
+        titleEl.style.cssText = 'font-size:13px;font-weight:600;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis';
+        titleEl.textContent = title;
+        textWrap.appendChild(titleEl);
+
+        if (subtitle || (rating != null && rating > 0)) {
+          const metaEl = document.createElement('div');
+          metaEl.style.cssText = 'font-size:11px;color:#6B7280;margin-top:1px;display:flex;align-items:center;gap:4px';
+          if (rating != null && rating > 0) {
+            const starSpan = document.createElement('span');
+            starSpan.textContent = `★ ${rating.toFixed(1)}`;
+            starSpan.style.cssText = 'color:#F59E0B;font-weight:600';
+            metaEl.appendChild(starSpan);
+            if (subtitle) {
+              const sep = document.createElement('span');
+              sep.textContent = '·';
+              sep.style.color = '#D1D5DB';
+              metaEl.appendChild(sep);
+            }
+          }
+          if (subtitle) {
+            const locSpan = document.createElement('span');
+            locSpan.textContent = subtitle;
+            metaEl.appendChild(locSpan);
+          }
+          textWrap.appendChild(metaEl);
+        }
+        container.appendChild(textWrap);
       tooltipRef.current
           .setLngLat([e.lngLat.lng, e.lngLat.lat])
           .setDOMContent(container)
@@ -539,8 +542,6 @@ export function MapContainer({
 
       map.on('mouseenter', POINT_LAYER, handlePinMouseEnter);
       map.on('mouseleave', POINT_LAYER, handlePinMouseLeave);
-      map.on('mouseenter', 'listing-pins-hitarea', handlePinMouseEnter);
-      map.on('mouseleave', 'listing-pins-hitarea', handlePinMouseLeave);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -687,15 +688,13 @@ export function MapContainer({
     );
   }, [isDarkMode, mapLoaded]);
 
-  // Update GeoJSON data when pins or hidden categories change (debounced to batch rapid toggles)
+  // Update GeoJSON data when pins or hidden categories change
   useEffect(() => {
     if (!mapInstanceRef.current || !mapLoaded) return;
     const source = mapInstanceRef.current.getSource(SOURCE_ID);
     if (!source) return;
-    const raf = requestAnimationFrame(() => {
-      source.setData(buildGeoJSON(pins, hiddenCategories));
-    });
-    return () => cancelAnimationFrame(raf);
+    const geo = buildGeoJSON(pins, hiddenCategories);
+    source.setData(geo);
   }, [pins, hiddenCategories, mapLoaded]);
 
   // Fly to center when it changes (for search results)

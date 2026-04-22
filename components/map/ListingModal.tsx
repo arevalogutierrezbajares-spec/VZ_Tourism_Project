@@ -38,7 +38,7 @@ interface ListingDetail {
   duration_hours?: number | null;
   max_guests?: number | null;
   safety_level?: string;
-  listing_photos?: { url: string; alt?: string }[];
+  photos?: { url: string; alt?: string }[];
 }
 
 interface ListingModalProps {
@@ -69,8 +69,8 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
       try {
         const res = await fetch(`/api/listings/${pin.listingId}`);
         if (!res.ok) throw new Error();
-        const data = await res.json();
-        if (!cancelled) setDetail(data);
+        const json = await res.json();
+        if (!cancelled) setDetail(json.data ?? json);
       } catch {
         // Fall back to pin data only
       } finally {
@@ -119,8 +119,8 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
     toast.success(`Added "${pin.title}" to Day ${targetDay}`);
   }, [current, days, addStop, openPanel, pin, detail]);
 
-  const images = detail?.listing_photos?.length
-    ? detail.listing_photos.map((p) => p.url)
+  const images = detail?.photos?.length
+    ? detail.photos.map((p) => p.url)
     : detail?.cover_image_url
       ? [detail.cover_image_url]
       : pin.imageUrl
@@ -340,9 +340,9 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
               <PlusCircle className="w-4 h-4" />
               Add to Trip
             </Button>
-            {pin.listingId && (
+            {pin.listingId && (detail?.slug || pin.slug) && (
               <Link
-                href={`/listing/${detail?.slug ?? pin.listingId}`}
+                href={`/listing/${detail?.slug ?? pin.slug}`}
                 className="flex-1 inline-flex items-center justify-center gap-2 rounded-[min(var(--radius-md),12px)] px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 View Full Details

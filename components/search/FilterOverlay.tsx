@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { X, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,39 @@ interface FilterOverlayProps {
 
 export function FilterOverlay({ onClose }: FilterOverlayProps) {
   const { filters, setFilters, resetFilters } = useSearchStore();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Escape key closes the overlay
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  // Focus trap: keep Tab within the panel
+  const handleFocusTrap = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab' || !panelRef.current) return;
+    const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, []);
+
+  // Auto-focus the panel on mount
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   const handleCategoryToggle = (category: string) => {
     setFilters({
@@ -38,9 +72,19 @@ export function FilterOverlay({ onClose }: FilterOverlayProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Filters">
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Filters"
+      onClick={onClose}
+      onKeyDown={handleFocusTrap}
+    >
       <motion.div
-        className="bg-background rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl"
+        ref={panelRef}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-background rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl focus:outline-none"
         initial={{ opacity: 0, y: 24, filter: 'blur(4px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         exit={{ opacity: 0, y: -12, transition: { duration: 0.15 } }}

@@ -10,6 +10,7 @@ export interface MapPin {
   lat: number;
   lng: number;
   title: string;
+  slug?: string;
   price?: number;
   currency?: string;
   category?: string;

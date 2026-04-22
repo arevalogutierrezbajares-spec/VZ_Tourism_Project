@@ -1,23 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { listingSchema } from '@/lib/validators';
+import { getAllListings, mapTypeToCategory } from '@/lib/local-listings';
 
 interface Params { params: Promise<{ id: string }> }
 
 export async function GET(_: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
-    if (!supabase) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
 
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*, provider:providers(business_name, is_verified, phone, whatsapp), photos:listing_photos(*)')
-      .eq('id', id)
-      .single();
+    // Try Supabase first (service client bypasses RLS — matches the list endpoint)
+    const supabase = await createServiceClient();
+    if (supabase) {
+      const { data } = await supabase
+        .from('listings')
+        .select('*, provider:providers(business_name, is_verified), photos:listing_photos(*)')
+        .eq('id', id)
+        .single();
 
-    if (error || !data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    return NextResponse.json({ data });
+      if (data) return NextResponse.json({ data });
+    }
+
+    // Fall back to local scraped data
+    const local = getAllListings().find((l) => l.id === id);
+    if (local) {
+      return NextResponse.json({
+        data: {
+          id: local.id,
+          title: local.name,
+          slug: local.slug,
+          description: local.description,
+          short_description: local.description?.slice(0, 200),
+          category: mapTypeToCategory(local.type),
+          type: local.type,
+          region: local.region,
+          city: local.city,
+          address: local.address,
+          rating: local.avg_rating,
+          review_count: local.review_count,
+          cover_image_url: local.cover_image_url,
+          phone: local.phone,
+          website: local.website,
+          instagram_handle: local.instagram_handle,
+          platform_status: local.platform_status ?? 'scraped',
+          amenities: local.category_tags ?? [],
+          photos: local.cover_image_url ? [{ url: local.cover_image_url }] : [],
+        },
+      });
+    }
+
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (err) {
     console.error('[listings GET]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

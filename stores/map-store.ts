@@ -34,6 +34,7 @@ interface MapActions {
   toggle3DTerrain: () => void;
   toggleDarkMode: () => void;
   toggleCategory: (category: string) => void;
+  setHiddenCategories: (categories: Set<string>) => void;
   setTargetBounds: (bounds: [[number, number], [number, number]] | null) => void;
 }
 
@@ -108,6 +109,8 @@ export const useMapStore = create<MapStore>()(
           else next.add(category);
           return { hiddenCategories: next };
         }),
+
+      setHiddenCategories: (categories) => set({ hiddenCategories: categories }),
 
       setTargetBounds: (targetBounds) => set({ targetBounds }),
     }),

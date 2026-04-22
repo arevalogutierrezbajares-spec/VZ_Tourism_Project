@@ -219,3 +219,24 @@ h1, h2, h3, h4 { text-wrap: balance; }
   outline: 1px solid rgba(0, 0, 0, 0.1);
   outline-offset: -1px;
 }
+
+/* ── Map tooltip (Mapbox GL Popup overrides) ── */
+.map-tooltip .mapboxgl-popup-content {
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.map-tooltip .mapboxgl-popup-tip {
+  border-top-color: #ffffff;
+}
+.dark .map-tooltip .mapboxgl-popup-content {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.dark .map-tooltip .mapboxgl-popup-tip {
+  border-top-color: #1e293b;
+}

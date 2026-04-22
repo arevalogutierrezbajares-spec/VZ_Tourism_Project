@@ -90,9 +90,9 @@ export function getCategoryIcon(category: string): string {
 export function getCategoryColor(category: string): string {
   const colors: Record<string, string> = {
     accommodation: '#3B82F6',
+    cities: '#3B82F6',     // scraped hotels — same as accommodation
     gastronomy: '#F97316',
     adventure: '#EF4444',
-    cities: '#8B5CF6',
     beaches: '#0EA5E9',
     'eco-tours': '#22C55E',
     mountains: '#8B5CF6',
@@ -111,7 +111,6 @@ export const BUSINESS_CATEGORIES: { key: string; label: string; color: string }[
   { key: 'accommodation', label: 'Hotels & Posadas', color: '#3B82F6' },
   { key: 'gastronomy', label: 'Gastronomy', color: '#F97316' },
   { key: 'adventure', label: 'Adventure', color: '#EF4444' },
-  { key: 'cities', label: 'Cities', color: '#8B5CF6' },
   { key: 'beaches', label: 'Beaches', color: '#0EA5E9' },
   { key: 'eco-tours', label: 'Eco-Tours', color: '#22C55E' },
   { key: 'mountains', label: 'Mountains', color: '#8B5CF6' },
