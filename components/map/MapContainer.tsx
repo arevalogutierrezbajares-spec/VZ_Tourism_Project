@@ -648,8 +648,30 @@ export function MapContainer({
           prevHidden = state.hiddenCategories;
           const source = map.getSource(SOURCE_ID);
           if (!source) return;
-          source.setData(buildGeoJSON(state.pins, state.hiddenCategories));
+          const geo = buildGeoJSON(state.pins, state.hiddenCategories);
+          source.setData(geo);
+          // Expose diagnostic for automated tests
+          if (typeof window !== 'undefined') {
+            (window as unknown as Record<string, unknown>).__mapFilterDiag = {
+              totalPins: state.pins.length,
+              hiddenCategories: state.hiddenCategories instanceof Set ? [...state.hiddenCategories] : [],
+              visibleFeatures: geo.features.length,
+              ts: Date.now(),
+            };
+          }
         });
+
+        // Expose initial diagnostic
+        if (typeof window !== 'undefined') {
+          const initGeo = buildGeoJSON(useMapStore.getState().pins, useMapStore.getState().hiddenCategories);
+          (window as unknown as Record<string, unknown>).__mapFilterDiag = {
+            totalPins: useMapStore.getState().pins.length,
+            hiddenCategories: [],
+            visibleFeatures: initGeo.features.length,
+            ts: Date.now(),
+          };
+          (window as unknown as Record<string, unknown>).__mapInstance = map;
+        }
 
         setMapLoaded(true);
       });
