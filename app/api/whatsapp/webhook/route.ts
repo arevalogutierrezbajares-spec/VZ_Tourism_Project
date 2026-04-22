@@ -11,6 +11,7 @@ import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import { hashToken } from '@/lib/whatsapp/hash';
 import { Redis } from '@upstash/redis';
+import { notifyOperatorEscalation } from '@/lib/whatsapp-escalation';
 import { rateLimit, groqRateLimit } from '@/lib/api/rate-limit';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 import type { ServiceClient } from '@/types/supabase-client';
@@ -293,6 +294,12 @@ async function handleMessage(
       reason: `Flagged message: ${sentiment.flag_reason}`,
       trigger_type: 'sentiment',
     });
+    waitUntil(notifyOperatorEscalation({
+      supabase, config, accessToken,
+      conversation: { id: conv.id, guest_name: guestName, guest_phone: from },
+      reason: `Flagged message: ${sentiment.flag_reason}`,
+      triggerType: 'sentiment',
+    }));
     return;
   }
 
@@ -322,6 +329,12 @@ async function handleMessage(
       reason: 'Guest asked if speaking to a bot',
       trigger_type: 'bot_question',
     });
+    waitUntil(notifyOperatorEscalation({
+      supabase, config, accessToken,
+      conversation: { id: conv.id, guest_name: guestName, guest_phone: from },
+      reason: 'Guest asked if speaking to a bot',
+      triggerType: 'bot_question',
+    }));
     return;
   }
 
@@ -442,6 +455,12 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
       reason: 'AI (Groq) timeout or error — fallback message sent',
       trigger_type: 'sentiment',
     });
+    notifyOperatorEscalation({
+      supabase, config: opts.config, accessToken: opts.accessToken,
+      conversation: { id: opts.convId, guest_name: null, guest_phone: opts.guestPhone },
+      reason: 'AI error — fallback message sent',
+      triggerType: 'ai_error',
+    });
     return;
   }
 
@@ -463,6 +482,12 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
       conversation_id: opts.convId,
       reason: `AI requested human review: ${hitlReason}`,
       trigger_type: 'sentiment',
+    });
+    notifyOperatorEscalation({
+      supabase, config: opts.config, accessToken: opts.accessToken,
+      conversation: { id: opts.convId, guest_name: null, guest_phone: opts.guestPhone },
+      reason: `AI requested human review: ${hitlReason}`,
+      triggerType: 'hitl',
     });
   }
 }

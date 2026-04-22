@@ -16,9 +16,12 @@ import {
   Bot, User, AlertTriangle, Send, RefreshCw,
   MessageCircle, Settings, Sparkles, Phone,
   CheckCheck, Circle, Globe, ChevronLeft,
+  Search, X, Zap, CalendarPlus, BarChart3, ExternalLink,
+  MessageSquarePlus,
 } from 'lucide-react';
 import type {
   WaConversation, WaMessage, WaConversationStatus, WaBookingStage,
+  QuickReplyTemplate,
 } from '@/types/database';
 import toast from 'react-hot-toast';
 import StatsStrip from '@/components/whatsapp/StatsStrip';
@@ -343,6 +346,9 @@ export default function MessagesPage() {
   const [filter, setFilter]               = useState<FilterTab>('all');
   const [configured, setConfigured]       = useState(true);
   const [mobileView, setMobileView]       = useState<'list' | 'chat'>('list');
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templates, setTemplates]         = useState<QuickReplyTemplate[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ── Load conversations ──────────────────────────────────────────────────────
@@ -375,6 +381,16 @@ export default function MessagesPage() {
         setConfigured(!!data);
       }
     });
+  }, []);
+
+  // ── Load quick reply templates ───────────────────────────────────────────────
+  useEffect(() => {
+    fetch('/api/whatsapp/templates').then(async (res) => {
+      if (res.ok) {
+        const { data } = await res.json() as { data: QuickReplyTemplate[] };
+        setTemplates(data ?? []);
+      }
+    }).catch(() => {});
   }, []);
 
   // ── Load thread ─────────────────────────────────────────────────────────────
@@ -499,7 +515,18 @@ export default function MessagesPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
   };
 
-  const filteredConvs = conversations.filter((c) => filter === 'all' || c.status === filter);
+  const filteredConvs = conversations.filter((c) => {
+    if (filter !== 'all' && c.status !== filter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        (c.guest_name?.toLowerCase().includes(q)) ||
+        c.guest_phone.includes(q) ||
+        (c.last_message_preview?.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  });
 
   // ─────────────────────────────────────────────────────────────────────────────
 
@@ -540,6 +567,28 @@ export default function MessagesPage() {
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </Button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="px-3 py-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar huésped..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-8 py-1.5 rounded-md border bg-muted/30 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -655,7 +704,36 @@ export default function MessagesPage() {
             {/* Input */}
             {selected.status === 'human' ? (
               <div className="px-4 py-3 border-t bg-background shrink-0">
+                {/* Quick reply template picker */}
+                {showTemplates && templates.length > 0 && (
+                  <div className="mb-2 p-2 rounded-lg border bg-muted/20 space-y-1 max-h-40 overflow-y-auto">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-1">
+                      Respuestas rápidas
+                    </p>
+                    {templates.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => { setReplyText(t.body); setShowTemplates(false); }}
+                        className="w-full text-left px-2 py-1.5 rounded-md hover:bg-muted transition-colors"
+                      >
+                        <p className="text-xs font-medium">{t.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{t.body.slice(0, 80)}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-2 items-end">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 shrink-0"
+                      onClick={() => setShowTemplates((s) => !s)}
+                      title="Respuestas rápidas"
+                    >
+                      <Zap className={cn('w-4 h-4', showTemplates ? 'text-primary' : 'text-muted-foreground')} />
+                    </Button>
+                  </div>
                   <textarea
                     className="flex-1 resize-none rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground min-h-[40px] max-h-28"
                     rows={1}
@@ -675,7 +753,7 @@ export default function MessagesPage() {
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5">↵ Send · ⇧↵ New line</p>
+                <p className="text-[10px] text-muted-foreground mt-1.5">↵ Send · ⇧↵ New line · ⚡ Respuestas rápidas</p>
               </div>
             ) : (
               <div className="px-4 py-3 border-t bg-muted/20 text-center shrink-0">
@@ -775,9 +853,9 @@ export default function MessagesPage() {
           </div>
 
           {/* Quick actions */}
-          <div className="p-4">
+          <div className="p-4 border-b">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
-              Quick Actions
+              Acciones
             </p>
             <div className="space-y-1.5">
               <Button
@@ -793,11 +871,53 @@ export default function MessagesPage() {
               <Button
                 variant="outline"
                 size="sm"
+                className="w-full text-xs h-7 justify-start"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (selected.guest_name) params.set('guest_name', selected.guest_name);
+                  if (selected.guest_phone) params.set('guest_phone', selected.guest_phone);
+                  params.set('conversation_id', selected.id);
+                  window.open(`/dashboard/bookings/new?${params}`, '_blank');
+                }}
+              >
+                <CalendarPlus className="w-3 h-3 mr-1.5" />
+                Crear Reserva
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 className="w-full text-xs h-7 justify-start text-destructive hover:text-destructive"
                 onClick={() => updateStage('closed')}
               >
                 <CheckCheck className="w-3 h-3 mr-1.5" />
                 Mark Closed
+              </Button>
+            </div>
+          </div>
+
+          {/* Links */}
+          <div className="p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
+              Herramientas
+            </p>
+            <div className="space-y-1.5">
+              <Button variant="ghost" size="sm" className="w-full text-xs h-7 justify-start" asChild>
+                <Link href="/dashboard/whatsapp/analytics">
+                  <BarChart3 className="w-3 h-3 mr-1.5" />
+                  Analíticas
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full text-xs h-7 justify-start" asChild>
+                <Link href="/dashboard/crm">
+                  <ExternalLink className="w-3 h-3 mr-1.5" />
+                  CRM
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full text-xs h-7 justify-start" asChild>
+                <Link href="/dashboard/whatsapp/setup">
+                  <Settings className="w-3 h-3 mr-1.5" />
+                  Configuración
+                </Link>
               </Button>
             </div>
           </div>

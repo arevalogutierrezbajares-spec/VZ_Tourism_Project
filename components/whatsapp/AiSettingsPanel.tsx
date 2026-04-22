@@ -872,6 +872,41 @@ function ConnectionTab({ cfg, siteUrl }: { cfg: AiConfig; siteUrl: string }) {
         </p>
       </div>
 
+      {/* Operator notifications */}
+      <SectionHeader
+        title="Notificaciones al Operador"
+        description="Recibe alertas en tu WhatsApp personal cuando el AI escala una conversación."
+      />
+      <div className="rounded-xl border p-5 space-y-4">
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold">Tu número de WhatsApp</p>
+          <input
+            className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+            defaultValue={(cfg as Record<string, unknown>).operator_phone as string ?? ''}
+            placeholder="+584141234567"
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              fetch('/api/whatsapp/config', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operator_phone: value || null }),
+              });
+            }}
+            onBlur={(e) => {
+              const value = e.target.value.trim();
+              fetch('/api/whatsapp/config', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operator_phone: value || null }),
+              });
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Formato internacional con código de país (ej: +58 414 123 4567)
+          </p>
+        </div>
+      </div>
+
       <div className="rounded-xl border p-5 space-y-3">
         <p className="text-sm font-semibold">Setup checklist</p>
         {[

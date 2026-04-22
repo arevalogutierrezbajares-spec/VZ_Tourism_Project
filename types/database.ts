@@ -505,6 +505,20 @@ export interface PosadaWhatsappConfig {
   custom_instructions: string | null;
   // Master switch
   ai_enabled: boolean;
+  // Operator escalation
+  operator_phone: string | null;
+  notify_escalations: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuickReplyTemplate {
+  id: string;
+  provider_id: string;
+  title: string;
+  body: string;
+  shortcut: string | null;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 }
