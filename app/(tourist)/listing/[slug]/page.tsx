@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ListingDetail } from '@/components/listing/ListingDetail';
 import { ScrapedListingView } from '@/components/listing/ScrapedListingView';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getListingBySlug, mapTypeToCategory, isOnboarded } from '@/lib/local-listings';
 import type { Listing, Review } from '@/types/database';
 
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
     if (!supabase) throw new Error('Supabase not configured');
     const { data: listing } = await supabase
       .from('listings')
@@ -51,12 +51,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ListingPage({ params }: Props) {
   const { slug } = await params;
 
+  // Fetch listing with service client (bypasses RLS that blocks anonymous access)
+  let supabaseListing = null;
+  let reviews: Review[] = [];
   try {
-    const supabase = await createClient();
-    if (!supabase) throw new Error('Supabase not configured');
-    // Try with provider join first; fall back to listing-only if join fails (e.g. RLS)
-    let supabaseListing = null;
-    const { data: withJoin } = await supabase
+    const serviceSupabase = await createServiceClient();
+    if (!serviceSupabase) throw new Error('Supabase not configured');
+
+    // Try with provider join first; fall back to listing-only if join fails
+    const { data: withJoin } = await serviceSupabase
       .from('listings')
       .select('*, provider:providers(*), photos:listing_photos(*)')
       .eq('slug', slug)
@@ -65,7 +68,7 @@ export default async function ListingPage({ params }: Props) {
     if (withJoin) {
       supabaseListing = withJoin;
     } else {
-      const { data: withoutJoin } = await supabase
+      const { data: withoutJoin } = await serviceSupabase
         .from('listings')
         .select('*, photos:listing_photos(*)')
         .eq('slug', slug)
@@ -75,59 +78,69 @@ export default async function ListingPage({ params }: Props) {
     }
 
     if (supabaseListing) {
-      const { data: reviews } = await supabase
+      const { data: reviewData } = await serviceSupabase
         .from('reviews')
         .select('*, tourist:users(id, full_name, avatar_url)')
         .eq('listing_id', supabaseListing.id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
         .limit(20);
+      reviews = (reviewData || []) as Review[];
 
-      void supabase.rpc('increment_listing_views', { listing_id: supabaseListing.id });
-
-      // Check if current user has a completed booking for this listing
-      const { data: { user } } = await supabase.auth.getUser();
-      let canReview = false;
-      let reviewBookingId: string | undefined;
-      if (user) {
-        const { data: completedBooking } = await supabase
-          .from('guest_bookings')
-          .select('id')
-          .eq('guest_email', user.email)
-          .eq('listing_id', supabaseListing.id)
-          .eq('status', 'completed')
-          .maybeSingle();
-        if (completedBooking) {
-          canReview = true;
-          reviewBookingId = completedBooking.id;
-        }
-      }
-
-      return (
-        <>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'LodgingBusiness',
-                name: supabaseListing.title,
-                description: (supabaseListing.short_description as string | null)?.slice(0, 200),
-                image: (supabaseListing as Listing).cover_image_url ?? undefined,
-              }),
-            }}
-          />
-          <ListingDetail
-            listing={supabaseListing as Listing}
-            reviews={(reviews || []) as Review[]}
-            canReview={canReview}
-            bookingId={reviewBookingId}
-          />
-        </>
-      );
+      void serviceSupabase.rpc('increment_listing_views', { listing_id: supabaseListing.id });
     }
   } catch {
     // Supabase not configured, fall through to local data
+  }
+
+  if (supabaseListing) {
+    // Auth-dependent check: can this user review? (separate try/catch so it doesn't break the page)
+    let canReview = false;
+    let reviewBookingId: string | undefined;
+    try {
+      const userSupabase = await createClient();
+      if (userSupabase) {
+        const { data: { user } } = await userSupabase.auth.getUser();
+        if (user) {
+          const { data: completedBooking } = await userSupabase
+            .from('guest_bookings')
+            .select('id')
+            .eq('guest_email', user.email)
+            .eq('listing_id', supabaseListing.id)
+            .eq('status', 'completed')
+            .maybeSingle();
+          if (completedBooking) {
+            canReview = true;
+            reviewBookingId = completedBooking.id;
+          }
+        }
+      }
+    } catch {
+      // Auth check failed — page still works, just without review capability
+    }
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'LodgingBusiness',
+              name: supabaseListing.title,
+              description: (supabaseListing.short_description as string | null)?.slice(0, 200),
+              image: (supabaseListing as Listing).cover_image_url ?? undefined,
+            }),
+          }}
+        />
+        <ListingDetail
+          listing={supabaseListing as Listing}
+          reviews={reviews}
+          canReview={canReview}
+          bookingId={reviewBookingId}
+        />
+      </>
+    );
   }
 
   // Fallback to scraped local data

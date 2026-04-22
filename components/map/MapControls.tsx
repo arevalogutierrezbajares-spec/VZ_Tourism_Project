@@ -1,7 +1,7 @@
 'use client';
 
 import { Sun, Moon, Maximize, Minimize } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMapStore } from '@/stores/map-store';
@@ -11,18 +11,27 @@ export function MapControls() {
   const { isDarkMode, toggleDarkMode } = useMapStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Sync fullscreen state with browser (handles Escape key exit)
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document.exitFullscreen().catch(() => {});
     }
   }, []);
 
   return (
     <TooltipProvider>
       <div
-        className="absolute top-4 right-4 flex flex-col gap-2 z-10"
+        className="absolute top-20 right-4 flex flex-col gap-2 z-10"
         role="toolbar"
         aria-label="Map controls"
       >

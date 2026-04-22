@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { SlidersHorizontal, MapPin, Route, LogIn, User, Luggage, Heart } from 'lucide-react';
+import { SlidersHorizontal, MapPin, Route, LogIn, User, Luggage, Heart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,12 +19,16 @@ import { SuggestionChips } from '@/components/search/SuggestionChips';
 import { AIResponsePanel } from '@/components/search/AIResponsePanel';
 import { FilterOverlay } from '@/components/search/FilterOverlay';
 import { ItineraryPanel } from '@/components/itinerary/ItineraryPanel';
+import { CitySearch } from '@/components/map/CitySearch';
+import { CitySidebar } from '@/components/map/CitySidebar';
+import { ListingModal } from '@/components/map/ListingModal';
 import { useSearch } from '@/hooks/use-search';
 import { useItinerary } from '@/hooks/use-itinerary';
 import { useAuth } from '@/hooks/use-auth';
 import { useMapStore } from '@/stores/map-store';
 import { useSearchStore } from '@/stores/search-store';
 import { BUSINESS_CATEGORIES } from '@/lib/mapbox/helpers';
+import { VENEZUELA_CENTER, VENEZUELA_DEFAULT_ZOOM } from '@/lib/constants';
 import { getInitials } from '@/lib/utils';
 import type { MapPin as MapPinType } from '@/types/map';
 
@@ -49,11 +53,12 @@ function MapPageContent() {
   const { isOpen: itineraryOpen, createNew } = useItinerary();
   const { isAuthenticated, user, profile, signOut } = useAuth();
   const router = useRouter();
-  const { setPins, hiddenCategories, toggleCategory } = useMapStore();
+  const { setPins, setCenter, setZoom, selectedPin, setSelectedPin, hiddenCategories, toggleCategory, setTargetBounds } = useMapStore();
   const searchFilters = useSearchStore((s) => s.filters);
   const [activeCategory, setActiveCategory] = useState(CATEGORY_FILTER_ALL);
   const [totalCount, setTotalCount] = useState(0);
   const [allPins, setAllPins] = useState<MapPinType[]>([]);
+  const [cityFilter, setCityFilter] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
   // Handle deep-link intents from the "Build my itinerary" modal
@@ -192,6 +197,41 @@ function MapPageContent() {
     }
   };
 
+  const handleCitySelect = (city: { name: string; lat: number; lng: number; isRegion?: boolean }) => {
+    setCityFilter(city.name);
+    // Filter pins to match — exact match for city, includes for region (covers sub-areas)
+    const q = city.name.toLowerCase();
+    const filtered = allPins.filter((p) => {
+      const pinCity = (p.city ?? '').toLowerCase();
+      const pinRegion = (p.region ?? '').toLowerCase();
+      return pinCity === q || pinRegion === q || pinRegion.includes(q);
+    });
+    const pinsToShow = filtered.length > 0 ? filtered : allPins;
+    setPins(pinsToShow);
+
+    // Fit map to the filtered pins' bounding box for optimal framing
+    if (pinsToShow.length > 1) {
+      const lngs = pinsToShow.map((p) => p.lng);
+      const lats = pinsToShow.map((p) => p.lat);
+      setTargetBounds([
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+      ]);
+    } else {
+      // Single pin or no matches: fly to the city point
+      setCenter([city.lng, city.lat]);
+      setZoom(city.isRegion ? 9 : 12);
+    }
+  };
+
+  const handleCityClear = () => {
+    setCityFilter(null);
+    setPins(allPins);
+    setTargetBounds(null);
+    setCenter(VENEZUELA_CENTER);
+    setZoom(VENEZUELA_DEFAULT_ZOOM);
+  };
+
   return (
     <div className="relative h-dvh w-full overflow-hidden">
       {/* Full-screen map */}
@@ -249,9 +289,15 @@ function MapPageContent() {
         </div>
 
         {/* Top search bar + filter chips */}
-        <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 z-20">
+        <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-20">
           <div className="space-y-2">
-            <div className="flex gap-2">
+            {/* Airbnb-style search row: City picker | AI search | Filters */}
+            <div className="flex gap-2 items-center">
+              <CitySearch
+                pins={allPins}
+                onSelectCity={handleCitySelect}
+                onClear={handleCityClear}
+              />
               <SearchBar
                 onSearch={search}
                 isLoading={isStreaming}
@@ -260,7 +306,7 @@ function MapPageContent() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-12 w-12 rounded-2xl bg-background shadow-lg border focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="h-12 w-12 rounded-2xl bg-background shadow-lg border flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={toggleFilterPanel}
                 aria-label="Open filters"
                 aria-expanded={isFilterOpen}
@@ -268,6 +314,24 @@ function MapPageContent() {
                 <SlidersHorizontal className="w-4 h-4" />
               </Button>
             </div>
+
+            {/* Active city filter badge */}
+            {cityFilter && !hasSearched && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full pl-3 pr-2 py-1 text-xs font-medium">
+                  <MapPin className="w-3 h-3" />
+                  {cityFilter}
+                  <button
+                    type="button"
+                    onClick={handleCityClear}
+                    className="p-0.5 rounded-full hover:bg-primary/20 transition-colors"
+                    aria-label={`Remove ${cityFilter} filter`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              </div>
+            )}
 
             {/* Category filter chips */}
             {totalCount > 0 && !hasSearched && (
@@ -338,6 +402,18 @@ function MapPageContent() {
           </div>
         )}
 
+        {/* City sidebar — bottom left */}
+        {!hasSearched && totalCount > 0 && (
+          <div className="pointer-events-auto absolute bottom-20 left-4 z-10">
+            <CitySidebar
+              pins={allPins}
+              activeCity={cityFilter}
+              onSelectCity={handleCitySelect}
+              onClear={handleCityClear}
+            />
+          </div>
+        )}
+
         {/* Bottom controls */}
         <div className="pointer-events-auto absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
           {isAuthenticated && (
@@ -360,6 +436,14 @@ function MapPageContent() {
           </a>
         </div>
       </div>
+
+      {/* Listing detail modal — centered */}
+      {selectedPin && (
+        <ListingModal
+          pin={selectedPin}
+          onClose={() => setSelectedPin(null)}
+        />
+      )}
 
       {/* Itinerary side panel */}
       {itineraryOpen && <ItineraryPanel />}

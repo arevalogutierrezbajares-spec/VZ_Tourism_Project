@@ -16,6 +16,7 @@ interface MapState {
   is3DTerrain: boolean;
   isDarkMode: boolean;
   hiddenCategories: Set<string>;
+  targetBounds: [[number, number], [number, number]] | null;
 }
 
 interface MapActions {
@@ -33,6 +34,7 @@ interface MapActions {
   toggle3DTerrain: () => void;
   toggleDarkMode: () => void;
   toggleCategory: (category: string) => void;
+  setTargetBounds: (bounds: [[number, number], [number, number]] | null) => void;
 }
 
 type MapStore = MapState & MapActions;
@@ -52,6 +54,7 @@ export const useMapStore = create<MapStore>()(
       is3DTerrain: false,
       isDarkMode: false,
       hiddenCategories: new Set<string>(),
+      targetBounds: null,
 
       // Actions
       setCenter: (center) => set({ center }),
@@ -105,6 +108,8 @@ export const useMapStore = create<MapStore>()(
           else next.add(category);
           return { hiddenCategories: next };
         }),
+
+      setTargetBounds: (targetBounds) => set({ targetBounds }),
     }),
     { name: 'map-store' }
   )
