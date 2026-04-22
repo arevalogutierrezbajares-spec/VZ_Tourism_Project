@@ -143,8 +143,12 @@ function ConversationRow({
 
 function MessageBubble({ msg }: { msg: WaMessage }) {
   const isOut = msg.role === 'outbound';
-  const [showTranslation, setShowTranslation] = useState(false);
-  const hasTranslation = !!(msg.content_en && msg.content_en !== msg.content);
+  const [showLang, setShowLang] = useState<'none' | 'es' | 'en'>('none');
+
+  const hasEs = !!(msg.content_es && msg.content_es !== msg.content);
+  const hasEn = !!(msg.content_en && msg.content_en !== msg.content);
+  const hasAnyTranslation = hasEs || hasEn;
+  const langLabel = msg.detected_lang?.toUpperCase() ?? '?';
 
   return (
     <div className={cn('flex gap-2 mb-2', isOut ? 'flex-row-reverse' : 'flex-row')}>
@@ -167,21 +171,43 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           {msg.content}
         </div>
 
-        {/* English translation toggle */}
-        {hasTranslation && (
-          <div className={cn('px-1', isOut ? 'text-right' : 'text-left')}>
-            <button
-              onClick={() => setShowTranslation((s) => !s)}
-              className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
-            >
-              {showTranslation ? 'Hide translation' : `Show in English (${msg.detected_lang?.toUpperCase() ?? '?'})`}
-            </button>
-            {showTranslation && (
-              <p className="text-[11px] text-muted-foreground italic mt-1 bg-muted/40 px-2 py-1 rounded-lg">
-                {msg.content_en}
-              </p>
+        {/* Translation toggles — Spanish primary (posada admin), English secondary */}
+        {hasAnyTranslation && (
+          <div className={cn('flex items-center gap-2 px-1', isOut ? 'justify-end' : 'justify-start')}>
+            {hasEs && (
+              <button
+                onClick={() => setShowLang((s) => s === 'es' ? 'none' : 'es')}
+                className={cn(
+                  'text-[10px] underline-offset-2 hover:underline transition-colors',
+                  showLang === 'es' ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {showLang === 'es' ? 'Ocultar ES' : `Ver en Español (${langLabel})`}
+              </button>
+            )}
+            {hasEs && hasEn && <span className="text-[10px] text-muted-foreground/40">·</span>}
+            {hasEn && (
+              <button
+                onClick={() => setShowLang((s) => s === 'en' ? 'none' : 'en')}
+                className={cn(
+                  'text-[10px] underline-offset-2 hover:underline transition-colors',
+                  showLang === 'en' ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {showLang === 'en' ? 'Hide EN' : `Show in English (${langLabel})`}
+              </button>
             )}
           </div>
+        )}
+        {showLang === 'es' && hasEs && (
+          <p className="text-[11px] text-muted-foreground italic mx-1 bg-muted/40 px-2 py-1 rounded-lg">
+            {msg.content_es}
+          </p>
+        )}
+        {showLang === 'en' && hasEn && (
+          <p className="text-[11px] text-muted-foreground italic mx-1 bg-muted/40 px-2 py-1 rounded-lg">
+            {msg.content_en}
+          </p>
         )}
 
         <div className={cn('flex items-center gap-1 px-1', isOut ? 'flex-row-reverse' : 'flex-row')}>
@@ -189,7 +215,7 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
           {isOut && msg.is_ai && <Sparkles className="w-2.5 h-2.5 text-muted-foreground" />}
           {isOut && !msg.is_ai && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
           {msg.flagged && <AlertTriangle className="w-2.5 h-2.5 text-destructive" />}
-          {hasTranslation && !showTranslation && (
+          {hasAnyTranslation && showLang === 'none' && (
             <Globe className="w-2.5 h-2.5 text-primary/60" aria-label={`Message in ${msg.detected_lang}`} />
           )}
         </div>

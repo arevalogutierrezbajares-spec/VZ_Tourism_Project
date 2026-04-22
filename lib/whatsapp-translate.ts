@@ -20,6 +20,7 @@ const DetectAndTranslateSchema = z.object({
   languageName: z.string().optional(),
   confidence: z.enum(['high', 'medium', 'low']).default('medium'),
   english: z.string().nullable().default(null),
+  spanish: z.string().nullable().default(null),
 });
 
 export interface DetectResult {
@@ -137,17 +138,20 @@ export async function translateToEnglish(
 }
 
 /**
- * Detect language AND produce English translation in a single Groq call.
- * More efficient than calling detectLanguage() + translateToEnglish() separately.
+ * Detect language AND produce English + Spanish translations in a single Groq call.
+ * Returns both translations so posada admins (Spanish) and platform admins (English)
+ * can always read conversations regardless of guest language.
  */
 export async function detectAndTranslate(text: string): Promise<{
   detected: DetectResult;
   english: string | null; // null if already English
+  spanish: string | null; // null if already Spanish
 }> {
   if (!text?.trim()) {
     return {
       detected: { language: 'en', languageName: 'English', isEnglish: true, confidence: 'low' },
       english: null,
+      spanish: null,
     };
   }
 
@@ -164,18 +168,22 @@ export async function detectAndTranslate(text: string): Promise<{
 - "languageName": language name in English (e.g. "Spanish")
 - "confidence": "high" | "medium" | "low"
 - "english": English translation of the message, or null if the message is already in English
+- "spanish": Spanish translation of the message, or null if the message is already in Spanish
 
 Rules:
-- Preserve emoji, phone numbers, URLs, and proper nouns in the translation
+- Preserve emoji, phone numbers, URLs, and proper nouns in translations
 - Return ONLY valid JSON — no markdown, no explanation
-- If the text is too short to detect confidently, use confidence: "low" and guess Spanish`,
+- If the text is too short to detect confidently, use confidence: "low" and guess Spanish
+- For messages already in Spanish: english = <translation>, spanish = null
+- For messages already in English: spanish = <translation>, english = null
+- For other languages (Portuguese, French, etc.): provide BOTH english and spanish translations`,
         },
         {
           role: 'user',
           content: text.slice(0, 500),
         },
       ],
-      max_tokens: 600,
+      max_tokens: 800,
       temperature: 0.1,
     });
 
@@ -185,6 +193,7 @@ Rules:
 
     const code = parsed.language.toLowerCase();
     const isEnglish = code === 'en' || code.startsWith('en-');
+    const isSpanish = code === 'es' || code.startsWith('es-');
 
     return {
       detected: {
@@ -194,6 +203,7 @@ Rules:
         confidence: parsed.confidence,
       },
       english: isEnglish ? null : parsed.english,
+      spanish: isSpanish ? null : parsed.spanish,
     };
   } catch {
     // Fallback
@@ -206,6 +216,7 @@ Rules:
         confidence: 'low',
       },
       english: null,
+      spanish: null,
     };
   }
 }

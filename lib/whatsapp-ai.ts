@@ -33,6 +33,7 @@ interface BuildReplyOptions {
   knowledge?: PosadaKnowledge | null;
   availabilityNote?: string;
   liveContext?: string;
+  detectedLang?: string | null;
 }
 
 // ─── Knowledge base formatter ─────────────────────────────────────────────────
@@ -166,12 +167,21 @@ export function buildSystemPrompt(opts: BuildReplyOptions): string {
       ? 'Use warm, friendly, conversational language. Use "tú" in Spanish.'
       : "Use neutral, polite language. Match the guest's register.";
 
+  // When detected language is not ES/EN, always use auto-detect behavior
+  // (workaround for PostgREST caching tone_language value)
+  const effectiveLang =
+    opts.detectedLang && !['es', 'en'].includes(opts.detectedLang) && config.tone_language !== 'es' && config.tone_language !== 'en'
+      ? 'auto'
+      : config.tone_language;
+
   const langGuide =
-    config.tone_language === 'es'
+    effectiveLang === 'es'
       ? 'Always respond in Spanish only.'
-      : config.tone_language === 'en'
+      : effectiveLang === 'en'
       ? 'Always respond in English only.'
-      : 'Detect the guest\'s language and respond in the same language (Spanish or English).';
+      : effectiveLang === 'auto'
+      ? 'ALWAYS respond in the same language the guest is using. If they write in Portuguese, reply in Portuguese. If French, reply in French. If Italian, reply in Italian. If Chinese, reply in Chinese. Match their language exactly.'
+      : 'ALWAYS respond in the same language the guest is using. If they write in Spanish, reply in Spanish. If English, reply in English. If any other language, reply in that language. Match their language exactly.';
 
   const lengthGuide =
     config.response_length === 'brief'
@@ -222,7 +232,7 @@ Your role:
 
 Tone & style:
 - ${formalityGuide}
-- ${langGuide}
+- ${langGuide}${opts.detectedLang ? `\n- The guest's detected language is: ${opts.detectedLang}. Reply in this language.` : ''}
 - ${lengthGuide}
 - ${pressureGuide}
 ${upsellGuide}

@@ -10,9 +10,31 @@ import { isWithinWorkingHours } from '@/lib/whatsapp-hours';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import { hashToken } from '@/lib/whatsapp/hash';
+import { Redis } from '@upstash/redis';
 import { rateLimit, groqRateLimit } from '@/lib/api/rate-limit';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 import type { ServiceClient } from '@/types/supabase-client';
+
+// ─── Reply debounce ─────────────────────────────────────────────────────────
+// Wait 60s after the last inbound message before generating an AI reply.
+// This lets guests finish typing multiple messages — the AI sees the full context.
+
+const DEBOUNCE_MS = process.env.NODE_ENV === 'development' ? 5_000 : 60_000;
+
+const debounceRedis = process.env.UPSTASH_REDIS_REST_URL
+  ? Redis.fromEnv()
+  : null;
+
+async function setDebounce(convId: string, timestamp: number): Promise<void> {
+  if (!debounceRedis) return;
+  await debounceRedis.set(`debounce:${convId}`, timestamp, { ex: 120 });
+}
+
+async function isLatestDebounce(convId: string, timestamp: number): Promise<boolean> {
+  if (!debounceRedis) return true; // no Redis = reply immediately
+  const stored = await debounceRedis.get<number>(`debounce:${convId}`);
+  return stored === timestamp;
+}
 
 // Regex to extract [NEEDS_HUMAN: <reason>] tag from AI replies.
 // Permissive — matches anywhere in the string so the LLM can place it mid-reply.
@@ -223,10 +245,11 @@ async function handleMessage(
   ]);
 
   const detectedLang = translation?.detected.language ?? null;
-  const contentEn = translation?.english ?? null; // null = already English
+  const contentEn = translation?.english ?? null;
+  const contentEs = translation?.spanish ?? null;
 
-  // 5. Persist inbound message (with language + English trail)
-  await supabase.from('wa_messages').insert({
+  // 5. Persist inbound message (with language + dual translations)
+  const { data: insertedMsg } = await supabase.from('wa_messages').insert({
     conversation_id: conv.id,
     wa_message_id: waMessageId,
     role: 'inbound',
@@ -237,7 +260,12 @@ async function handleMessage(
     flagged: sentiment.flagged,
     flag_reason: sentiment.flag_reason,
     sentiment_score: sentiment.score,
-  });
+  }).select('id').single();
+
+  // Set content_es via RPC (bypasses PostgREST column cache)
+  if (insertedMsg && contentEs) {
+    await supabase.rpc('set_message_content_es', { msg_id: insertedMsg.id, es_text: contentEs });
+  }
 
   // 6. Update conversation preview + detected language
   await supabase
@@ -297,89 +325,146 @@ async function handleMessage(
     return;
   }
 
-  // 11. Load history + knowledge in parallel (independent queries)
+  // 11. Debounce: wait 60s for the guest to finish typing before replying.
+  //     Each new message resets the timer. After 60s of silence, generate one
+  //     AI reply that accounts for ALL messages sent during the window.
+  const debounceTs = Date.now();
+  await setDebounce(conv.id, debounceTs);
+
+  // Mark inbound as read immediately (don't wait for the debounce)
+  await markWhatsAppRead({
+    phoneNumberId: config.phone_number_id,
+    accessToken,
+    messageId: waMessageId,
+  });
+
+  // Schedule the delayed reply via waitUntil (keeps serverless function alive)
+  waitUntil(
+    scheduleDelayedReply({
+      debounceTs,
+      convId: conv.id,
+      config,
+      provider,
+      accessToken,
+      guestPhone: from,
+    })
+  );
+}
+
+// ─── Debounced AI reply ─────────────────────────────────────────────────────
+
+interface DelayedReplyOpts {
+  debounceTs: number;
+  convId: string;
+  config: PosadaWhatsappConfig;
+  provider: { id: string; business_name: string; description: string; region: string };
+  accessToken: string;
+  guestPhone: string;
+}
+
+async function scheduleDelayedReply(opts: DelayedReplyOpts) {
+  // Wait for the guest to stop typing
+  await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS));
+
+  // Check if a newer message reset the debounce
+  if (!(await isLatestDebounce(opts.convId, opts.debounceTs))) {
+    return; // a newer message will handle the reply
+  }
+
+  const supabase = await createServiceClient();
+  if (!supabase) return;
+
+  // Re-check conversation status (may have been escalated or closed during the wait)
+  const { data: conv } = await supabase
+    .from('wa_conversations')
+    .select('id, status')
+    .eq('id', opts.convId)
+    .single();
+
+  if (!conv || conv.status === 'human' || conv.status === 'closed' || conv.status === 'escalated') return;
+
+  // Per-provider Groq rate limit
+  if (await groqRateLimit(opts.config.provider_id)) {
+    console.warn(`[webhook] Groq rate limited for provider: ${opts.config.provider_id}`);
+    const fallback = opts.config.after_hours_message || 'Estamos recibiendo muchos mensajes. Te responderemos pronto.';
+    await sendAndPersist(supabase, opts.convId, opts.config, opts.accessToken, opts.guestPhone, fallback, true);
+    return;
+  }
+
+  // Load full history + knowledge (gets ALL messages including ones sent during the wait)
   const [{ data: history }, { data: knowledge }] = await Promise.all([
     supabase
       .from('wa_messages')
       .select('id, role, content, is_ai, created_at')
-      .eq('conversation_id', conv.id)
+      .eq('conversation_id', opts.convId)
       .order('created_at', { ascending: true })
       .limit(20) as unknown as Promise<{ data: WaMessage[] | null }>,
     supabase
       .from('posada_knowledge')
       .select('*')
-      .eq('provider_id', provider.id)
+      .eq('provider_id', opts.provider.id)
       .single() as unknown as Promise<{ data: PosadaKnowledge | null }>,
   ]);
 
-  // 11c. Build live context (dynamic pricing + availability)
-  const liveContext = await buildLiveContext(supabase, provider.id, knowledge).catch(() => undefined);
+  const liveContext = await buildLiveContext(supabase, opts.provider.id, knowledge).catch(() => undefined);
 
-  // 11d. Per-provider Groq rate limit
-  if (await groqRateLimit(config.provider_id)) {
-    console.warn(`[webhook] Groq rate limited for provider: ${config.provider_id}`);
-    const fallback = config.after_hours_message || 'Estamos recibiendo muchos mensajes. Te responderemos pronto.';
-    await sendAndPersist(supabase, conv.id, config, accessToken, from, fallback, true);
-    return;
-  }
+  // Get the latest inbound message text for the AI (it sees full history anyway)
+  const lastInbound = (history ?? []).filter((m) => m.role === 'inbound').pop();
+  const inboundText = lastInbound?.content ?? '';
 
-  // 12. Generate AI reply via Groq
+  // Detect language from the latest message
+  const translation = await detectAndTranslate(inboundText).catch(() => null);
+  const detectedLang = translation?.detected.language ?? null;
+
+  // Generate AI reply
   let rawReply: string;
   try {
     rawReply = await generateReply({
-      config,
-      providerName: provider.business_name,
-      providerDescription: provider.description,
-      providerRegion: provider.region,
-      inboundText: body,
+      config: opts.config,
+      providerName: opts.provider.business_name,
+      providerDescription: opts.provider.description,
+      providerRegion: opts.provider.region,
+      inboundText,
       history: (history ?? []).filter((m) => m.id !== undefined),
       knowledge,
       liveContext,
+      detectedLang,
     });
   } catch (groqErr) {
     console.error('[whatsapp/webhook] Groq error — sending fallback message:', groqErr);
-    const fallbackMsg = config.tone_language === 'es'
+    const fallbackMsg = opts.config.tone_language === 'es'
       ? 'Estamos experimentando una breve demora. Un miembro del equipo responderá en breve.'
       : 'We\'re experiencing a brief delay. A team member will respond shortly.';
-    await sendAndPersist(supabase, conv.id, config, accessToken, from, fallbackMsg, true);
-    // Escalate so a human follows up
-    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
+    await sendAndPersist(supabase, opts.convId, opts.config, opts.accessToken, opts.guestPhone, fallbackMsg, true);
+    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', opts.convId);
     await supabase.from('wa_escalations').insert({
-      conversation_id: conv.id,
+      conversation_id: opts.convId,
       reason: 'AI (Groq) timeout or error — fallback message sent',
       trigger_type: 'sentiment',
     });
     return;
   }
 
-  // 12b. Parse HITL escalation tag
+  // Parse HITL escalation tag
   const hitlMatch = rawReply.match(NEEDS_HUMAN_RE);
   const reply = rawReply.replace(NEEDS_HUMAN_RE, '').replace(/\s{2,}/g, ' ').trim();
   const needsHuman = !!hitlMatch;
   const hitlReason = hitlMatch?.[1]?.trim() ?? null;
 
-  // 13. Send + persist outbound (with English trail if AI replied in another language)
-  const replyEn = detectedLang && detectedLang !== 'en'
-    ? await detectAndTranslate(reply).then((r) => r.english).catch(() => null)
-    : null;
-  await sendAndPersist(supabase, conv.id, config, accessToken, from, reply, true, detectedLang, replyEn);
+  // Dual-translate the outbound reply so admins can read it
+  const replyTranslation = await detectAndTranslate(reply).catch(() => null);
+  const replyEn = replyTranslation?.english ?? null;
+  const replyEs = replyTranslation?.spanish ?? null;
+  await sendAndPersist(supabase, opts.convId, opts.config, opts.accessToken, opts.guestPhone, reply, true, detectedLang, replyEn, replyEs);
 
-  // 13b. If AI flagged uncertainty — escalate and notify provider
   if (needsHuman) {
-    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
+    await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', opts.convId);
     await supabase.from('wa_escalations').insert({
-      conversation_id: conv.id,
+      conversation_id: opts.convId,
       reason: `AI requested human review: ${hitlReason}`,
       trigger_type: 'sentiment',
     });
   }
-
-  // 14. Mark inbound as read
-  await markWhatsAppRead({
-    phoneNumberId: config.phone_number_id,
-    accessToken: accessToken,
-    messageId: waMessageId,
-  });
 }
 
 async function sendAndPersist(
@@ -391,7 +476,8 @@ async function sendAndPersist(
   body: string,
   isAi: boolean,
   detectedLang?: string | null,
-  contentEn?: string | null
+  contentEn?: string | null,
+  contentEs?: string | null
 ) {
   const result = await sendWhatsAppText({
     phoneNumberId: config.phone_number_id,
@@ -405,7 +491,7 @@ async function sendAndPersist(
     // Still persist so the provider can see the attempted reply in the dashboard.
   }
 
-  const { error: insertError } = await supabase.from('wa_messages').insert({
+  const { data: inserted, error: insertError } = await supabase.from('wa_messages').insert({
     conversation_id: convId,
     wa_message_id: result.messageId ?? null,
     role: 'outbound',
@@ -414,9 +500,14 @@ async function sendAndPersist(
     detected_lang: detectedLang ?? null,
     is_ai: isAi,
     flagged: false,
-  });
+  }).select('id').single();
   if (insertError) {
     console.error('[whatsapp/webhook] wa_messages insert failed:', insertError.message);
+  }
+
+  // Set content_es via RPC (bypasses PostgREST column cache)
+  if (inserted && contentEs) {
+    await supabase.rpc('set_message_content_es', { msg_id: inserted.id, es_text: contentEs });
   }
 
   await supabase

@@ -448,7 +448,7 @@ export type WaConversationStatus = 'ai' | 'human' | 'escalated' | 'closed';
 export type WaBookingStage = 'lead' | 'quoted' | 'confirmed' | 'checked_in' | 'closed';
 export type WaMessageRole = 'inbound' | 'outbound';
 export type WaToneFormality = 'casual' | 'neutral' | 'formal';
-export type WaToneLanguage = 'es' | 'en' | 'bilingual';
+export type WaToneLanguage = 'es' | 'en' | 'bilingual' | 'auto';
 export type WaResponseLength = 'brief' | 'standard' | 'detailed';
 export type WaBookingPressure = 'soft' | 'direct';
 export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_uncertainty';
@@ -534,6 +534,7 @@ export interface WaMessage {
   role: WaMessageRole;
   content: string;
   content_en: string | null;      // English translation (null if already English)
+  content_es: string | null;      // Spanish translation (null if already Spanish)
   detected_lang: string | null;   // BCP-47 language code
   is_ai: boolean;
   flagged: boolean;

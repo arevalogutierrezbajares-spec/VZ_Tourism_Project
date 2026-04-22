@@ -27,6 +27,17 @@ function isWeekend(dateStr: string): boolean {
   return dow === 0 || dow === 6;
 }
 
+function dateRange(start: string, end: string): string[] {
+  const dates: string[] = [];
+  const current = new Date(start + 'T00:00:00Z');
+  const last = new Date(end + 'T00:00:00Z');
+  while (current <= last) {
+    dates.push(toYMD(current));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+  return dates;
+}
+
 function diffDays(a: string, b: string): number {
   return Math.round(
     (new Date(b + 'T00:00:00Z').getTime() - new Date(a + 'T00:00:00Z').getTime()) /
@@ -247,7 +258,7 @@ export async function buildLiveContext(
     lines.push('');
   }
 
-  // ── Live availability (file-based store, may be empty in production) ───────
+  // ── Live availability ───────────────────────────────────────────────────────
   try {
     // Fetch listing IDs for this provider from Supabase
     const { data: listings } = await supabase
@@ -256,46 +267,182 @@ export async function buildLiveContext(
       .eq('provider_id', providerId)
       .limit(5);
 
+    const end30 = toYMD(addDays(today, 30));
+
     if (listings?.length) {
       lines.push('### Availability (next 30 days)');
 
-      const end30 = toYMD(addDays(today, 30));
-
       for (const listing of listings) {
-        const entries = getAvailability(listing.id, todayStr, end30);
-        const windows = collapseWindows(entries);
-        const blockedWindows = windows.filter((w) => !w.isAvailable);
-        const availableDays = entries.filter((e) => e.is_available).length;
-
-        if (blockedWindows.length === 0) {
-          lines.push(`  - **${listing.title}**: Fully available for the next 30 days`);
-        } else {
-          const blockedStr = blockedWindows
-            .map((w) => {
-              const nights = diffDays(w.start, w.end) + 1;
-              return `${formatDate(w.start)}${w.start !== w.end ? `–${formatDate(w.end)}` : ''} (${nights}n)`;
-            })
-            .join(', ');
-          lines.push(
-            `  - **${listing.title}**: ${availableDays}/30 days available · Blocked: ${blockedStr}`
-          );
+        // Try file store first (local dev), then fall back to Supabase
+        let fileEntries: { date: string; is_available: boolean }[] = [];
+        try {
+          fileEntries = getAvailability(listing.id, todayStr, end30);
+        } catch {
+          // File store unavailable (serverless) — will use Supabase below
         }
 
-        // Also check room types from file store for overridden prices
-        const fileRooms = getRoomTypes(listing.id);
-        if (fileRooms.length > 0) {
-          for (const fr of fileRooms) {
-            const effectivePrice = applyPricingRules(fr.base_price, todayStr, rules);
+        const hasFileData = fileEntries.some((e) => !e.is_available);
+
+        if (hasFileData) {
+          // File store has real data — use it
+          const windows = collapseWindows(fileEntries);
+          const blockedWindows = windows.filter((w) => !w.isAvailable);
+          const availableDays = fileEntries.filter((e) => e.is_available).length;
+
+          if (blockedWindows.length === 0) {
+            lines.push(`  - **${listing.title}**: Fully available for the next 30 days`);
+          } else {
+            const blockedStr = blockedWindows
+              .map((w) => {
+                const nights = diffDays(w.start, w.end) + 1;
+                return `${formatDate(w.start)}${w.start !== w.end ? `–${formatDate(w.end)}` : ''} (${nights}n)`;
+              })
+              .join(', ');
             lines.push(
-              `    • ${fr.name}: $${effectivePrice}/night (base $${fr.base_price})`
+              `  - **${listing.title}**: ${availableDays}/30 days available · Blocked: ${blockedStr}`
             );
+          }
+
+          // Also check room types from file store for overridden prices
+          const fileRooms = getRoomTypes(listing.id);
+          if (fileRooms.length > 0) {
+            for (const fr of fileRooms) {
+              const effectivePrice = applyPricingRules(fr.base_price, todayStr, rules);
+              lines.push(
+                `    • ${fr.name}: $${effectivePrice}/night (base $${fr.base_price})`
+              );
+            }
+          }
+        } else {
+          // Fall back to Supabase availability + guest_bookings
+          const [{ data: availRows }, { data: bookingRows }] = await Promise.all([
+            supabase
+              .from('availability')
+              .select('date, is_available, price_override_usd, slots, booked_slots')
+              .eq('listing_id', listing.id)
+              .gte('date', todayStr)
+              .lte('date', end30)
+              .order('date'),
+            supabase
+              .from('guest_bookings')
+              .select('check_in, check_out, guest_count, status, guest_name')
+              .eq('listing_id', listing.id)
+              .in('status', ['pending', 'confirmed'])
+              .gte('check_out', todayStr)
+              .lte('check_in', end30)
+              .order('check_in'),
+          ]);
+
+          // Build a date→blocked map from explicit availability rows
+          const blockedDates = new Set<string>();
+          if (availRows?.length) {
+            for (const row of availRows) {
+              const dateStr = typeof row.date === 'string' ? row.date : toYMD(new Date(row.date));
+              if (!row.is_available || (row.slots > 0 && row.booked_slots >= row.slots)) {
+                blockedDates.add(dateStr);
+              }
+            }
+          }
+
+          // Also block dates that have confirmed/pending bookings
+          if (bookingRows?.length) {
+            for (const bk of bookingRows) {
+              const ciStr = typeof bk.check_in === 'string' ? bk.check_in : toYMD(new Date(bk.check_in));
+              const coStr = typeof bk.check_out === 'string' ? bk.check_out : toYMD(new Date(bk.check_out));
+              // Block check_in through check_out - 1 (checkout day is free)
+              const d = new Date(ciStr + 'T00:00:00Z');
+              const coDate = new Date(coStr + 'T00:00:00Z');
+              while (d < coDate) {
+                blockedDates.add(toYMD(d));
+                d.setUTCDate(d.getUTCDate() + 1);
+              }
+            }
+          }
+
+          if (blockedDates.size === 0) {
+            lines.push(`  - **${listing.title}**: Fully available for the next 30 days`);
+          } else {
+            // Collapse blocked dates into windows
+            const allDates = dateRange(todayStr, end30);
+            const entries = allDates.map((date) => ({
+              date,
+              is_available: !blockedDates.has(date),
+            }));
+            const windows = collapseWindows(entries);
+            const blockedWindows = windows.filter((w) => !w.isAvailable);
+            const availableDays = entries.filter((e) => e.is_available).length;
+            const blockedStr = blockedWindows
+              .map((w) => {
+                const nights = diffDays(w.start, w.end) + 1;
+                return `${formatDate(w.start)}${w.start !== w.end ? `–${formatDate(w.end)}` : ''} (${nights}n)`;
+              })
+              .join(', ');
+            lines.push(
+              `  - **${listing.title}**: ${availableDays}/${allDates.length} days available · Booked: ${blockedStr}`
+            );
+          }
+
+          // Show upcoming bookings so AI knows what's reserved
+          if (bookingRows?.length) {
+            lines.push(`  _Upcoming bookings:_`);
+            for (const bk of bookingRows.slice(0, 5)) {
+              const ci = formatDate(typeof bk.check_in === 'string' ? bk.check_in : toYMD(new Date(bk.check_in)));
+              const co = formatDate(typeof bk.check_out === 'string' ? bk.check_out : toYMD(new Date(bk.check_out)));
+              lines.push(`    • ${ci} – ${co}: ${bk.guest_count} guest${bk.guest_count > 1 ? 's' : ''} (${bk.status})`);
+            }
+          }
+        }
+      }
+      lines.push('');
+    } else {
+      // No listings in DB — check guest_bookings by provider_id directly
+      const { data: providerBookings } = await supabase
+        .from('guest_bookings')
+        .select('check_in, check_out, guest_count, status, guest_name')
+        .eq('provider_id', providerId)
+        .in('status', ['pending', 'confirmed'])
+        .gte('check_out', todayStr)
+        .lte('check_in', end30)
+        .order('check_in');
+
+      lines.push('### Availability (next 30 days)');
+
+      if (providerBookings?.length) {
+        // Build blocked dates from bookings
+        const blockedDates = new Set<string>();
+        for (const bk of providerBookings) {
+          const ciStr = typeof bk.check_in === 'string' ? bk.check_in : toYMD(new Date(bk.check_in));
+          const coStr = typeof bk.check_out === 'string' ? bk.check_out : toYMD(new Date(bk.check_out));
+          const d = new Date(ciStr + 'T00:00:00Z');
+          const coDate = new Date(coStr + 'T00:00:00Z');
+          while (d < coDate) {
+            blockedDates.add(toYMD(d));
+            d.setUTCDate(d.getUTCDate() + 1);
+          }
+        }
+
+        const allDates = dateRange(todayStr, end30);
+        const availableDays = allDates.filter((d) => !blockedDates.has(d)).length;
+        lines.push(`  - ${availableDays}/${allDates.length} days available`);
+        lines.push(`  _Upcoming bookings:_`);
+        for (const bk of providerBookings.slice(0, 5)) {
+          const ci = formatDate(typeof bk.check_in === 'string' ? bk.check_in : toYMD(new Date(bk.check_in)));
+          const co = formatDate(typeof bk.check_out === 'string' ? bk.check_out : toYMD(new Date(bk.check_out)));
+          lines.push(`    • ${ci} – ${co}: ${bk.guest_count} guest${bk.guest_count > 1 ? 's' : ''} (${bk.status})`);
+        }
+      } else {
+        lines.push('  - No current bookings — all rooms appear available for the next 30 days.');
+        if (knowledgeRooms.length > 0) {
+          lines.push('  _Rooms:_');
+          for (const room of knowledgeRooms) {
+            lines.push(`    • ${room.name}: up to ${room.capacity} guests — $${room.price_usd}/night`);
           }
         }
       }
       lines.push('');
     }
   } catch {
-    // File store not available (e.g. serverless) — silently skip availability block
+    // Availability data unavailable — silently skip
   }
 
   // ── Pricing guidance for the AI ───────────────────────────────────────────

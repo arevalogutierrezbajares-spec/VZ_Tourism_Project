@@ -119,7 +119,7 @@ function StatusTab({ cfg, onChange, onSave, saving }: {
               </p>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {cfg.ai_enabled
-                  ? `Responding as ${cfg.persona_name || 'Asistente'} · ${cfg.tone_language === 'es' ? 'Spanish' : cfg.tone_language === 'en' ? 'English' : 'Bilingual'}`
+                  ? `Responding as ${cfg.persona_name || 'Asistente'} · ${{ es: 'Spanish', en: 'English', bilingual: 'Bilingual', auto: 'All Languages' }[cfg.tone_language] ?? 'Bilingual'}`
                   : 'All messages will be held for manual response.'}
               </p>
             </div>
@@ -362,13 +362,14 @@ function CommunicationTab({ cfg, onChange, onSave, saving }: {
         <div className="space-y-3">
           <p className="text-sm font-semibold">Language mode</p>
           <p className="text-xs text-muted-foreground">
-            Bilingual auto-detects the guest&apos;s language and mirrors it.
+            &quot;All Languages&quot; replies in whatever language the guest uses (Portuguese, French, etc.) and translates everything for your dashboard.
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {([
               { value: 'es',       label: '🇻🇪 Spanish',   },
               { value: 'en',       label: '🇬🇧 English',   },
               { value: 'bilingual',label: '🌐 Bilingual',  },
+              { value: 'auto',     label: '🌍 All Languages', },
             ] as { value: WaToneLanguage; label: string }[]).map((opt) => (
               <button
                 key={opt.value}

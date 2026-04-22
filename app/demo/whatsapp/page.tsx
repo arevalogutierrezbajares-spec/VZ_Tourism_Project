@@ -76,6 +76,7 @@ export default function WhatsAppDemoPage() {
       role: 'outbound',
       content: replyText.trim(),
       content_en: null,
+      content_es: null,
       detected_lang: null,
       is_ai: false,
       flagged: false,

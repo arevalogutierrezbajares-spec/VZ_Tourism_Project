@@ -647,7 +647,8 @@ function StepPersona({ state, dispatch }: { state: WizardState; dispatch: React.
           options={[
             { value: 'es', label: 'Español', description: 'Siempre responde en español' },
             { value: 'en', label: 'English', description: 'Always responds in English' },
-            { value: 'bilingual', label: 'Bilingüe', description: 'Detecta y responde en el idioma del huésped' },
+            { value: 'bilingual', label: 'Bilingüe', description: 'Español e inglés según el huésped' },
+            { value: 'auto', label: 'Todos los idiomas', description: 'Responde en el idioma del huésped (portugués, francés, etc.)' },
           ]}
         />
       </Field>
@@ -1024,7 +1025,7 @@ function StepGoLive({ state, dispatch, onSave }: {
 
   const summaryItems = [
     { label: 'Agente', value: state.persona_name, ok: !!state.persona_name },
-    { label: 'Idioma', value: { es: 'Español', en: 'English', bilingual: 'Bilingüe' }[state.tone_language], ok: true },
+    { label: 'Idioma', value: { es: 'Español', en: 'English', bilingual: 'Bilingüe', auto: 'Todos los idiomas' }[state.tone_language], ok: true },
     { label: 'WhatsApp', value: state.phone_number_id ? '✓ Conectado' : 'Sin conectar', ok: !!state.phone_number_id },
     { label: 'Conexión', value: state.connected_via === 'embedded' ? 'Automática' : state.connected_via === 'manual' ? 'Manual' : '—', ok: !!state.connected_via },
     { label: 'Descripción', value: state.property_description ? '✓ Completada' : 'Vacía', ok: !!state.property_description },

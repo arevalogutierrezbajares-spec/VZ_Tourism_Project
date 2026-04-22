@@ -13,7 +13,7 @@ export const ConfigUpdateSchema = z.object({
   greeting_style: z.enum(['friendly', 'professional', 'warm']).optional(),
   custom_greeting: z.string().max(500).nullable().optional(),
   tone_formality: z.enum(['formal', 'casual', 'neutral']).optional(),
-  tone_language: z.enum(['es', 'en', 'bilingual']).optional(),
+  tone_language: z.enum(['es', 'en', 'bilingual', 'auto']).optional(),
   response_length: z.enum(['brief', 'standard', 'detailed']).optional(),
   booking_pressure: z.enum(['soft', 'direct']).optional(),
   emoji_style: z.enum(['none', 'moderate', 'heavy']).optional(),
