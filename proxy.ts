@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
 
   // Dev-only: bypass auth for dashboard routes when DEV_SKIP_AUTH is set
   // (only set this in .env.local — never in production env)
-  if (process.env.DEV_SKIP_AUTH === 'true') {
+  if (process.env.DEV_SKIP_AUTH === 'true' && process.env.NODE_ENV === 'development') {
     return NextResponse.next({ request });
   }
 

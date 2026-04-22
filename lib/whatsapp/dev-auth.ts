@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 
-const DEV_PROVIDER_ID = 'dc1ca9eb-91fa-40f3-8700-c37d7cca588f'; // Posada Tomas Dev
+const DEV_PROVIDER_ID = process.env.DEV_PROVIDER_ID;
 
 type AuthResult =
   | { ok: true; supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>; providerId: string }
@@ -16,6 +16,10 @@ export async function getAuthenticatedProvider(): Promise<AuthResult> {
   const isDev = process.env.DEV_SKIP_AUTH === 'true' && process.env.NODE_ENV === 'development';
 
   if (isDev) {
+    if (!DEV_PROVIDER_ID) {
+      console.error('[dev-auth] DEV_PROVIDER_ID env var not set');
+      return { ok: false, response: NextResponse.json({ error: 'Dev provider not configured' }, { status: 500 }) };
+    }
     const supabase = await createServiceClient();
     if (!supabase) return { ok: false, response: NextResponse.json({ error: 'Service unavailable' }, { status: 503 }) };
     return { ok: true, supabase, providerId: DEV_PROVIDER_ID };

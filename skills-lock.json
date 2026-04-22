@@ -1,10 +1,35 @@
 {
   "version": 1,
   "skills": {
+    "agents-sdk": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "computedHash": "cb669fba9289d500872584ea0daab1c5114f1c8f12a991f90871431d3fadbf3c"
+    },
+    "audit-context-building": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "computedHash": "3f18904093acbd6c42bc8770f3ca5b02f98de8d6ba5cf7b1f45b5383921e757d"
+    },
+    "composio": {
+      "source": "composiohq/skills",
+      "sourceType": "github",
+      "computedHash": "11b975f122ecbf455b437e4e42ebf8f30fad84220894c3d52549eefea92a7795"
+    },
     "cookie-sync": {
       "source": "browserbase/skills",
       "sourceType": "github",
       "computedHash": "cd377a90e4b4944aefd274e7a415be0b1e82d42720d2e1bf0fdd83b198e4b3ea"
+    },
+    "courier-notification-skills": {
+      "source": "trycourier/courier-skills",
+      "sourceType": "github",
+      "computedHash": "0333bf2f990931902faaa52519a821319723f23f688a1df051481f7818889b6d"
+    },
+    "insecure-defaults": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "computedHash": "b3d5dba6b18379f47ce17994ceb872434550dffc18c775075f60d27864b36d8b"
     },
     "make-interfaces-feel-better": {
       "source": "jakubkrehel/make-interfaces-feel-better",
@@ -16,15 +41,40 @@
       "sourceType": "github",
       "computedHash": "595a334de3bd5335f442a33d1bdefb01207c88c99fe43e3bd99b0d5435f230de"
     },
+    "property-based-testing": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "computedHash": "534153af7a54c94fc297625290a9f7055aa3b4ec8d9aaa77247463c25deab79c"
+    },
     "screenshot": {
       "source": "openai/skills",
       "sourceType": "github",
       "computedHash": "2dc50b3537ea27a1020a660ff17f12860f6ad05bcf40539165eb4655e5010d73"
     },
+    "security-best-practices": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "computedHash": "c27616fb4e27999605b90b261dc729784420c8d77bd1a98748384ffaa5b35704"
+    },
+    "security-threat-model": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "computedHash": "b3ad2dc0b2eee1f189680fdb8cf3b17853f12ab3403d389393f4237ebc6f9821"
+    },
     "sentry-nextjs-sdk": {
       "source": "getsentry/sentry-agent-skills",
       "sourceType": "github",
       "computedHash": "6bbb2bce22fa8fc3e0385dbe06fe5a26770b2f91f66ad8e78d80c1df3d4b2e05"
+    },
+    "sharp-edges": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "computedHash": "22659ba5eac9130ce0fc15ded5699db2847c375e61880aea3e12f3b5d9867bc8"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d606a1146be6d54fb9e73f718b5320b9acac5ff2ba2d7230a555df4b5a923b4a"
     },
     "ui-test": {
       "source": "browserbase/skills",

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   if (!appId || !appSecret) {
     return NextResponse.json(
-      { error: 'Meta App not configured. Set NEXT_PUBLIC_META_APP_ID and META_APP_SECRET.' },
+      { error: 'WhatsApp integration is not configured. Contact support.' },
       { status: 500 }
     );
   }
@@ -78,6 +78,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Token exchange network error' }, { status: 502 });
   }
 
+  // ── Step 1.5: Validate phone_number_id belongs to this WABA ───────────────
+  try {
+    const phoneCheckRes = await fetch(
+      `${META_GRAPH_URL}/${waba_id}/phone_numbers?access_token=${accessToken}`
+    );
+    if (phoneCheckRes.ok) {
+      const phoneData = await phoneCheckRes.json() as {
+        data?: { id: string }[];
+      };
+      const validPhones = phoneData.data?.map((p) => p.id) ?? [];
+      if (!validPhones.includes(phone_number_id)) {
+        return NextResponse.json(
+          { error: 'phone_number_id does not belong to the provided WABA' },
+          { status: 400 }
+        );
+      }
+    }
+    // If the check fails (e.g. permissions), log but proceed — better UX
+  } catch (err) {
+    console.warn('[embedded-signup] Phone validation failed (non-blocking):', err);
+  }
+
   // ── Step 2: Subscribe WABA to receive webhooks on this app ────────────────
   try {
     const subRes = await fetch(`${META_GRAPH_URL}/${waba_id}/subscribed_apps`, {
@@ -112,7 +134,7 @@ export async function POST(request: NextRequest) {
     console.info('[embedded-signup] Phone registration error (may already be registered):', err);
   }
 
-  // ── Step 4: Generate verify token and save config ─────────────────────────
+  // ── Step 4: Generate verify token and save config (without access token) ──
   const verifyToken = crypto.randomUUID();
 
   const { data, error } = await supabase
@@ -121,7 +143,6 @@ export async function POST(request: NextRequest) {
       {
         provider_id: providerId,
         phone_number_id,
-        access_token: accessToken,
         verify_token: hashToken(verifyToken),
         ai_enabled: false, // Start disabled — user enables after completing wizard
       },
@@ -133,6 +154,39 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error('[embedded-signup] DB upsert failed:', error);
     return NextResponse.json({ error: 'Failed to save configuration' }, { status: 500 });
+  }
+
+  // ── Step 5: Store access token in Vault (with plaintext fallback) ────────
+  let plaintextFallback = false;
+  try {
+    const { createServiceClient } = await import('@/lib/supabase/server');
+    const serviceSupabase = await createServiceClient();
+    if (serviceSupabase) {
+      const { data: vaultId } = await serviceSupabase.rpc('upsert_wa_access_token', {
+        p_config_id: data.id,
+        p_token: accessToken,
+      });
+      if (vaultId) {
+        await serviceSupabase
+          .from('posada_whatsapp_config')
+          .update({ access_token_vault_id: vaultId, access_token: 'VAULT' })
+          .eq('id', data.id);
+      } else {
+        plaintextFallback = true;
+      }
+    } else {
+      plaintextFallback = true;
+    }
+  } catch {
+    plaintextFallback = true;
+  }
+
+  if (plaintextFallback) {
+    console.warn('[embedded-signup] Vault unavailable — storing token in plaintext');
+    await supabase
+      .from('posada_whatsapp_config')
+      .update({ access_token: accessToken })
+      .eq('id', data.id);
   }
 
   return NextResponse.json({

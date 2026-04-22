@@ -320,14 +320,16 @@ export function MapContainer({
       // Click: cluster → zoom in (respects prefers-reduced-motion)
       map.on('click', CLUSTER_LAYER, (e) => {
         if (!e.features?.length) return;
-        const clusterId = e.features[0].properties['cluster_id'] as number;
+        const feature = e.features[0];
+        const clusterId = feature.properties['cluster_id'] as number;
+        const coordinates = feature.geometry.coordinates;
         const source = map.getSource(SOURCE_ID);
         if (!source) return;
         source.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
           if (err) return;
           const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           map.easeTo({
-            center: e.features![0].geometry.coordinates,
+            center: coordinates,
             zoom: zoomLevel,
             duration: prefersReducedMotion ? 0 : 500,
           });
