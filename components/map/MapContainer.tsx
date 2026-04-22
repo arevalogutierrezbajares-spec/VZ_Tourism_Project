@@ -147,6 +147,7 @@ export function MapContainer({
   const hoveredIdRef = useRef<string | null>(null);
   const selectedIdRef = useRef<string | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const storeSubRef = useRef<(() => void) | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const {
@@ -633,6 +634,23 @@ export function MapContainer({
           console.error('Failed to add map layers on load:', err);
         }
         initialLoadDone = true;
+
+        // Subscribe to store changes to update GeoJSON source data.
+        // This bypasses React's useEffect lifecycle — the `map` variable
+        // in this closure is guaranteed to be the live Mapbox instance,
+        // immune to React 18 Strict Mode ref-nulling.
+        storeSubRef.current?.();
+        let prevPins = useMapStore.getState().pins;
+        let prevHidden = useMapStore.getState().hiddenCategories;
+        storeSubRef.current = useMapStore.subscribe((state) => {
+          if (state.pins === prevPins && state.hiddenCategories === prevHidden) return;
+          prevPins = state.pins;
+          prevHidden = state.hiddenCategories;
+          const source = map.getSource(SOURCE_ID);
+          if (!source) return;
+          source.setData(buildGeoJSON(state.pins, state.hiddenCategories));
+        });
+
         setMapLoaded(true);
       });
 
@@ -669,6 +687,8 @@ export function MapContainer({
     });
 
     return () => {
+      storeSubRef.current?.();
+      storeSubRef.current = null;
       resizeObserverRef.current?.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -688,14 +708,10 @@ export function MapContainer({
     );
   }, [isDarkMode, mapLoaded]);
 
-  // Update GeoJSON data when pins or hidden categories change
-  useEffect(() => {
-    if (!mapInstanceRef.current || !mapLoaded) return;
-    const source = mapInstanceRef.current.getSource(SOURCE_ID);
-    if (!source) return;
-    const geo = buildGeoJSON(pins, hiddenCategories);
-    source.setData(geo);
-  }, [pins, hiddenCategories, mapLoaded]);
+  // GeoJSON data updates are handled by the direct store subscription
+  // in the map's 'load' handler above — NOT via useEffect.
+  // React 18 Strict Mode's mount/unmount cycle nulls mapInstanceRef,
+  // making useEffect-based updates unreliable.
 
   // Fly to center when it changes (for search results)
   // Respects prefers-reduced-motion by using jumpTo instead of flyTo

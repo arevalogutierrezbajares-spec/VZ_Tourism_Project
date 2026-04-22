@@ -179,10 +179,8 @@ function MapPageContent() {
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat);
     if (cat === CATEGORY_FILTER_ALL) {
-      // Show all — single atomic update
       setHiddenCategories(new Set());
     } else {
-      // Hide all except selected — single atomic update
       const hidden = new Set(
         BUSINESS_CATEGORIES.map((c) => c.key).filter((k) => k !== cat)
       );
