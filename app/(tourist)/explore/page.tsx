@@ -60,7 +60,7 @@ export default async function ExplorePage({ searchParams }: Props) {
 
       {/* Category cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        {CATEGORY_CARDS.map((cat) => (
+        {CATEGORY_CARDS.map((cat, idx) => (
           <Link
             key={cat.id}
             href={`/explore?category=${cat.id}`}
@@ -70,6 +70,7 @@ export default async function ExplorePage({ searchParams }: Props) {
               src={cat.image}
               alt={`Browse ${cat.label} in Venezuela`}
               fill
+              priority={idx === 0}
               className="object-cover group-hover:scale-105 transition-transform duration-300 outline outline-1 -outline-offset-1 outline-black/10"
               sizes="(max-width: 640px) 100vw, 33vw"
             />

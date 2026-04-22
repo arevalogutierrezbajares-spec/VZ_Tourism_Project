@@ -288,7 +288,7 @@
   {
     "id": "14",
     "source_type": "unsplash",
-    "url": "https://images.unsplash.com/photo-1518173946687-a1e23a38edbb?w=600&h=700&fit=crop",
+    "url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=700&fit=crop",
     "caption": "Wildlife of the Venezuelan rainforest",
     "description": "Venezuela's rainforests are home to an extraordinary range of wildlife including toucans, scarlet macaws, tapirs, and giant river otters. Every morning brings new discoveries.",
     "region": "amazon",
@@ -305,12 +305,12 @@
     "lat": 3.8,
     "lng": -65.2,
     "geo_label": "Orinoco Delta, Delta Amacuro",
-    "thumbnail_url": "https://images.unsplash.com/photo-1518173946687-a1e23a38edbb?w=600&h=700&fit=crop"
+    "thumbnail_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=700&fit=crop"
   },
   {
     "id": "15",
     "source_type": "unsplash",
-    "url": "https://images.unsplash.com/photo-1440342359743-84fcb8c21c7a?w=600&h=900&fit=crop",
+    "url": "https://images.unsplash.com/photo-1606567595334-d39972c85dbe?w=600&h=900&fit=crop",
     "caption": "Cacao country \u2014 where chocolate begins",
     "description": "Venezuela produces some of the world's finest cacao, particularly the rare Criollo variety from the valleys around Choron\u00ed. A visit to a working cacao plantation is a chocolate lover's pilgrimage.",
     "region": "choroni",
@@ -327,7 +327,7 @@
     "lat": 10.45,
     "lng": -67.58,
     "geo_label": "Chuao Valley, Aragua State",
-    "thumbnail_url": "https://images.unsplash.com/photo-1440342359743-84fcb8c21c7a?w=600&h=900&fit=crop"
+    "thumbnail_url": "https://images.unsplash.com/photo-1606567595334-d39972c85dbe?w=600&h=900&fit=crop"
   },
   {
     "id": "16",
@@ -618,7 +618,7 @@
   {
     "id": "29",
     "source_type": "unsplash",
-    "url": "https://images.unsplash.com/photo-1518173946687-a1e23a38edbb?w=600&h=700&fit=crop",
+    "url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=700&fit=crop",
     "caption": "The pearl oysters of Margarita",
     "description": "Long before oil, Venezuela's wealth came from Margarita's pearl oysters. The island's seafood restaurants serve ceviche, grilled fish, and fresh lobster that recalls this rich maritime heritage.",
     "region": "margarita",
@@ -635,12 +635,12 @@
     "lat": 11.02,
     "lng": -63.88,
     "geo_label": "Pampatar, Margarita Island",
-    "thumbnail_url": "https://images.unsplash.com/photo-1518173946687-a1e23a38edbb?w=600&h=700&fit=crop"
+    "thumbnail_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=700&fit=crop"
   },
   {
     "id": "30",
     "source_type": "unsplash",
-    "url": "https://images.unsplash.com/photo-1440342359743-84fcb8c21c7a?w=600&h=900&fit=crop",
+    "url": "https://images.unsplash.com/photo-1606567595334-d39972c85dbe?w=600&h=900&fit=crop",
     "caption": "Sunrise fishing in Los Llanos",
     "description": "Los Llanos \u2014 Venezuela's vast tropical savanna \u2014 explodes with wildlife at the end of the dry season. Sunrise over the floodplains reveals capybaras, caimans, herons, and anacondas.",
     "region": "amazon",
@@ -657,7 +657,7 @@
     "lat": 7.5,
     "lng": -69.0,
     "geo_label": "Hato Pi\u00f1ero, Cojedes",
-    "thumbnail_url": "https://images.unsplash.com/photo-1440342359743-84fcb8c21c7a?w=600&h=900&fit=crop"
+    "thumbnail_url": "https://images.unsplash.com/photo-1606567595334-d39972c85dbe?w=600&h=900&fit=crop"
   },
   {
     "id": "31",

@@ -97,6 +97,15 @@ const persistedStore = persist<ItineraryStore>(
       }),
 
     addStop: (stop) => {
+      // Dedup guard: skip if same listing already exists on the same day
+      const { days } = get();
+      if (stop.listing_id) {
+        const isDupe = days.some((d) =>
+          d.day === stop.day && d.stops.some((s) => s.listing_id === stop.listing_id)
+        );
+        if (isDupe) return;
+      }
+
       const id = `stop-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const newStop: ItineraryStop = {
         ...stop,
@@ -104,7 +113,44 @@ const persistedStore = persist<ItineraryStore>(
         created_at: new Date().toISOString(),
       };
       set((state) => {
-        const days = state.days.map((d) => {
+        // Auto-create a local itinerary if none exists
+        let { current, days } = state;
+        if (!current) {
+          const now = new Date().toISOString();
+          current = {
+            id: `local-${Date.now()}`,
+            user_id: 'local',
+            title: 'My Trip',
+            description: null,
+            cover_image_url: null,
+            start_date: null,
+            end_date: null,
+            is_public: false,
+            is_template: false,
+            is_influencer_pick: false,
+            referral_code: null,
+            total_days: 1,
+            estimated_cost_usd: 0,
+            regions: [],
+            tags: [],
+            likes: 0,
+            saves: 0,
+            views: 0,
+            created_at: now,
+            updated_at: now,
+            stops: [],
+          };
+        }
+
+        // Ensure the target day exists
+        if (!days.some((d) => d.day === stop.day)) {
+          const maxDay = Math.max(stop.day, days.length);
+          for (let d = days.length + 1; d <= maxDay; d++) {
+            days = [...days, { day: d, title: `Day ${d}`, stops: [] }];
+          }
+        }
+
+        const updatedDays = days.map((d) => {
           if (d.day === stop.day) {
             return {
               ...d,
@@ -113,7 +159,7 @@ const persistedStore = persist<ItineraryStore>(
           }
           return d;
         });
-        return { days, isDirty: true, lastAddedStopId: id };
+        return { current, days: updatedDays, isDirty: true, lastAddedStopId: id };
       });
       get().calculateCost();
     },

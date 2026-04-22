@@ -63,7 +63,7 @@ export default async function ItineraryPage({ params }: Props) {
   let itinerary = null;
   let discountDisplay: { code: string; label: string } | null = null;
 
-  if (id === 'demo') {
+  if (id === 'demo' || id.startsWith('demo-')) {
     itinerary = DEMO_ITINERARY;
   } else {
     try {

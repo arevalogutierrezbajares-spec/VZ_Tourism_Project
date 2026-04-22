@@ -54,12 +54,25 @@ export default async function ListingPage({ params }: Props) {
   try {
     const supabase = await createClient();
     if (!supabase) throw new Error('Supabase not configured');
-    const { data: supabaseListing } = await supabase
+    // Try with provider join first; fall back to listing-only if join fails (e.g. RLS)
+    let supabaseListing = null;
+    const { data: withJoin } = await supabase
       .from('listings')
       .select('*, provider:providers(*), photos:listing_photos(*)')
       .eq('slug', slug)
       .eq('is_published', true)
       .single();
+    if (withJoin) {
+      supabaseListing = withJoin;
+    } else {
+      const { data: withoutJoin } = await supabase
+        .from('listings')
+        .select('*, photos:listing_photos(*)')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
+      supabaseListing = withoutJoin;
+    }
 
     if (supabaseListing) {
       const { data: reviews } = await supabase

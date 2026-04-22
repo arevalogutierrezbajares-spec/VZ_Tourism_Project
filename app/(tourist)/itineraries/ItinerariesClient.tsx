@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, Sparkles, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItineraryFeedCard } from '@/components/social/ItineraryFeedCard';
@@ -47,6 +48,8 @@ export function ItinerariesClient({
   influencerPicks,
   regions,
 }: ItinerariesClientProps) {
+  const searchParams = useSearchParams();
+  const didApplyParams = useRef(false);
   const [itineraries, setItineraries] = useState<Itinerary[]>(initialItineraries);
   const [totalCount, setTotalCount] = useState(initialCount);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -54,6 +57,22 @@ export function ItinerariesClient({
   const [error, setError] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
   const [showWizard, setShowWizard] = useState(false);
+
+  // Apply URL params on mount (e.g. ?destination=los-roques)
+  useEffect(() => {
+    if (didApplyParams.current) return;
+    didApplyParams.current = true;
+    const dest = searchParams.get('destination');
+    if (dest) {
+      const normalized = dest.replace(/-/g, ' ');
+      const match = regions.find(
+        (r) => r.toLowerCase() === normalized.toLowerCase()
+      );
+      if (match) {
+        setFilters((f) => ({ ...f, region: match }));
+      }
+    }
+  }, [searchParams, regions]);
 
   const hasActiveFilters = filters.region || filters.durationMin || filters.budgetMin || filters.sort !== 'popular';
 
@@ -208,11 +227,7 @@ export function ItinerariesClient({
                   <div
                     key={it.id}
                     onClick={() => setSelectedItinerary(it)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedItinerary(it); } }}
-                    role="button"
-                    tabIndex={0}
-                    className="cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:rounded-2xl focus-visible:outline-none"
-                    aria-label={`View details for ${it.title}`}
+                    className="cursor-pointer"
                   >
                     <ItineraryFeedCard itinerary={it} showActions />
                   </div>

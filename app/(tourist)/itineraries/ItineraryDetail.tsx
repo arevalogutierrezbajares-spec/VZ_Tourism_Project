@@ -100,7 +100,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-4 left-6 right-16 text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-1 text-balance">{itinerary.title}</h2>
+              <h1 className="text-2xl md:text-3xl font-bold mb-1 text-balance">{itinerary.title}</h1>
               <div className="flex items-center gap-3 text-sm text-white/90 tabular-nums">
                 <span>{itinerary.total_days} days</span>
                 <span aria-hidden="true">·</span>
@@ -162,7 +162,7 @@ export function ItineraryDetail({ itinerary, onClose }: ItineraryDetailProps) {
 
           {/* Day-by-day itinerary */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Day-by-Day Itinerary</h3>
+            <h2 className="font-bold text-lg mb-4">Day-by-Day Itinerary</h2>
             <div className="space-y-2">
               {Array.from({ length: totalDays }).map((_, idx) => {
                 const day = idx + 1;

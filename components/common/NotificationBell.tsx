@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Notification {
   id: string;
@@ -20,11 +21,13 @@ interface Notification {
 }
 
 export function NotificationBell() {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
 
   const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await fetch('/api/notifications?unread=true&limit=5');
       if (!res.ok) return;
@@ -33,15 +36,16 @@ export function NotificationBell() {
       setNotifications(data);
       setUnreadCount(data.filter((n) => !n.is_read).length);
     } catch {
-      // silently fail — user may not be authenticated yet
+      // silently fail
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60_000);
     return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  }, [fetchNotifications, isAuthenticated]);
 
   const markRead = async (id: string) => {
     try {

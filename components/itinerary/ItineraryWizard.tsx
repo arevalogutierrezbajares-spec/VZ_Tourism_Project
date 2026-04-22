@@ -31,6 +31,7 @@ function WizardContent({ onClose }: WizardProps) {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [days, setDays] = useState(5);
+  const [validationError, setValidationError] = useState('');
 
   const titlePlaceholder = destination
     ? `${destination} Adventure`
@@ -148,7 +149,7 @@ function WizardContent({ onClose }: WizardProps) {
                       key={d.id}
                       type="button"
                       whileTap={{ scale: 0.96 }}
-                      onClick={() => setDestination(destination === d.id ? '' : d.id)}
+                      onClick={() => { setDestination(destination === d.id ? '' : d.id); setValidationError(''); }}
                       className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-center transition-[border-color,background-color,color] min-h-[40px] ${
                         destination === d.id
                           ? 'border-primary bg-primary/5 text-primary'
@@ -160,6 +161,9 @@ function WizardContent({ onClose }: WizardProps) {
                     </motion.button>
                   ))}
                 </div>
+                {validationError && (
+                  <p className="text-xs text-destructive mt-1" role="alert">{validationError}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -290,7 +294,14 @@ function WizardContent({ onClose }: WizardProps) {
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.96 }}
-                onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3)}
+                onClick={() => {
+                  if (step === 1 && !destination) {
+                    setValidationError('Please select a destination');
+                    return;
+                  }
+                  setValidationError('');
+                  setStep((s) => (s + 1) as 1 | 2 | 3);
+                }}
                 className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-[background-color] min-h-[44px]"
               >
                 Continue <ChevronRight className="w-4 h-4" />

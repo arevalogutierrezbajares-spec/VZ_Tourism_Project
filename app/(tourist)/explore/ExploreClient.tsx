@@ -155,6 +155,35 @@ export function ExploreClient({ total, initialCategory = 'all' }: { total: numbe
     return () => { cancelled = true; };
   }, [buildUrl]);
 
+  // Re-fetch when navigating back (popstate / bfcache restore)
+  useEffect(() => {
+    const refetch = () => {
+      setLoading(true);
+      setOffset(0);
+      fetch(buildUrl(0))
+        .then((r) => r.json())
+        .then((json) => {
+          setListings(json.data ?? []);
+          setCount(json.count ?? 0);
+          setOffset(PAGE_SIZE);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    };
+
+    window.addEventListener('popstate', refetch);
+
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) refetch();
+    };
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('popstate', refetch);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [buildUrl]);
+
   // Sync listings → map store when in map view
   useEffect(() => {
     if (viewMode === 'map' && listings.length > 0) {

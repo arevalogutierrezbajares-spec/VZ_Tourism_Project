@@ -70,9 +70,9 @@
   --secondary: oklch(0.65 0.15 142);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  /* Warm gold accent */
-  --accent: oklch(0.7 0.15 75);
+  --muted-foreground: oklch(0.45 0 0);
+  /* Warm gold accent — darkened for WCAG AA (4.5:1 on white) */
+  --accent: oklch(0.55 0.15 75);
   --accent-foreground: oklch(0.145 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
@@ -84,9 +84,9 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   /* Status colors (design review v0.3.5) */
-  --status-confirmed: oklch(0.65 0.15 142);
-  --status-pending: oklch(0.7 0.15 75);
-  --status-cancelled: oklch(0.577 0.245 27);
+  --status-confirmed: oklch(0.45 0.15 142);
+  --status-pending: oklch(0.55 0.15 75);
+  --status-cancelled: oklch(0.50 0.245 27);
   --status-info: oklch(0.55 0.18 220);
   --status-completed: oklch(0.5 0.15 145);
   --status-payment-submitted: oklch(0.55 0.12 250);

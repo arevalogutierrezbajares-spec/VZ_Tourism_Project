@@ -1,10 +1,50 @@
 {
   "version": 1,
   "skills": {
+    "cookie-sync": {
+      "source": "browserbase/skills",
+      "sourceType": "github",
+      "computedHash": "cd377a90e4b4944aefd274e7a415be0b1e82d42720d2e1bf0fdd83b198e4b3ea"
+    },
     "make-interfaces-feel-better": {
       "source": "jakubkrehel/make-interfaces-feel-better",
       "sourceType": "github",
       "computedHash": "54b6e221bbe4e2d1a8461c3f9ecabe69daf891f964e9ee5e699c323daa018f2e"
+    },
+    "playwright": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "computedHash": "595a334de3bd5335f442a33d1bdefb01207c88c99fe43e3bd99b0d5435f230de"
+    },
+    "screenshot": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "computedHash": "2dc50b3537ea27a1020a660ff17f12860f6ad05bcf40539165eb4655e5010d73"
+    },
+    "sentry-nextjs-sdk": {
+      "source": "getsentry/sentry-agent-skills",
+      "sourceType": "github",
+      "computedHash": "6bbb2bce22fa8fc3e0385dbe06fe5a26770b2f91f66ad8e78d80c1df3d4b2e05"
+    },
+    "ui-test": {
+      "source": "browserbase/skills",
+      "sourceType": "github",
+      "computedHash": "c5db04f3d92b57fc419c600e554853abe8079e97bc884e09adec8c0dda77b2a2"
+    },
+    "web-perf": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "computedHash": "7ae53856c320574f7440f50aef7892f96837eec9fd49d329d049d432fb4b299a"
+    },
+    "web-quality-audit": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "computedHash": "1168be21aa9fe7bdc6e6e053ca05b6ca5a45675a527c103cdf77bc56ce8159af"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "ad5b1fc52807e9afa4635e59218a026b164dc58b6c3f41b0f7c644dcd6ccf572"
     }
   }
 }

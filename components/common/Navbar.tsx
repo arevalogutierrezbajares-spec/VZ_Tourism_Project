@@ -112,7 +112,7 @@ export function Navbar() {
               </Link>
               <NotificationBell />
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
+                <DropdownMenuTrigger aria-label="User menu" className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
                   <Avatar className="w-8 h-8 outline outline-1 -outline-offset-1 outline-black/10">
                     <AvatarImage src={profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
