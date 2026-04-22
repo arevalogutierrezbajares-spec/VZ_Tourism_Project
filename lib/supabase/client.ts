@@ -2,7 +2,13 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 
+// Singleton — prevents navigator.locks contention when multiple hooks/components
+// each create their own client (React Strict Mode double-mount makes this worse).
+let _client: ReturnType<typeof createBrowserClient> | null = null;
+
 export function createClient() {
+  if (_client) return _client;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -13,5 +19,13 @@ export function createClient() {
     );
     return null;
   }
-  return createBrowserClient(url, key);
+  _client = createBrowserClient(url, key, {
+    isSingleton: true,
+    auth: {
+      flowType: 'pkce',
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+  return _client;
 }

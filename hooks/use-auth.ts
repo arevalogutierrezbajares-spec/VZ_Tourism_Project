@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth-store';
@@ -97,14 +97,23 @@ export function useAuth() {
     useAuthStore();
   const router = useRouter();
 
+  // Guard against React Strict Mode double-mount — gotrue-js acquires a
+  // navigator.locks lock during auth init, and a second concurrent init
+  // causes "Lock was stolen by another request" AbortErrors.
+  const initedRef = useRef(false);
+
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       setLoading(false);
       return;
     }
+    if (initedRef.current) return;
+    initedRef.current = true;
+
     const supabase = createClient();
     if (!supabase) {
       setLoading(false);
+      initedRef.current = false;
       return;
     }
 

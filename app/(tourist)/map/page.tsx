@@ -209,16 +209,15 @@ function MapPageContent() {
     const pinsToShow = filtered.length > 0 ? filtered : allPins;
     setPins(pinsToShow);
 
-    // Fit map to the filtered pins' bounding box for optimal framing
-    if (pinsToShow.length > 1) {
-      const lngs = pinsToShow.map((p) => p.lng);
-      const lats = pinsToShow.map((p) => p.lat);
-      setTargetBounds([
-        [Math.min(...lngs), Math.min(...lats)],
-        [Math.max(...lngs), Math.max(...lats)],
-      ]);
+    // Fly to the city center — use the median of filtered pin coordinates
+    // for a more accurate center than the sidebar's single lat/lng
+    if (pinsToShow.length > 1 && pinsToShow !== allPins) {
+      const sortedLats = pinsToShow.map((p) => p.lat).sort((a, b) => a - b);
+      const sortedLngs = pinsToShow.map((p) => p.lng).sort((a, b) => a - b);
+      const mid = Math.floor(sortedLats.length / 2);
+      setCenter([sortedLngs[mid], sortedLats[mid]]);
+      setZoom(city.isRegion ? 9 : 12);
     } else {
-      // Single pin or no matches: fly to the city point
       setCenter([city.lng, city.lat]);
       setZoom(city.isRegion ? 9 : 12);
     }
