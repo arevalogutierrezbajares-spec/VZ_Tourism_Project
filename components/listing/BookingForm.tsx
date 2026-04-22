@@ -543,7 +543,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                 className="w-full flex items-center justify-between px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors duration-150 ease-out"
                 aria-expanded={promoOpen}
               >
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-1.5 font-medium">
                   <Tag className="w-3.5 h-3.5" />
                   Have a promo code?
                 </span>
@@ -580,7 +580,7 @@ export function BookingForm({ listing }: BookingFormProps) {
                           type="button"
                           onClick={handleApplyPromo}
                           disabled={promoLoading || !promoCode.trim()}
-                          className="px-3 h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity duration-100 ease-out shrink-0"
+                          className="px-3 h-8 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity duration-100 ease-out shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                         >
                           {promoLoading ? '...' : 'Apply'}
                         </button>

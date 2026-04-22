@@ -114,7 +114,7 @@ export function ItineraryDaySection({
   return (
     <div className={cn('rounded-xl border bg-background shadow-sm overflow-hidden', className)}>
       {/* Day header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30" role="heading" aria-level={4}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold tabular-nums shadow-sm">
             {day}
@@ -231,7 +231,7 @@ export function ItineraryDaySection({
                 aria-label={`Add ${suggestion.title} to Day ${day}`}
               >
                 <div className="flex items-start gap-2">
-                  <Plus className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Plus className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 transition-opacity" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium line-clamp-1">
                       {suggestion.title}

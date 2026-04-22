@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from '@/components/common/StarRating';
 import { reviewSchema, type ReviewFormData } from '@/lib/validators';
@@ -93,48 +94,52 @@ export function ReviewSection({ listingId, reviews, canReview, bookingId }: Revi
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 bg-muted/30 rounded-xl border">
-          <h4 className="font-semibold">Your Review</h4>
-          <div>
-            <label className="text-sm font-medium">Rating</label>
-            <StarRating
-              rating={rating}
-              interactive
-              size="lg"
-              onRatingChange={(v) => setValue('rating', v)}
-              className="mt-1"
-            />
-            {errors.rating && (
-              <p className="text-xs text-destructive mt-1">{errors.rating.message}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="review-body" className="text-sm font-medium mb-1 block">Your review</label>
-            <Textarea
-              id="review-body"
-              placeholder="Share your experience..."
-              rows={4}
-              {...register('body')}
-              className="resize-none"
-            />
-            {errors.body && (
-              <p className="text-xs text-destructive mt-1">{errors.body.message}</p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting} size="sm" className="active:scale-[0.96] transition-transform duration-150 ease-out">
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowForm(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <h4 className="font-semibold">Your Review</h4>
+              <div>
+                <label className="text-sm font-medium">Rating</label>
+                <StarRating
+                  rating={rating}
+                  interactive
+                  size="lg"
+                  onRatingChange={(v) => setValue('rating', v)}
+                  className="mt-1"
+                />
+                {errors.rating && (
+                  <p className="text-xs text-destructive mt-1">{errors.rating.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="review-body" className="text-sm font-medium mb-1 block">Your review</label>
+                <Textarea
+                  id="review-body"
+                  placeholder="Share your experience..."
+                  rows={4}
+                  {...register('body')}
+                  className="resize-none"
+                />
+                {errors.body && (
+                  <p className="text-xs text-destructive mt-1">{errors.body.message}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isSubmitting} size="sm" className="active:scale-[0.96] transition-transform duration-150 ease-out">
+                  {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {/* Reviews list */}

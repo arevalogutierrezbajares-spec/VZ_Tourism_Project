@@ -62,7 +62,7 @@ export function HeroSection() {
         {HERO_IMAGES.map(({ src, alt }, i) => (
           <div
             key={i}
-            className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
+            className="absolute inset-0 transition-opacity duration-500 ease-in-out motion-reduce:transition-none"
             style={{ opacity: i === imageIndex ? 1 : 0 }}
           >
             <Image
@@ -71,8 +71,8 @@ export function HeroSection() {
               fill
               sizes="100vw"
               priority={i === 0}
-              className="object-cover transition-transform duration-[800ms] ease-out motion-reduce:transition-none"
-              style={{ transform: i === imageIndex ? 'scale(1.08)' : 'scale(1)' }}
+              className="object-cover transition-transform duration-500 ease-out motion-reduce:transition-none"
+              style={{ transform: i === imageIndex ? 'scale(1.05)' : 'scale(1)' }}
             />
           </div>
         ))}
@@ -89,7 +89,7 @@ export function HeroSection() {
           >
             <span className="block">
               <span
-                className="inline-block transition-all duration-400 ease-out"
+                className="inline-block transition-all duration-300 ease-out motion-reduce:transition-none"
                 style={{
                   opacity: isVisible ? 1 : 0,
                   transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
@@ -111,7 +111,7 @@ export function HeroSection() {
 
           {/* CTAs */}
           <div
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 ease-out"
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-500 ease-out motion-reduce:transition-none"
             style={{
               opacity: ctaVisible ? 1 : 0,
               transform: ctaVisible ? 'translateY(0)' : 'translateY(28px)',
@@ -126,7 +126,7 @@ export function HeroSection() {
               <span>Build my itinerary with AI</span>
               {/* Shimmer sweep on hover */}
               <span
-                className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/35 to-transparent motion-reduce:hidden"
+                className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-in-out bg-gradient-to-r from-transparent via-white/35 to-transparent motion-reduce:hidden"
                 aria-hidden="true"
               />
             </button>
@@ -143,7 +143,7 @@ export function HeroSection() {
 
           {/* Trust line */}
           <p
-            className="mt-6 text-xs sm:text-sm text-white/50 transition-all duration-700 delay-200"
+            className="mt-6 text-xs sm:text-sm text-white/50 transition-all duration-500 delay-200 motion-reduce:transition-none"
             style={{
               opacity: ctaVisible ? 1 : 0,
             }}

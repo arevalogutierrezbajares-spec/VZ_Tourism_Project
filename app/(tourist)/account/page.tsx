@@ -165,8 +165,30 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="container px-4 py-8 max-w-2xl mx-auto" role="status" aria-label="Loading account settings">
+        {/* Header skeleton */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
+          <div className="flex-1 space-y-2">
+            <div className="h-7 w-48 bg-muted rounded-lg animate-pulse" />
+            <div className="h-4 w-32 bg-muted/60 rounded animate-pulse" />
+          </div>
+          <div className="h-6 w-16 bg-muted/60 rounded-full animate-pulse" />
+        </div>
+        {/* Card skeletons */}
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="rounded-xl border bg-card p-6 space-y-4">
+              <div className="h-5 w-28 bg-muted rounded animate-pulse" />
+              <div className="space-y-3">
+                <div className="h-4 w-20 bg-muted/60 rounded animate-pulse" />
+                <div className="h-10 w-full bg-muted/40 rounded-md animate-pulse" />
+                <div className="h-4 w-24 bg-muted/60 rounded animate-pulse" />
+                <div className="h-10 w-full bg-muted/40 rounded-md animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -259,7 +281,7 @@ export default function AccountPage() {
                     key={lang}
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, language: lang }))}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-[color,background-color,border-color] ${
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-[color,background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       form.language === lang
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:border-primary/60'
@@ -283,7 +305,7 @@ export default function AccountPage() {
                   key={value}
                   type="button"
                   onClick={() => toggleInterest(value)}
-                  className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors text-left ${
+                  className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     form.interests.includes(value)
                       ? 'bg-accent border-accent text-accent-foreground'
                       : 'bg-background border-border hover:border-accent/50'

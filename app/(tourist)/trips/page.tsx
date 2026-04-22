@@ -196,39 +196,49 @@ function BookingCard({ booking, past, onCancelled }: { booking: GuestBooking; pa
 }
 
 function EmptyState({ tab }: { tab: Tab }) {
-  const configs: Record<Tab, { icon: React.ReactNode; text: string; cta: string; href: string }> = {
+  const configs: Record<Tab, { icon: React.ReactNode; title: string; description: string; cta: string; href: string }> = {
     upcoming: {
       icon: <Luggage className="w-12 h-12 text-primary/40" />,
-      text: "No upcoming trips yet.",
-      cta: "Explore Venezuela →",
+      title: "No upcoming trips yet",
+      description: "Your next Venezuelan adventure starts with a single booking. Browse experiences, stays, and tours to get started.",
+      cta: "Explore Venezuela",
       href: "/",
     },
     past: {
       icon: <Star className="w-12 h-12 text-accent/50" />,
-      text: "No past trips to show.",
-      cta: "Plan your first adventure →",
+      title: "No travel history",
+      description: "Once you complete a trip, it will appear here along with options to leave reviews and rebook.",
+      cta: "Plan your first adventure",
       href: "/",
     },
     itineraries: {
       icon: <BookOpen className="w-12 h-12 text-primary/40" />,
-      text: "No saved itineraries yet.",
-      cta: "Build my itinerary with AI →",
+      title: "No saved itineraries",
+      description: "Let AI help you plan the perfect trip. Build a custom itinerary with stops, transport, and daily schedules.",
+      cta: "Build my itinerary with AI",
       href: "/plan",
     },
     saved: {
       icon: <Heart className="w-12 h-12 text-destructive/40" />,
-      text: "No saved places yet.",
-      cta: "Explore listings →",
+      title: "No saved places",
+      description: "Tap the heart icon on any listing to save it here for later. Build your wishlist as you explore.",
+      cta: "Explore listings",
       href: "/",
     },
   };
 
-  const { icon, text, cta, href } = configs[tab];
+  const { icon, title, description, cta, href } = configs[tab];
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="flex flex-col items-center justify-center py-16 text-center max-w-sm mx-auto">
       <div className="mb-4">{icon}</div>
-      <p className="text-muted-foreground mb-3">{text}</p>
-      <Link href={href} className="text-sm font-medium text-primary hover:underline">{cta}</Link>
+      <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-4 text-pretty">{description}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+      >
+        {cta} →
+      </Link>
     </div>
   );
 }
@@ -364,7 +374,7 @@ export default function TripsPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-t ${
               tab === t.id
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground'

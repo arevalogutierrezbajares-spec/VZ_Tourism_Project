@@ -80,7 +80,7 @@ export function FilterBar({ regions, filters, onChange }: FilterBarProps) {
   };
 
   return (
-    <div className="flex gap-2 flex-wrap" role="group" aria-label="Filter itineraries by region, duration, and budget">
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" role="group" aria-label="Filter itineraries by region, duration, and budget">
       {regions.map((r) => (
         <Chip
           key={r}
