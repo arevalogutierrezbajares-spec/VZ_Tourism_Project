@@ -15,7 +15,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
   const { data: conversation, error } = await supabase
     .from('wa_conversations')
-    .select('*, messages:wa_messages(* ORDER BY created_at ASC), escalations:wa_escalations(* ORDER BY created_at DESC)')
+    .select('*, messages:wa_messages(* ORDER BY created_at ASC LIMIT 100), escalations:wa_escalations(* ORDER BY created_at DESC)')
     .eq('id', id)
     .eq('provider_id', providerId)
     .single();
@@ -65,7 +65,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[whatsapp/conversations] PATCH error:', error.message);
+    return NextResponse.json({ error: 'Failed to update conversation' }, { status: 500 });
+  }
 
   return NextResponse.json({ data });
 }

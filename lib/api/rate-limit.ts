@@ -7,21 +7,25 @@ const redis = process.env.UPSTASH_REDIS_REST_URL
   ? Redis.fromEnv()
   : null;
 
-function createLimiter(maxRequests: number, window: string) {
-  if (!redis) return null;
-  return new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(maxRequests, window),
-    analytics: true,
-    prefix: 'rl',
-  });
-}
-
 // Default: 10 req / 60s (for authenticated endpoints)
-const defaultLimiter = createLimiter(10, '60 s');
+const defaultLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, '60 s'),
+      analytics: true,
+      prefix: 'rl',
+    })
+  : null;
 
 // Webhook: 20 messages / 60s per phone number
-const webhookLimiter = createLimiter(20, '60 s');
+const webhookLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(20, '60 s'),
+      analytics: true,
+      prefix: 'rl',
+    })
+  : null;
 
 export async function rateLimit(
   identifier: string,
@@ -46,6 +50,22 @@ export async function rateLimit(
     );
   }
   return null;
+}
+
+// Groq: 30 AI replies / 60s per provider (prevents one tenant exhausting shared key)
+const groqLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(30, '60 s'),
+      analytics: true,
+      prefix: 'rl:groq',
+    })
+  : null;
+
+export async function groqRateLimit(providerId: string): Promise<boolean> {
+  if (!groqLimiter) return false; // dev mode
+  const { success } = await groqLimiter.limit(`groq:${providerId}`);
+  return !success; // true = rate limited
 }
 
 export function getClientIp(request: Request): string {

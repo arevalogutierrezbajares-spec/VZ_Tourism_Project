@@ -3,6 +3,7 @@ import { sendWhatsAppText } from '@/lib/whatsapp-api';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import { rateLimit } from '@/lib/api/rate-limit';
 import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
+import { SendMessageSchema } from '@/lib/whatsapp/schemas';
 
 /**
  * POST /api/whatsapp/send
@@ -15,20 +16,21 @@ export async function POST(request: NextRequest) {
   const { supabase, providerId } = auth;
 
   // Rate limit: 10 messages/minute per provider
-  const rateLimitRes = rateLimit(`ws:${providerId}`, 10);
+  const rateLimitRes = await rateLimit(`ws:${providerId}`, 10);
   if (rateLimitRes) return rateLimitRes;
 
-  let body: { conversation_id?: string; body?: string };
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { conversation_id, body: messageBody } = body;
-  if (!conversation_id || !messageBody?.trim()) {
-    return NextResponse.json({ error: 'conversation_id and body are required' }, { status: 400 });
+  const parsed = SendMessageSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 });
   }
+  const { conversation_id, body: messageBody } = parsed.data;
 
   // Fetch conversation (validates ownership via RLS)
   const { data: conv } = await supabase
@@ -62,7 +64,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 502 });
+    console.error('[whatsapp/send] WhatsApp API error:', result.error);
+    return NextResponse.json({ error: 'Failed to send message' }, { status: 502 });
   }
 
   // Persist outbound message

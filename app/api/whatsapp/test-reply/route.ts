@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildSystemPrompt } from '@/lib/whatsapp-ai';
 import { getGroqClient, GROQ_MODEL } from '@/lib/groq';
 import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
+import { TestReplySchema } from '@/lib/whatsapp/schemas';
+import { rateLimit } from '@/lib/api/rate-limit';
 import type { PosadaWhatsappConfig, PosadaKnowledge } from '@/types/database';
 
 /**
@@ -13,17 +15,21 @@ export async function POST(request: NextRequest) {
   const auth = await getAuthenticatedProvider();
   if (!auth.ok) return auth.response;
 
-  let body: { message?: string; config?: Partial<PosadaWhatsappConfig>; knowledge?: Partial<PosadaKnowledge>; provider_name?: string };
+  const rateLimitRes = await rateLimit(`api:test-reply`, 20);
+  if (rateLimitRes) return rateLimitRes;
+
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { message, config, knowledge, provider_name } = body;
-  if (!message || typeof message !== 'string' || message.length > 1000) {
-    return NextResponse.json({ error: 'message is required (max 1000 chars)' }, { status: 400 });
+  const parsed = TestReplySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 });
   }
+  const { message, config, knowledge, provider_name } = parsed.data;
 
   // Build a minimal config object with defaults for missing fields
   const fullConfig = {
@@ -94,7 +100,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message },
       ],
-      max_tokens: fullConfig.response_length === 'brief' ? 150 : 400,
+      max_tokens: (fullConfig as PosadaWhatsappConfig).response_length === 'brief' ? 150 : 400,
       temperature: 0.3,
       top_p: 0.9,
     });

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { hashToken } from '@/lib/whatsapp/hash';
 import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
+import { ConfigUpdateSchema } from '@/lib/whatsapp/schemas';
+import { rateLimit } from '@/lib/api/rate-limit';
 
 /**
  * GET /api/whatsapp/config
@@ -20,7 +22,8 @@ export async function GET() {
     .single();
 
   if (error && error.code !== 'PGRST116') {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[whatsapp/config] GET error:', error.message);
+    return NextResponse.json({ error: 'Failed to load configuration' }, { status: 500 });
   }
 
   // Mask secrets — never send raw tokens to the client
@@ -39,26 +42,22 @@ export async function PUT(request: NextRequest) {
   if (!auth.ok) return auth.response;
   const { supabase, providerId } = auth;
 
-  let body: Record<string, unknown>;
+  const rateLimitRes = await rateLimit(`api:${providerId}`, 20);
+  if (rateLimitRes) return rateLimitRes;
+
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const allowed = [
-    'phone_number_id', 'access_token', 'persona_name', 'persona_bio',
-    'greeting_style', 'custom_greeting',
-    'tone_formality', 'tone_language', 'response_length', 'booking_pressure', 'emoji_style',
-    'upsell_enabled', 'sentiment_threshold', 'value_escalation_usd', 'escalation_keywords',
-    'response_delay_ms',
-    'working_hours_enabled', 'working_hours', 'after_hours_message',
-    'custom_instructions', 'ai_enabled', 'verify_token',
-  ];
+  const parsed = ConfigUpdateSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 });
+  }
 
-  const updates = Object.fromEntries(
-    Object.entries(body).filter(([k]) => allowed.includes(k))
-  );
+  const updates: Record<string, unknown> = { ...parsed.data };
 
   // Hash verify_token before storing — never store plaintext.
   // Preserve the plaintext to return in the response (shown once for Meta setup).
@@ -122,11 +121,16 @@ export async function PUT(request: NextRequest) {
     .select('id, provider_id, phone_number_id, persona_name, persona_bio, greeting_style, custom_greeting, tone_formality, tone_language, response_length, booking_pressure, emoji_style, upsell_enabled, sentiment_threshold, value_escalation_usd, escalation_keywords, response_delay_ms, working_hours_enabled, working_hours, after_hours_message, custom_instructions, ai_enabled, verify_token, updated_at')
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[whatsapp/config] PUT error:', error.message);
+    return NextResponse.json({ error: 'Failed to save configuration' }, { status: 500 });
+  }
 
   // Return plaintext verify_token in response so UI can display it once for Meta setup.
   // After this response, subsequent GETs will return a masked placeholder.
   const responseData = { ...data } as Record<string, unknown>;
+  delete responseData.access_token;
+  delete responseData.access_token_vault_id;
   if (plaintextVerifyToken) {
     responseData.verify_token = plaintextVerifyToken;
   }

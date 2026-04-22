@@ -10,6 +10,7 @@ import { isWithinWorkingHours } from '@/lib/whatsapp-hours';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
 import { hashToken } from '@/lib/whatsapp/hash';
+import { rateLimit, groqRateLimit } from '@/lib/api/rate-limit';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 import type { ServiceClient } from '@/types/supabase-client';
 
@@ -32,22 +33,6 @@ function verifyWebhookSignature(rawBody: string, signature: string | null): bool
   } catch {
     return false;
   }
-}
-
-// ─── In-memory rate limiter (per phone number) ──────────────────────────────
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 20;
-const rateLimitMap = new Map<string, number[]>();
-
-function isRateLimited(phone: string): boolean {
-  const now = Date.now();
-  const timestamps = rateLimitMap.get(phone) ?? [];
-  const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT_MAX) return true;
-  recent.push(now);
-  rateLimitMap.set(phone, recent);
-  return false;
 }
 
 // ─── Webhook verification (Meta GET challenge) ────────────────────────────────
@@ -133,8 +118,9 @@ async function processInbound(payload: unknown) {
 
   for (const msg of messages) {
     // Rate limit: skip processing if phone number exceeds threshold
-    if (isRateLimited(msg.from)) {
-      console.warn(`[whatsapp/webhook] rate limited: ${msg.from}`);
+    const rateLimitRes = await rateLimit(`wh:${msg.from}`, 20);
+    if (rateLimitRes) {
+      console.warn(`[webhook] Rate limited phone: ${msg.from}`);
       continue;
     }
     try {
@@ -149,7 +135,19 @@ async function handleMessage(
   supabase: ServiceClient,
   msg: Awaited<ReturnType<typeof parseWebhookPayload>>[number]
 ) {
-  const { phoneNumberId, from, guestName, waMessageId, body, messageType } = msg;
+  const { phoneNumberId, from, guestName, waMessageId, body: msgBody, messageType } = msg;
+  // Cap message body to prevent abuse (WhatsApp max is 4096)
+  const body = msgBody.slice(0, 4096);
+
+  // Validate required fields
+  if (!phoneNumberId || !from || !waMessageId) {
+    console.warn('[webhook] Malformed message — missing required fields:', {
+      phoneNumberId: !!phoneNumberId,
+      from: !!from,
+      waMessageId: !!waMessageId,
+    });
+    return;
+  }
 
   // 1. Look up posada config by phone_number_id
   const { data: config } = await supabase
@@ -209,18 +207,7 @@ async function handleMessage(
       guest_name: guestName ?? undefined,
     }).eq('id', conv.id);
 
-    const { error: rpcError } = await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
-    if (rpcError) {
-      const { data: cur } = await supabase
-        .from('wa_conversations')
-        .select('unread_count')
-        .eq('id', conv.id)
-        .single();
-      await supabase
-        .from('wa_conversations')
-        .update({ unread_count: (cur?.unread_count ?? 0) + 1 })
-        .eq('id', conv.id);
-    }
+    await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
 
     const ack = config.tone_language === 'en'
       ? 'Thanks for sharing! I can only read text messages right now. Could you describe what you need in a text message?'
@@ -263,21 +250,8 @@ async function handleMessage(
     })
     .eq('id', conv.id);
 
-  // Increment unread count atomically via RPC (see supabase/migrations for function definition)
-  const { error: rpcError } = await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
-  if (rpcError) {
-    // Fallback: read-then-write (has TOCTOU race under concurrent messages).
-    // Deploy the increment_wa_unread RPC to eliminate this — see supabase/migrations/.
-    const { data: current } = await supabase
-      .from('wa_conversations')
-      .select('unread_count')
-      .eq('id', conv.id)
-      .single();
-    await supabase
-      .from('wa_conversations')
-      .update({ unread_count: (current?.unread_count ?? 0) + 1 })
-      .eq('id', conv.id);
-  }
+  // Increment unread count atomically via RPC
+  await supabase.rpc('increment_wa_unread', { conv_id: conv.id });
 
 
   // 7. If conversation is in human or closed mode — skip AI
@@ -340,6 +314,14 @@ async function handleMessage(
 
   // 11c. Build live context (dynamic pricing + availability)
   const liveContext = await buildLiveContext(supabase, provider.id, knowledge).catch(() => undefined);
+
+  // 11d. Per-provider Groq rate limit
+  if (await groqRateLimit(config.provider_id)) {
+    console.warn(`[webhook] Groq rate limited for provider: ${config.provider_id}`);
+    const fallback = config.after_hours_message || 'Estamos recibiendo muchos mensajes. Te responderemos pronto.';
+    await sendAndPersist(supabase, conv.id, config, accessToken, from, fallback, true);
+    return;
+  }
 
   // 12. Generate AI reply via Groq
   let rawReply: string;

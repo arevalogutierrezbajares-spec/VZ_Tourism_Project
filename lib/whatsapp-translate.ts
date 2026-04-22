@@ -6,7 +6,21 @@
  * Cost: ~$0 (Groq free tier, ~80ms latency)
  */
 
+import { z } from 'zod';
 import { getGroqClient, GROQ_MODEL } from './groq';
+
+const DetectResultSchema = z.object({
+  language: z.string().default('es'),
+  name: z.string().optional(),
+  confidence: z.enum(['high', 'medium', 'low']).default('medium'),
+});
+
+const DetectAndTranslateSchema = z.object({
+  language: z.string().default('es'),
+  languageName: z.string().optional(),
+  confidence: z.enum(['high', 'medium', 'low']).default('medium'),
+  english: z.string().nullable().default(null),
+});
 
 export interface DetectResult {
   language: string;   // BCP-47 tag e.g. "es", "en", "pt", "fr", "de", "it", "zh"
@@ -61,16 +75,16 @@ export async function detectLanguage(text: string): Promise<DetectResult> {
     const raw = completion.choices[0]?.message?.content?.trim() ?? '';
     // Strip potential markdown code fences
     const cleaned = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/, '').trim();
-    const parsed = JSON.parse(cleaned) as { language: string; name: string; confidence: string };
+    const parsed = DetectResultSchema.parse(JSON.parse(cleaned));
 
-    const code = parsed.language?.toLowerCase() ?? 'es';
+    const code = parsed.language.toLowerCase();
     const isEnglish = code === 'en' || code.startsWith('en-');
 
     return {
       language: code,
       languageName: parsed.name ?? COMMON_LANGUAGES[code] ?? code,
       isEnglish,
-      confidence: (parsed.confidence as DetectResult['confidence']) ?? 'medium',
+      confidence: parsed.confidence,
     };
   } catch {
     // Fallback: simple heuristic check for English words
@@ -167,14 +181,9 @@ Rules:
 
     const raw = completion.choices[0]?.message?.content?.trim() ?? '';
     const cleaned = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/, '').trim();
-    const parsed = JSON.parse(cleaned) as {
-      language: string;
-      languageName: string;
-      confidence: string;
-      english: string | null;
-    };
+    const parsed = DetectAndTranslateSchema.parse(JSON.parse(cleaned));
 
-    const code = parsed.language?.toLowerCase() ?? 'es';
+    const code = parsed.language.toLowerCase();
     const isEnglish = code === 'en' || code.startsWith('en-');
 
     return {
@@ -182,9 +191,9 @@ Rules:
         language: code,
         languageName: parsed.languageName ?? COMMON_LANGUAGES[code] ?? code,
         isEnglish,
-        confidence: (parsed.confidence as DetectResult['confidence']) ?? 'medium',
+        confidence: parsed.confidence,
       },
-      english: isEnglish ? null : (parsed.english ?? null),
+      english: isEnglish ? null : parsed.english,
     };
   } catch {
     // Fallback

@@ -4,8 +4,11 @@ import { updateSession } from '@/lib/supabase/middleware';
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip Supabase auth when not configured
+  // Skip Supabase auth when not configured — but block protected routes
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/ruta')) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
     return NextResponse.next({ request });
   }
 

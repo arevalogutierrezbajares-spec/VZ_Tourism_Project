@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedProvider } from '@/lib/whatsapp/dev-auth';
 import { hashToken } from '@/lib/whatsapp/hash';
+import { EmbeddedSignupSchema } from '@/lib/whatsapp/schemas';
 
 const META_GRAPH_VERSION = 'v21.0';
 const META_GRAPH_URL = `https://graph.facebook.com/${META_GRAPH_VERSION}`;
@@ -35,19 +36,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { code?: string; phone_number_id?: string; waba_id?: string };
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { code, phone_number_id, waba_id } = body;
-  if (!code || !phone_number_id || !waba_id) {
-    return NextResponse.json(
-      { error: 'code, phone_number_id, and waba_id are required' },
-      { status: 400 }
-    );
+  const parsed = EmbeddedSignupSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'code, phone_number_id, and waba_id are required' }, { status: 400 });
+  }
+  const { code, phone_number_id, waba_id } = parsed.data;
+
+  // Validate IDs are numeric (Meta IDs are always numeric strings)
+  const numericIdPattern = /^\d+$/;
+  if (!numericIdPattern.test(phone_number_id) || !numericIdPattern.test(waba_id)) {
+    return NextResponse.json({ error: 'Invalid phone_number_id or waba_id format' }, { status: 400 });
   }
 
   // ── Step 1: Exchange authorization code for access token ──────────────────
@@ -123,7 +128,10 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ messaging_product: 'whatsapp', pin: '000000' }),
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        pin: String(Math.floor(100000 + Math.random() * 900000)),
+      }),
     });
     if (!regRes.ok) {
       const err = await regRes.text();

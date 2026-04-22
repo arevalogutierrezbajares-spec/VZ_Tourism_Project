@@ -43,7 +43,8 @@ async function waPost(
 
   if (!res.ok) {
     const text = await res.text();
-    return { success: false, error: `WhatsApp API ${res.status}: ${text}` };
+    console.error(`[WhatsApp API] ${res.status}: ${text}`);
+    return { success: false, error: 'WhatsApp API request failed' };
   }
 
   const data = await res.json() as { messages?: { id: string }[] };
