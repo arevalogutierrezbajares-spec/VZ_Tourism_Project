@@ -5,6 +5,7 @@ import { useMapStore } from '@/stores/map-store';
 import { MapControls } from './MapControls';
 import type { MapPin } from '@/types/map';
 import { VENEZUELA_CENTER, VENEZUELA_DEFAULT_ZOOM } from '@/lib/constants';
+import { CATEGORY_COLORS as COLORS_MAP, normalizeCategory } from '@/lib/mapbox/helpers';
 
 interface MapContainerProps {
   className?: string;
@@ -68,47 +69,23 @@ const CLUSTER_COUNT_LAYER = 'cluster-count';
 const POINT_LAYER = 'unclustered-point';
 const GLOW_LAYER = 'pin-glow';
 
-// ── Category color map (used by Mapbox expressions + tooltip) ──────────
-const CATEGORY_COLORS: Record<string, string> = {
-  accommodation: '#3B82F6',
-  gastronomy:    '#F97316',
-  restaurants:   '#F97316',
-  adventure:     '#EF4444',
-  cultural:      '#F59E0B',
-  culture:       '#F59E0B',
-  'eco-tours':   '#22C55E',
-  beaches:       '#0EA5E9',
-  wellness:      '#EC4899',
-  mountains:     '#8B5CF6',
-  cities:        '#3B82F6',  // scraped hotels — same color as accommodation
-};
+// ── Category colors — single source of truth in helpers.ts ──────────
+const CATEGORY_COLORS = COLORS_MAP;
 const DEFAULT_COLOR = '#6B7280';
 
-/** Normalize category aliases to canonical BUSINESS_CATEGORIES keys */
-function normalizeCategory(category: string | undefined): string {
-  const cat = category ?? 'other';
-  if (cat === 'restaurants') return 'gastronomy';
-  if (cat === 'culture') return 'cultural';
-  if (cat === 'cities') return 'accommodation';
-  return cat;
-}
-
-/** Mapbox match expression: category → color (used by multiple layers) */
-const CATEGORY_COLOR_EXPR = [
-  'match', ['get', 'category'],
-  'accommodation', '#3B82F6',
-  'cities', '#3B82F6',         // scraped hotels — same as accommodation
-  'gastronomy', '#F97316',
-  'restaurants', '#F97316',
-  'adventure', '#EF4444',
-  'cultural', '#F59E0B',
-  'culture', '#F59E0B',
-  'eco-tours', '#22C55E',
-  'beaches', '#0EA5E9',
-  'wellness', '#EC4899',
-  'mountains', '#8B5CF6',
-  DEFAULT_COLOR,
-];
+/** Mapbox match expression: category → color (built from CATEGORY_COLORS) */
+const CATEGORY_COLOR_EXPR: unknown[] = (() => {
+  const expr: unknown[] = ['match', ['get', 'category']];
+  for (const [key, color] of Object.entries(CATEGORY_COLORS)) {
+    expr.push(key, color);
+  }
+  // Also handle raw aliases that may appear in GeoJSON before normalization
+  expr.push('restaurants', CATEGORY_COLORS.gastronomy);
+  expr.push('culture', CATEGORY_COLORS.cultural);
+  expr.push('cities', CATEGORY_COLORS.accommodation);
+  expr.push(DEFAULT_COLOR); // fallback
+  return expr;
+})();
 
 function buildGeoJSON(pins: MapPin[], hiddenCategories: Set<string>) {
   return {
@@ -148,6 +125,7 @@ export function MapContainer({
   const selectedIdRef = useRef<string | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const storeSubRef = useRef<(() => void) | null>(null);
+  const webglHandlersRef = useRef<{ lost: (e: Event) => void; restored: () => void } | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const {
@@ -155,7 +133,6 @@ export function MapContainer({
     zoom,
     pins,
     isDarkMode,
-    is3DTerrain,
     hiddenCategories,
     selectedPin,
     setSelectedPin,
@@ -414,13 +391,14 @@ export function MapContainer({
         if (!source) return;
         source.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
           if (err) return;
+          const clampedZoom = Math.min(zoomLevel, 18);
           const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           if (prefersReducedMotion) {
-            map.easeTo({ center: coordinates, zoom: zoomLevel, duration: 0 });
+            map.easeTo({ center: coordinates, zoom: clampedZoom, duration: 0 });
           } else {
             map.flyTo({
               center: coordinates,
-              zoom: zoomLevel,
+              zoom: clampedZoom,
               curve: 1.42,
               speed: 1.6,
               maxDuration: 1500,
@@ -433,12 +411,13 @@ export function MapContainer({
       // Shared handler for pin click (used by both the visible layer and the transparent hitarea)
       function handlePinLayerClick(e: MapboxEvent) {
         if (!e.features?.length) return;
-        const raw = e.features[0].properties['pinJson'] as string;
+        const raw = e.features[0].properties['pinJson'];
+        if (typeof raw !== 'string') return;
         try {
           const pin = JSON.parse(raw) as MapPin;
           handlePinClick(pin);
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error('Failed to parse pin data:', err);
         }
       }
 
@@ -602,13 +581,17 @@ export function MapContainer({
 
       // WebGL context loss recovery — prevents silent blank map
       const mapCanvas = map.getCanvas();
-      mapCanvas.addEventListener('webglcontextlost', (e) => {
-        e.preventDefault();
-        setMapError('Map display interrupted — restoring...');
-      });
-      mapCanvas.addEventListener('webglcontextrestored', () => {
-        setMapError(null);
-      });
+      webglHandlersRef.current = {
+        lost: (e: Event) => {
+          e.preventDefault();
+          setMapError('Map display interrupted — restoring...');
+        },
+        restored: () => {
+          setMapError(null);
+        },
+      };
+      mapCanvas.addEventListener('webglcontextlost', webglHandlersRef.current.lost);
+      mapCanvas.addEventListener('webglcontextrestored', webglHandlersRef.current.restored);
 
       // Disable rotation on touch (keep pinch-zoom enabled)
       (map as unknown as { touchZoomRotate: { disableRotation: () => void } }).touchZoomRotate.disableRotation();
@@ -650,28 +633,7 @@ export function MapContainer({
           if (!source) return;
           const geo = buildGeoJSON(state.pins, state.hiddenCategories);
           source.setData(geo);
-          // Expose diagnostic for automated tests
-          if (typeof window !== 'undefined') {
-            (window as unknown as Record<string, unknown>).__mapFilterDiag = {
-              totalPins: state.pins.length,
-              hiddenCategories: state.hiddenCategories instanceof Set ? [...state.hiddenCategories] : [],
-              visibleFeatures: geo.features.length,
-              ts: Date.now(),
-            };
-          }
         });
-
-        // Expose initial diagnostic
-        if (typeof window !== 'undefined') {
-          const initGeo = buildGeoJSON(useMapStore.getState().pins, useMapStore.getState().hiddenCategories);
-          (window as unknown as Record<string, unknown>).__mapFilterDiag = {
-            totalPins: useMapStore.getState().pins.length,
-            hiddenCategories: [],
-            visibleFeatures: initGeo.features.length,
-            ts: Date.now(),
-          };
-          (window as unknown as Record<string, unknown>).__mapInstance = map;
-        }
 
         setMapLoaded(true);
       });
@@ -713,6 +675,15 @@ export function MapContainer({
       storeSubRef.current = null;
       resizeObserverRef.current?.disconnect();
       if (mapInstanceRef.current) {
+        // Clean up WebGL context listeners before removing the map
+        if (webglHandlersRef.current) {
+          try {
+            const canvas = mapInstanceRef.current.getCanvas();
+            canvas.removeEventListener('webglcontextlost', webglHandlersRef.current.lost);
+            canvas.removeEventListener('webglcontextrestored', webglHandlersRef.current.restored);
+          } catch { /* canvas may already be disposed */ }
+          webglHandlersRef.current = null;
+        }
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -778,12 +749,19 @@ export function MapContainer({
   // Fit map to bounds when targetBounds changes (city/region selection)
   useEffect(() => {
     if (!mapInstanceRef.current || !mapLoaded || !targetBounds) return;
+    // Validate bounds — prevent NaN or degenerate (identical corners)
+    const [[w, s], [e, n]] = targetBounds;
+    if ([w, s, e, n].some((v) => !Number.isFinite(v))) return;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    mapInstanceRef.current.fitBounds(targetBounds, {
-      padding: { top: 120, bottom: 80, left: 60, right: 60 },
-      maxZoom: 14,
-      duration: prefersReducedMotion ? 0 : 1500,
-    });
+    try {
+      mapInstanceRef.current.fitBounds(targetBounds, {
+        padding: { top: 120, bottom: 80, left: 60, right: 60 },
+        maxZoom: 14,
+        duration: prefersReducedMotion ? 0 : 1500,
+      });
+    } catch (err) {
+      console.error('fitBounds failed:', err);
+    }
   }, [targetBounds, mapLoaded]);
 
   return (

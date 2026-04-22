@@ -27,7 +27,7 @@ import { useItinerary } from '@/hooks/use-itinerary';
 import { useAuth } from '@/hooks/use-auth';
 import { useMapStore } from '@/stores/map-store';
 import { useSearchStore } from '@/stores/search-store';
-import { BUSINESS_CATEGORIES } from '@/lib/mapbox/helpers';
+import { BUSINESS_CATEGORIES, normalizeCategory } from '@/lib/mapbox/helpers';
 import { VENEZUELA_CENTER, VENEZUELA_DEFAULT_ZOOM } from '@/lib/constants';
 import { getInitials } from '@/lib/utils';
 import type { MapPin as MapPinType } from '@/types/map';
@@ -57,8 +57,12 @@ function MapPageContent() {
   const searchFilters = useSearchStore((s) => s.filters);
   const [activeCategory, setActiveCategory] = useState(CATEGORY_FILTER_ALL);
   const [totalCount, setTotalCount] = useState(0);
+  const [filteredCount, setFilteredCount] = useState(0);
   const [allPins, setAllPins] = useState<MapPinType[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [cityFilter, setCityFilter] = useState<string | null>(null);
+  const [pinLoadError, setPinLoadError] = useState(false);
+  const [pinsLoading, setPinsLoading] = useState(true);
   const searchParams = useSearchParams();
 
   // Handle deep-link intents from the "Build my itinerary" modal
@@ -87,10 +91,16 @@ function MapPageContent() {
 
   // Load all scraped listings as map pins on mount
   useEffect(() => {
+    const controller = new AbortController();
+
     async function loadPins() {
+      setPinsLoading(true);
+      setPinLoadError(false);
       try {
-        const res = await fetch('/api/listings?limit=2000');
-        if (!res.ok) return;
+        const res = await fetch('/api/listings?limit=2000', {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`API responded ${res.status}`);
         const json = await res.json();
         const listings: {
           id: string;
@@ -105,29 +115,45 @@ function MapPageContent() {
           region: string;
         }[] = json.data ?? [];
 
-        const pins: MapPinType[] = listings.map((l) => ({
-          id: l.id,
-          lat: l.latitude,
-          lng: l.longitude,
-          title: l.title,
-          slug: l.slug,
-          category: l.category,
-          rating: l.rating ?? undefined,
-          reviewCount: l.review_count,
-          city: l.city,
-          region: l.region,
-          listingId: l.id,
-        }));
+        const pins: MapPinType[] = listings
+          .filter((l) => Number.isFinite(l.latitude) && Number.isFinite(l.longitude))
+          .map((l) => ({
+            id: l.id,
+            lat: l.latitude,
+            lng: l.longitude,
+            title: l.title,
+            slug: l.slug,
+            category: l.category,
+            rating: l.rating ?? undefined,
+            reviewCount: l.review_count,
+            city: l.city,
+            region: l.region,
+            listingId: l.id,
+          }));
+
+        // Compute per-category counts using normalized keys
+        const counts: Record<string, number> = {};
+        for (const p of pins) {
+          const key = normalizeCategory(p.category);
+          counts[key] = (counts[key] || 0) + 1;
+        }
 
         setAllPins(pins);
         setPins(pins);
         setTotalCount(pins.length);
+        setFilteredCount(pins.length);
+        setCategoryCounts(counts);
       } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
         console.error('Failed to load map pins', err);
+        setPinLoadError(true);
+      } finally {
+        setPinsLoading(false);
       }
     }
 
     loadPins();
+    return () => controller.abort();
   }, [setPins]);
 
   // Sync FilterOverlay filters (searchStore) → map pins
@@ -145,6 +171,7 @@ function MapPageContent() {
       setPins(allPins);
       setHiddenCategories(new Set());
       setActiveCategory(CATEGORY_FILTER_ALL);
+      setFilteredCount(allPins.length);
       return;
     }
 
@@ -180,11 +207,32 @@ function MapPageContent() {
     setActiveCategory(cat);
     if (cat === CATEGORY_FILTER_ALL) {
       setHiddenCategories(new Set());
+      setFilteredCount(totalCount);
+      setCenter(VENEZUELA_CENTER);
+      setZoom(VENEZUELA_DEFAULT_ZOOM);
     } else {
       const hidden = new Set(
         BUSINESS_CATEGORIES.map((c) => c.key).filter((k) => k !== cat)
       );
       setHiddenCategories(hidden);
+      setFilteredCount(categoryCounts[cat] || 0);
+
+      // Zoom to fit filtered pins so the change is visually obvious
+      const visible = allPins.filter((p) => normalizeCategory(p.category) === cat);
+      if (visible.length > 0) {
+        const lats = visible.map((p) => p.lat);
+        const lngs = visible.map((p) => p.lng);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        // Add padding so pins aren't right at the edge
+        const pad = 0.3;
+        setTargetBounds([
+          [minLng - pad, minLat - pad],
+          [maxLng + pad, maxLat + pad],
+        ]);
+      }
     }
   };
 
@@ -220,6 +268,9 @@ function MapPageContent() {
     setTargetBounds(null);
     setCenter(VENEZUELA_CENTER);
     setZoom(VENEZUELA_DEFAULT_ZOOM);
+    setActiveCategory(CATEGORY_FILTER_ALL);
+    setHiddenCategories(new Set());
+    setFilteredCount(allPins.length);
   };
 
   return (
@@ -325,52 +376,116 @@ function MapPageContent() {
 
             {/* Category filter chips */}
             {totalCount > 0 && !hasSearched && (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="radiogroup" aria-label="Filter by category">
-                <button
-                  onClick={() => handleCategoryFilter(CATEGORY_FILTER_ALL)}
-                  role="radio"
-                  aria-checked={activeCategory === CATEGORY_FILTER_ALL}
-                  className={`flex-shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                    activeCategory === CATEGORY_FILTER_ALL
-                      ? 'bg-foreground text-background border-foreground'
-                      : 'bg-background text-muted-foreground border hover:bg-muted/50'
-                  }`}
-                >
-                  All ({totalCount.toLocaleString()})
-                </button>
-                {BUSINESS_CATEGORIES.map(({ key, label, color }) => (
+              <div className="space-y-1.5">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="radiogroup" aria-label="Filter by category">
                   <button
-                    key={key}
-                    onClick={() => handleCategoryFilter(key)}
+                    onClick={() => handleCategoryFilter(CATEGORY_FILTER_ALL)}
                     role="radio"
-                    aria-checked={activeCategory === key}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                      activeCategory === key
-                        ? 'text-white border-transparent'
+                    aria-checked={activeCategory === CATEGORY_FILTER_ALL}
+                    className={`flex-shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      activeCategory === CATEGORY_FILTER_ALL
+                        ? 'bg-foreground text-background border-foreground'
                         : 'bg-background text-muted-foreground border hover:bg-muted/50'
                     }`}
-                    style={
-                      activeCategory === key ? { backgroundColor: color, borderColor: color } : {}
-                    }
                   >
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: activeCategory === key ? 'white' : color }}
-                      aria-hidden="true"
-                    />
-                    {label}
+                    All ({totalCount.toLocaleString()})
                   </button>
-                ))}
+                  {BUSINESS_CATEGORIES.map(({ key, label, color }) => {
+                    const count = categoryCounts[key] || 0;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleCategoryFilter(key)}
+                        role="radio"
+                        aria-checked={activeCategory === key}
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium shadow-sm border transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                          activeCategory === key
+                            ? 'text-white border-transparent'
+                            : 'bg-background text-muted-foreground border hover:bg-muted/50'
+                        }`}
+                        style={
+                          activeCategory === key ? { backgroundColor: color, borderColor: color } : {}
+                        }
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: activeCategory === key ? 'white' : color }}
+                          aria-hidden="true"
+                        />
+                        {label}
+                        {count > 0 && (
+                          <span className={`tabular-nums ${activeCategory === key ? 'text-white/80' : 'text-muted-foreground/60'}`}>
+                            ({count})
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Active filter indicator */}
+                {activeCategory !== CATEGORY_FILTER_ALL && (
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[11px] font-medium text-muted-foreground bg-background/90 backdrop-blur-sm rounded-md px-2 py-0.5 shadow-sm border">
+                      Showing {filteredCount.toLocaleString()} of {totalCount.toLocaleString()} places
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Suggestion chips */}
-            {!hasSearched && totalCount === 0 && (
+            {/* Suggestion chips (show while loading or if no pins) */}
+            {!hasSearched && totalCount === 0 && !pinLoadError && !pinsLoading && (
               <SuggestionChips
                 suggestions={suggestions.slice(0, 5)}
                 onSelect={search}
                 className="justify-center"
               />
+            )}
+
+            {/* Pin loading error */}
+            {pinLoadError && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-sm text-destructive font-medium">Unable to load places</span>
+                <button
+                  onClick={() => {
+                    setPinLoadError(false);
+                    setPinsLoading(true);
+                    fetch('/api/listings?limit=2000')
+                      .then((res) => {
+                        if (!res.ok) throw new Error();
+                        return res.json();
+                      })
+                      .then((json) => {
+                        const listings = json.data ?? [];
+                        const pins: MapPinType[] = listings
+                          .filter((l: { latitude: number; longitude: number }) =>
+                            Number.isFinite(l.latitude) && Number.isFinite(l.longitude)
+                          )
+                          .map((l: { id: string; title: string; slug: string; latitude: number; longitude: number; category: string; rating: number | null; review_count: number; city: string; region: string }) => ({
+                            id: l.id, lat: l.latitude, lng: l.longitude,
+                            title: l.title, slug: l.slug, category: l.category,
+                            rating: l.rating ?? undefined, reviewCount: l.review_count,
+                            city: l.city, region: l.region, listingId: l.id,
+                          }));
+                        const counts: Record<string, number> = {};
+                        for (const p of pins) {
+                          const key = normalizeCategory(p.category);
+                          counts[key] = (counts[key] || 0) + 1;
+                        }
+                        setAllPins(pins);
+                        setPins(pins);
+                        setTotalCount(pins.length);
+                        setFilteredCount(pins.length);
+                        setCategoryCounts(counts);
+                      })
+                      .catch(() => setPinLoadError(true))
+                      .finally(() => setPinsLoading(false));
+                  }}
+                  className="text-xs font-medium text-destructive underline hover:no-underline"
+                >
+                  Retry
+                </button>
+              </div>
             )}
           </div>
         </div>

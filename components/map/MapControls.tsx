@@ -22,7 +22,9 @@ export function MapControls() {
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => {
+        // Fullscreen not supported or denied (e.g. iframe sandbox)
+      });
     } else {
       document.exitFullscreen().catch(() => {});
     }

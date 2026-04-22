@@ -75,14 +75,7 @@ export const useMapStore = create<MapStore>()(
 
       setPins: (pins) => set({ pins }),
 
-      setSelectedPin: (pin) =>
-        set((state) => ({
-          selectedPin: pin,
-          pins: state.pins.map((p) => ({
-            ...p,
-            isSelected: p.id === pin?.id,
-          })),
-        })),
+      setSelectedPin: (pin) => set({ selectedPin: pin }),
 
       toggleSafetyZones: () =>
         set((state) => ({ showSafetyZones: !state.showSafetyZones })),

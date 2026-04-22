@@ -87,36 +87,44 @@ export function getCategoryIcon(category: string): string {
   return icons[category] || '📍';
 }
 
+/** Single source of truth for category → color mapping */
+export const CATEGORY_COLORS: Record<string, string> = {
+  accommodation: '#3B82F6',
+  gastronomy:    '#F97316',
+  adventure:     '#EF4444',
+  beaches:       '#0EA5E9',
+  'eco-tours':   '#22C55E',
+  mountains:     '#8B5CF6',
+  cultural:      '#F59E0B',
+  wellness:      '#EC4899',
+};
+
+const DEFAULT_COLOR = '#6B7280';
+
+/** Resolve category aliases to their canonical colors */
 export function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
-    accommodation: '#3B82F6',
-    cities: '#3B82F6',     // scraped hotels — same as accommodation
-    gastronomy: '#F97316',
-    adventure: '#EF4444',
-    beaches: '#0EA5E9',
-    'eco-tours': '#22C55E',
-    mountains: '#8B5CF6',
-    cultural: '#F59E0B',
-    wellness: '#EC4899',
-    // Legacy aliases
-    hotel: '#3B82F6',
-    restaurant: '#F97316',
-    experience: '#22C55E',
-    other: '#6B7280',
-  };
-  return colors[category] || '#6B7280';
+  return CATEGORY_COLORS[normalizeCategory(category)] ?? DEFAULT_COLOR;
 }
 
 export const BUSINESS_CATEGORIES: { key: string; label: string; color: string }[] = [
-  { key: 'accommodation', label: 'Hotels & Posadas', color: '#3B82F6' },
-  { key: 'gastronomy', label: 'Gastronomy', color: '#F97316' },
-  { key: 'adventure', label: 'Adventure', color: '#EF4444' },
-  { key: 'beaches', label: 'Beaches', color: '#0EA5E9' },
-  { key: 'eco-tours', label: 'Eco-Tours', color: '#22C55E' },
-  { key: 'mountains', label: 'Mountains', color: '#8B5CF6' },
-  { key: 'cultural', label: 'Cultural', color: '#F59E0B' },
-  { key: 'wellness', label: 'Wellness', color: '#EC4899' },
+  { key: 'accommodation', label: 'Hotels & Posadas', color: CATEGORY_COLORS.accommodation },
+  { key: 'gastronomy', label: 'Gastronomy', color: CATEGORY_COLORS.gastronomy },
+  { key: 'adventure', label: 'Adventure', color: CATEGORY_COLORS.adventure },
+  { key: 'beaches', label: 'Beaches', color: CATEGORY_COLORS.beaches },
+  { key: 'eco-tours', label: 'Eco-Tours', color: CATEGORY_COLORS['eco-tours'] },
+  { key: 'mountains', label: 'Mountains', color: CATEGORY_COLORS.mountains },
+  { key: 'cultural', label: 'Cultural', color: CATEGORY_COLORS.cultural },
+  { key: 'wellness', label: 'Wellness', color: CATEGORY_COLORS.wellness },
 ];
+
+/** Normalize raw API category aliases to canonical BUSINESS_CATEGORIES keys */
+export function normalizeCategory(category: string | undefined): string {
+  const cat = category ?? 'other';
+  if (cat === 'restaurants') return 'gastronomy';
+  if (cat === 'culture') return 'cultural';
+  if (cat === 'cities') return 'accommodation';
+  return cat;
+}
 
 export function getSafetyColor(level: string): string {
   const colors: Record<string, string> = {

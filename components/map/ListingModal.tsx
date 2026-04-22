@@ -81,21 +81,27 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
     return () => { cancelled = true; };
   }, [pin.listingId]);
 
-  // Close on Escape
+  // Close on Escape + lock body scroll
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = prev;
+    };
   }, [onClose]);
 
   const handleAddToItinerary = useCallback(() => {
     if (!current) {
-      toast.error('Create an itinerary first');
+      openPanel(); // Opens the itinerary panel so user can create one
+      toast('Create an itinerary first, then add stops', { icon: 'info' });
       return;
     }
-    const targetDay = days[0]?.day ?? 1;
+    const targetDay = days.length > 0 ? days[0].day : 1;
     const existingStops = days.find((d) => d.day === targetDay)?.stops ?? [];
     addStop({
       itinerary_id: current.id,
@@ -107,7 +113,7 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
       latitude: pin.lat,
       longitude: pin.lng,
       location_name: pin.title,
-      cost_usd: detail?.price_usd ?? pin.price ?? 0,
+      cost_usd: detail?.price_usd ?? 0,
       duration_hours: detail?.duration_hours ?? null,
       start_time: null,
       end_time: null,
@@ -155,9 +161,9 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
           aria-modal="true"
           aria-label={pin.title}
           className="relative bg-background rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
-          initial={{ opacity: 0, scale: 0.95, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] } }}
-          exit={{ opacity: 0, scale: 0.97, y: 8 }}
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 30, mass: 0.8 } }}
+          exit={{ opacity: 0, scale: 0.98, y: -12, filter: 'blur(4px)', transition: { duration: 0.15 } }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Image gallery */}
@@ -173,9 +179,9 @@ export function ListingModal({ pin, onClose }: ListingModalProps) {
                 />
                 {images.length > 1 && (
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {images.slice(0, 5).map((_, i) => (
+                    {images.slice(0, 5).map((url, i) => (
                       <button
-                        key={i}
+                        key={url}
                         type="button"
                         onClick={() => setActiveImage(i)}
                         className={cn(
