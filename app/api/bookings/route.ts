@@ -126,19 +126,21 @@ export async function POST(request: NextRequest) {
     max_guests?: number;
     min_guests?: number;
     phone?: string;
+    rooms?: { price_usd?: number; max_guests?: number }[];
   } | undefined;
 
   const listing_name = listing?.title ?? listing?.name ?? `Experience ${listing_id}`;
   const listing_slug = (listing as { slug?: string } | undefined)?.slug;
   const provider_id = listing?.provider_id;
-  const base_price_usd = listing?.price_usd ?? listing?.price;
+  const base_price_usd = listing?.price_usd ?? listing?.price ?? listing?.rooms?.[0]?.price_usd;
   if (!base_price_usd) {
     return NextResponse.json(
       { error: 'This listing does not have pricing available yet. Bookings are only available for verified partners.' },
       { status: 422 }
     );
   }
-  const max_guests = listing?.max_guests ?? 99;
+  const roomMaxGuests = listing?.rooms?.length ? Math.max(...listing.rooms.map(r => r.max_guests ?? 2)) : undefined;
+  const max_guests = listing?.max_guests ?? roomMaxGuests ?? 99;
   const min_guests = listing?.min_guests ?? 1;
 
   if (guest_count < min_guests || guest_count > max_guests) {

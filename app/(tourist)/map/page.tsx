@@ -23,6 +23,7 @@ import { useSearch } from '@/hooks/use-search';
 import { useItinerary } from '@/hooks/use-itinerary';
 import { useAuth } from '@/hooks/use-auth';
 import { useMapStore } from '@/stores/map-store';
+import { useSearchStore } from '@/stores/search-store';
 import { BUSINESS_CATEGORIES } from '@/lib/mapbox/helpers';
 import { getInitials } from '@/lib/utils';
 import type { MapPin as MapPinType } from '@/types/map';
@@ -49,8 +50,10 @@ function MapPageContent() {
   const { isAuthenticated, user, profile, signOut } = useAuth();
   const router = useRouter();
   const { setPins, hiddenCategories, toggleCategory } = useMapStore();
+  const searchFilters = useSearchStore((s) => s.filters);
   const [activeCategory, setActiveCategory] = useState(CATEGORY_FILTER_ALL);
   const [totalCount, setTotalCount] = useState(0);
+  const [allPins, setAllPins] = useState<MapPinType[]>([]);
   const searchParams = useSearchParams();
 
   // Handle deep-link intents from the "Build my itinerary" modal
@@ -109,6 +112,7 @@ function MapPageContent() {
           listingId: l.id,
         }));
 
+        setAllPins(pins);
         setPins(pins);
         setTotalCount(pins.length);
       } catch (err) {
@@ -118,6 +122,58 @@ function MapPageContent() {
 
     loadPins();
   }, [setPins]);
+
+  // Sync FilterOverlay filters (searchStore) → map pins
+  useEffect(() => {
+    if (allPins.length === 0) return;
+
+    const hasAnyFilter =
+      searchFilters.category ||
+      searchFilters.region ||
+      (searchFilters.minPrice != null && searchFilters.minPrice > 0) ||
+      (searchFilters.maxPrice != null && searchFilters.maxPrice < 1000);
+
+    // No filters active → restore full pin set and show all categories
+    if (!hasAnyFilter) {
+      setPins(allPins);
+      // Reset category chip to "All"
+      if (activeCategory !== CATEGORY_FILTER_ALL) {
+        BUSINESS_CATEGORIES.forEach(({ key }) => {
+          if (hiddenCategories.has(key)) toggleCategory(key);
+        });
+        setActiveCategory(CATEGORY_FILTER_ALL);
+      }
+      return;
+    }
+
+    // Category filter from overlay → hide non-matching categories
+    if (searchFilters.category) {
+      BUSINESS_CATEGORIES.forEach(({ key }) => {
+        const shouldBeHidden = key !== searchFilters.category;
+        const isHidden = hiddenCategories.has(key);
+        if (shouldBeHidden !== isHidden) toggleCategory(key);
+      });
+      setActiveCategory(searchFilters.category);
+    }
+
+    // Region + price filters → filter the pins array directly
+    let filtered = allPins;
+    if (searchFilters.region) {
+      const r = searchFilters.region.toLowerCase();
+      filtered = filtered.filter(
+        (p) => (p.region ?? '').toLowerCase() === r || (p.city ?? '').toLowerCase() === r
+      );
+    }
+    if (searchFilters.minPrice != null && searchFilters.minPrice > 0) {
+      filtered = filtered.filter((p) => (p.price ?? 0) >= searchFilters.minPrice!);
+    }
+    if (searchFilters.maxPrice != null && searchFilters.maxPrice < 1000) {
+      filtered = filtered.filter((p) => (p.price ?? 0) <= searchFilters.maxPrice!);
+    }
+
+    setPins(filtered);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFilters]);
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat);

@@ -7,7 +7,7 @@ import { PinPreviewCard } from './PinPreviewCard';
 import { MapLegend } from './MapLegend';
 import { MapControls } from './MapControls';
 import type { MapPin } from '@/types/map';
-import { VENEZUELA_CENTER } from '@/lib/constants';
+import { VENEZUELA_CENTER, VENEZUELA_DEFAULT_ZOOM } from '@/lib/constants';
 
 interface MapContainerProps {
   className?: string;
@@ -128,6 +128,43 @@ export function MapContainer({
 
       const mapboxgl = (await import('mapbox-gl')).default;
 
+      // Dim countries outside Venezuela
+      // Read dark mode from store at call-time (not stale closure)
+      const dark = useMapStore.getState().isDarkMode;
+      if (!map.getSource('country-boundaries-source')) {
+        map.addSource('country-boundaries-source', {
+          type: 'vector',
+          url: 'mapbox://mapbox.country-boundaries-v1',
+        });
+      }
+      if (!map.getLayer('country-dim')) {
+        map.addLayer({
+          id: 'country-dim',
+          type: 'fill',
+          source: 'country-boundaries-source',
+          'source-layer': 'country_boundaries',
+          filter: ['!=', ['get', 'iso_3166_1'], 'VE'],
+          paint: {
+            'fill-color': dark ? '#000000' : '#e2e0db',
+            'fill-opacity': dark ? 0.55 : 0.6,
+          },
+        });
+      }
+      if (!map.getLayer('venezuela-border')) {
+        map.addLayer({
+          id: 'venezuela-border',
+          type: 'line',
+          source: 'country-boundaries-source',
+          'source-layer': 'country_boundaries',
+          filter: ['==', ['get', 'iso_3166_1'], 'VE'],
+          paint: {
+            'line-color': dark ? '#ffffff' : '#334155',
+            'line-width': 1.5,
+            'line-opacity': 0.4,
+          },
+        });
+      }
+
       // GeoJSON source with clustering
       map.addSource(SOURCE_ID, {
         type: 'geojson',
@@ -174,7 +211,7 @@ export function MapContainer({
         paint: { 'text-color': '#ffffff' },
       });
 
-      // Individual pins — radius 8 (visible)
+      // Individual pins — scale with zoom for better readability at all levels
       map.addLayer({
         id: POINT_LAYER,
         type: 'circle',
@@ -195,22 +232,35 @@ export function MapContainer({
             'wellness', '#EC4899',
             /* default */ '#6B7280',
           ],
-          'circle-radius': 8,
-          'circle-stroke-width': 2,
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 4,     // small at country level
+            8, 6,     // medium at region level
+            12, 9,    // larger at city level
+            16, 12,   // full size at street level
+          ],
+          'circle-stroke-width': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 1,
+            12, 2,
+          ],
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.9,
         },
       });
 
-      // Transparent 44px hit-area circle added AFTER the visible pin layer so it sits on top
-      // and captures touch/click events within a 44px touch target (WCAG 2.5.5 minimum)
+      // Transparent hit-area circle for WCAG 2.5.5 touch targets (min 44px)
       map.addLayer({
         id: 'listing-pins-hitarea',
         type: 'circle',
         source: SOURCE_ID,
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': 22,
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 12,
+            12, 22,
+          ],
           'circle-opacity': 0,
           'circle-color': 'transparent',
         },
@@ -224,7 +274,13 @@ export function MapContainer({
         filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'isVerified'], 1]],
         paint: {
           'circle-color': 'transparent',
-          'circle-radius': 10,
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 6,
+            8, 8,
+            12, 11,
+            16, 14,
+          ],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0,
@@ -365,13 +421,26 @@ export function MapContainer({
           ? 'mapbox://styles/mapbox/dark-v11'
           : 'mapbox://styles/mapbox/outdoors-v12',
         center: VENEZUELA_CENTER,
-        zoom: 7,
+        zoom: VENEZUELA_DEFAULT_ZOOM,
         bearing: 0,
         pitch: 0,
         interactive,
+        dragRotate: false,
+        pitchWithRotate: false,
+        touchPitch: false,
+        // Restrict panning to Venezuela + surrounding waters
+        maxBounds: [
+          [-76, 0.5],   // SW corner (west of Zulia, south of Amazonas)
+          [-58, 16],     // NE corner (east of Delta Amacuro, north of Los Roques)
+        ],
+        minZoom: 4.5,
+        maxZoom: 18,
       });
 
       mapInstanceRef.current = map;
+
+      // Disable rotation on touch (keep pinch-zoom enabled)
+      (map as unknown as { touchZoomRotate: { disableRotation: () => void } }).touchZoomRotate.disableRotation();
 
       const loadTimeout = setTimeout(() => {
         if (!initialLoadDone) {
@@ -384,9 +453,9 @@ export function MapContainer({
         clearTimeout(loadTimeout);
         // Add nav controls
         const NavigationControl = (
-          mapboxgl as { NavigationControl: new () => unknown }
+          mapboxgl as { NavigationControl: new (opts?: unknown) => unknown }
         ).NavigationControl;
-        map.addControl(new NavigationControl(), 'bottom-right');
+        map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
 
         try {
           await addListingsLayers(map);
