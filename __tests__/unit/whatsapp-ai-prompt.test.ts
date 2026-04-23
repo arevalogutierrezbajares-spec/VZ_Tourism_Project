@@ -169,7 +169,7 @@ describe('buildSystemPrompt', () => {
   test('bilingual language setting', () => {
     const config = makeConfig({ tone_language: 'bilingual' });
     const prompt = buildSystemPrompt({ ...baseOpts, config });
-    expect(prompt).toContain("Detect the guest's language");
+    expect(prompt).toContain('ALWAYS respond in the same language the guest is using');
   });
 
   test('brief response length', () => {
