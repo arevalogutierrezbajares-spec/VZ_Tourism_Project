@@ -65,6 +65,37 @@ export async function sendWhatsAppText(opts: SendTextOptions) {
   );
 }
 
+// ─── Template messages (for use outside the 24-hour window) ──────────────────
+
+interface SendTemplateOptions {
+  phoneNumberId: string;
+  accessToken: string;
+  to: string;
+  templateName: string;
+  languageCode: string; // e.g. 'es', 'en'
+  components?: Array<{
+    type: 'body' | 'header';
+    parameters: Array<{ type: 'text'; text: string }>;
+  }>;
+}
+
+export async function sendWhatsAppTemplate(opts: SendTemplateOptions) {
+  return waPost(
+    `/${opts.phoneNumberId}/messages`,
+    opts.accessToken,
+    {
+      messaging_product: 'whatsapp',
+      to: opts.to,
+      type: 'template',
+      template: {
+        name: opts.templateName,
+        language: { code: opts.languageCode },
+        ...(opts.components ? { components: opts.components } : {}),
+      },
+    }
+  );
+}
+
 export async function markWhatsAppRead(opts: MarkReadOptions) {
   return waPost(
     `/${opts.phoneNumberId}/messages`,
@@ -86,6 +117,8 @@ export interface InboundMessage {
   body: string;
   messageType: string;
   timestamp: number;
+  mediaId?: string;         // Meta media ID for image/audio/video/document/sticker
+  mediaMimeType?: string;   // MIME type of the media attachment
 }
 
 export function parseWebhookPayload(payload: unknown): InboundMessage[] {
@@ -99,7 +132,15 @@ export function parseWebhookPayload(payload: unknown): InboundMessage[] {
           value?: {
             metadata?: { phone_number_id?: string };
             contacts?: { profile?: { name?: string }; wa_id?: string }[];
-            messages?: { from?: string; id?: string; timestamp?: string; type?: string; text?: { body?: string } }[];
+            messages?: {
+              from?: string; id?: string; timestamp?: string; type?: string;
+              text?: { body?: string };
+              image?: { id?: string; mime_type?: string; sha256?: string };
+              audio?: { id?: string; mime_type?: string; sha256?: string };
+              video?: { id?: string; mime_type?: string; sha256?: string };
+              document?: { id?: string; mime_type?: string; sha256?: string; filename?: string };
+              sticker?: { id?: string; mime_type?: string; sha256?: string };
+            }[];
           };
         }[];
       }[];
@@ -120,6 +161,12 @@ export function parseWebhookPayload(payload: unknown): InboundMessage[] {
         for (const msg of val.messages) {
           if (!msg.id) continue;
           const body = msg.text?.body ?? '';
+
+          // Extract media ID and MIME type from the type-specific object
+          const mediaObj = msg.image ?? msg.audio ?? msg.video ?? msg.document ?? msg.sticker;
+          const mediaId = mediaObj?.id;
+          const mediaMimeType = mediaObj?.mime_type;
+
           messages.push({
             phoneNumberId,
             from: msg.from ?? '',
@@ -128,6 +175,8 @@ export function parseWebhookPayload(payload: unknown): InboundMessage[] {
             body,
             messageType: msg.type ?? 'unknown',
             timestamp: parseInt(msg.timestamp ?? '0', 10),
+            ...(mediaId ? { mediaId } : {}),
+            ...(mediaMimeType ? { mediaMimeType } : {}),
           });
         }
       }

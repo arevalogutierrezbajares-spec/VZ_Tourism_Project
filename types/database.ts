@@ -451,7 +451,7 @@ export type WaToneFormality = 'casual' | 'neutral' | 'formal';
 export type WaToneLanguage = 'es' | 'en' | 'bilingual' | 'auto';
 export type WaResponseLength = 'brief' | 'standard' | 'detailed';
 export type WaBookingPressure = 'soft' | 'direct';
-export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_uncertainty';
+export type WaEscalationTrigger = 'manual' | 'sentiment' | 'bot_question' | 'keyword' | 'value_threshold' | 'ai_error' | 'hitl' | 'topic_guard';
 
 export type WaEmojiStyle = 'frequent' | 'moderate' | 'none';
 export type WaGreetingStyle = 'friendly' | 'professional' | 'custom';
@@ -531,6 +531,7 @@ export interface WaConversation {
   status: WaConversationStatus;
   unread_count: number;
   last_message_at: string | null;
+  last_customer_message_at: string | null;
   last_message_preview: string | null;
   booking_stage: WaBookingStage;
   notes: string | null;
@@ -554,6 +555,9 @@ export interface WaMessage {
   flagged: boolean;
   flag_reason: string | null;
   sentiment_score: number | null;
+  media_url?: string | null;
+  media_type?: string | null;
+  media_id?: string | null;
   created_at: string;
 }
 

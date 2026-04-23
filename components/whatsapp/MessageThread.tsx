@@ -62,7 +62,38 @@ function MessageBubble({ msg }: { msg: WaMessage }) {
             msg.flagged && 'ring-1 ring-destructive'
           )}
         >
-          {msg.content}
+          {/* Media attachment */}
+          {msg.media_url && (
+            <div className="mb-1">
+              {msg.media_type?.startsWith('image/') || msg.content === '[Sticker]' ? (
+                <img
+                  src={msg.media_url}
+                  alt="Shared media"
+                  className="rounded-lg max-w-full max-h-64 object-cover cursor-pointer"
+                  onClick={() => window.open(msg.media_url!, '_blank')}
+                  loading="lazy"
+                />
+              ) : msg.media_type?.startsWith('audio/') ? (
+                <audio controls className="max-w-full" preload="none">
+                  <source src={msg.media_url} type={msg.media_type} />
+                </audio>
+              ) : msg.media_type?.startsWith('video/') ? (
+                <video controls className="rounded-lg max-w-full max-h-64" preload="none">
+                  <source src={msg.media_url} type={msg.media_type} />
+                </video>
+              ) : (
+                <a
+                  href={msg.media_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline text-primary"
+                >
+                  Download {msg.content}
+                </a>
+              )}
+            </div>
+          )}
+          {(!msg.media_url || !/^\[.+\]$/.test(msg.content)) && msg.content}
         </div>
 
         {hasTranslation && (

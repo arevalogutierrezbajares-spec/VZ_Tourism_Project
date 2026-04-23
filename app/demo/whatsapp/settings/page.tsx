@@ -34,6 +34,8 @@ const DEMO_CONFIG: AiConfig = {
   after_hours_message:  '¡Hola! Nuestro equipo está fuera de línea ahora mismo. Te responderemos mañana en cuanto abramos. ¡Gracias por tu paciencia! 🌙',
   custom_instructions:  '- Always ask for check-in date before quoting a price.\n- Mention the pool and included breakfast in every quote.\n- If a group exceeds 8 people, escalate to the owner.',
   ai_enabled:           true,
+  operator_phone:       '+58412555-9999',
+  notify_escalations:   true,
 };
 
 export default function WhatsAppSettingsDemoPage() {

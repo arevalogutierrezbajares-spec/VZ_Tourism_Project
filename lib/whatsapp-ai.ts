@@ -41,6 +41,7 @@ interface BuildReplyOptions {
   availabilityNote?: string;
   liveContext?: string;
   detectedLang?: string | null;
+  handbackContext?: string | null;
 }
 
 // ─── Knowledge base formatter ─────────────────────────────────────────────────
@@ -210,6 +211,10 @@ export function buildSystemPrompt(opts: BuildReplyOptions): string {
     ? `\nSpecial instructions from the posada owner:\n${sanitizeCustomInstructions(config.custom_instructions)}\n`
     : '';
 
+  const handbackBlock = opts.handbackContext
+    ? `\n${opts.handbackContext}\n`
+    : '';
+
   const availBlock = opts.availabilityNote
     ? `\nCurrent availability: ${opts.availabilityNote}\n`
     : '';
@@ -263,7 +268,7 @@ Critical rules:
 - Quote prices and policies from the knowledge base exactly. If uncertain, say you'll confirm.
 - Never make firm booking commitments — collect the info and say the team will confirm.
 - Keep responses natural and warm — this is a WhatsApp conversation, not a formal email.
-${customBlock}
+${customBlock}${handbackBlock}
 Human-in-the-loop escalation:
 When you are NOT confident you can answer accurately, you MUST:
 1. Give the guest a warm holding response (e.g. "Déjame verificar eso con el equipo y te confirmo en breve.")

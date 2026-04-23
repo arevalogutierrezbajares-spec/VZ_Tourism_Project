@@ -57,6 +57,8 @@ export async function POST(request: NextRequest) {
     after_hours_message: null,
     custom_instructions: null,
     ai_enabled: true,
+    operator_phone: null,
+    notify_escalations: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...config,

@@ -2,10 +2,13 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
 import { createServiceClient } from '@/lib/supabase/server';
-import { parseWebhookPayload, sendWhatsAppText, markWhatsAppRead } from '@/lib/whatsapp-api';
+import { parseWebhookPayload, markWhatsAppRead } from '@/lib/whatsapp-api';
+import { downloadAndStoreMedia } from '@/lib/whatsapp-media';
+import { sendAndPersist } from '@/lib/whatsapp-send';
 import { analyzeMessage } from '@/lib/sentiment';
 import { generateReply, getBotQuestionResponse } from '@/lib/whatsapp-ai';
 import { buildLiveContext } from '@/lib/whatsapp-context';
+import { buildHandbackContext } from '@/lib/whatsapp-handback';
 import { isWithinWorkingHours } from '@/lib/whatsapp-hours';
 import { detectAndTranslate } from '@/lib/whatsapp-translate';
 import { getWhatsAppToken } from '@/lib/whatsapp/token';
@@ -159,7 +162,7 @@ async function handleMessage(
   supabase: ServiceClient,
   msg: Awaited<ReturnType<typeof parseWebhookPayload>>[number]
 ) {
-  const { phoneNumberId, from, guestName, waMessageId, body: msgBody, messageType } = msg;
+  const { phoneNumberId, from, guestName, waMessageId, body: msgBody, messageType, mediaId, mediaMimeType } = msg;
   // Cap message body to prevent abuse (WhatsApp max is 4096)
   const body = msgBody.slice(0, 4096);
 
@@ -207,6 +210,13 @@ async function handleMessage(
 
   if (count && count > 0) return;
 
+  // Mark as read immediately — guest sees blue checks regardless of how we process it
+  markWhatsAppRead({
+    phoneNumberId: config.phone_number_id,
+    accessToken,
+    messageId: waMessageId,
+  }).catch((err) => console.warn('[webhook] markRead failed:', err));
+
   // 3b. Non-text message — persist with descriptive label, skip AI
   if (messageType !== 'text') {
     const typeLabels: Record<string, string> = {
@@ -216,17 +226,18 @@ async function handleMessage(
     };
     const label = typeLabels[messageType] ?? `[${messageType}]`;
 
-    await supabase.from('wa_messages').insert({
+    const { data: insertedMediaMsg } = await supabase.from('wa_messages').insert({
       conversation_id: conv.id,
       wa_message_id: waMessageId,
       role: 'inbound',
       content: label,
       is_ai: false,
       flagged: false,
-    });
+    }).select('id').single();
 
     await supabase.from('wa_conversations').update({
       last_message_at: new Date().toISOString(),
+      last_customer_message_at: new Date().toISOString(),
       last_message_preview: label,
       guest_name: guestName ?? undefined,
     }).eq('id', conv.id);
@@ -237,6 +248,29 @@ async function handleMessage(
       ? 'Thanks for sharing! I can only read text messages right now. Could you describe what you need in a text message?'
       : '¡Gracias por compartir! Por ahora solo puedo leer mensajes de texto. ¿Podrías describir lo que necesitas en un mensaje escrito?';
     await sendAndPersist(supabase, conv.id, config, accessToken, from, ack, true);
+
+    // Download media in background (fire-and-forget) and update the message row
+    if (mediaId && insertedMediaMsg) {
+      waitUntil(
+        downloadAndStoreMedia({
+          mediaId,
+          accessToken,
+          supabase,
+          providerId: provider.id,
+          conversationId: conv.id,
+          messageId: insertedMediaMsg.id,
+          mimeType: mediaMimeType ?? 'application/octet-stream',
+        }).then(async (result) => {
+          if (result) {
+            await supabase.from('wa_messages').update({
+              media_url: result.publicUrl,
+              media_type: mediaMimeType ?? null,
+            }).eq('id', insertedMediaMsg.id);
+          }
+        }).catch((err) => console.error('[webhook] Media download failed:', err))
+      );
+    }
+
     return;
   }
 
@@ -286,6 +320,7 @@ async function handleMessage(
     .from('wa_conversations')
     .update({
       last_message_at: new Date().toISOString(),
+      last_customer_message_at: new Date().toISOString(),
       last_message_preview: body.slice(0, 120),
       guest_name: guestName ?? undefined,
       guest_language: detectedLang ?? undefined,
@@ -381,13 +416,6 @@ async function handleMessage(
   const debounceTs = Date.now();
   await setDebounce(conv.id, debounceTs);
 
-  // Mark inbound as read immediately (don't wait for the debounce)
-  await markWhatsAppRead({
-    phoneNumberId: config.phone_number_id,
-    accessToken,
-    messageId: waMessageId,
-  });
-
   // Schedule the delayed reply via waitUntil (keeps serverless function alive)
   waitUntil(
     scheduleDelayedReply({
@@ -434,6 +462,9 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
     .single();
 
   if (!conv || conv.status === 'human' || conv.status === 'closed' || conv.status === 'escalated') return;
+
+  // Build handback context if conversation was recently in human mode
+  const handbackContext = await buildHandbackContext(supabase, opts.convId).catch(() => null);
 
   // Per-provider Groq rate limit
   if (await groqRateLimit(opts.config.provider_id)) {
@@ -488,6 +519,7 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
       knowledge,
       liveContext,
       detectedLang,
+      handbackContext,
     });
   } catch (groqErr) {
     console.error('[whatsapp/webhook] Groq error — sending fallback message:', groqErr);
@@ -543,54 +575,3 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
   }
 }
 
-async function sendAndPersist(
-  supabase: ServiceClient,
-  convId: string,
-  config: PosadaWhatsappConfig,
-  accessToken: string,
-  to: string,
-  body: string,
-  isAi: boolean,
-  detectedLang?: string | null,
-  contentEn?: string | null,
-  contentEs?: string | null
-) {
-  const result = await sendWhatsAppText({
-    phoneNumberId: config.phone_number_id,
-    accessToken,
-    to,
-    body,
-  });
-
-  if (!result.success) {
-    console.error('[whatsapp/webhook] sendWhatsAppText failed:', result.error);
-    // Still persist so the provider can see the attempted reply in the dashboard.
-  }
-
-  const { data: inserted, error: insertError } = await supabase.from('wa_messages').insert({
-    conversation_id: convId,
-    wa_message_id: result.messageId ?? null,
-    role: 'outbound',
-    content: body,
-    content_en: contentEn ?? null,
-    detected_lang: detectedLang ?? null,
-    is_ai: isAi,
-    flagged: false,
-  }).select('id').single();
-  if (insertError) {
-    console.error('[whatsapp/webhook] wa_messages insert failed:', insertError.message);
-  }
-
-  // Set content_es via RPC (bypasses PostgREST column cache)
-  if (inserted && contentEs) {
-    await supabase.rpc('set_message_content_es', { msg_id: inserted.id, es_text: contentEs });
-  }
-
-  await supabase
-    .from('wa_conversations')
-    .update({
-      last_message_at: new Date().toISOString(),
-      last_message_preview: `→ ${body.slice(0, 100)}`,
-    })
-    .eq('id', convId);
-}

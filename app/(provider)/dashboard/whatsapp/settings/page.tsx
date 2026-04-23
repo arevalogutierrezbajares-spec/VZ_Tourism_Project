@@ -28,6 +28,8 @@ const DEFAULT_CONFIG: AiConfig = {
   after_hours_message:    null,
   custom_instructions:    null,
   ai_enabled:             true,
+  operator_phone:         null,
+  notify_escalations:     false,
 };
 
 export default function AiSettingsPage() {
@@ -65,6 +67,8 @@ export default function AiSettingsPage() {
           after_hours_message:   data.after_hours_message ?? null,
           custom_instructions:   data.custom_instructions,
           ai_enabled:            data.ai_enabled,
+          operator_phone:        data.operator_phone ?? null,
+          notify_escalations:    data.notify_escalations ?? false,
         } : DEFAULT_CONFIG);
       })
       .catch(() => setConfig(DEFAULT_CONFIG))
