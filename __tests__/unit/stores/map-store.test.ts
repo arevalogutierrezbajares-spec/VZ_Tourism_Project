@@ -13,6 +13,8 @@ const initialState = {
   showSafetyZones: false,
   is3DTerrain: false,
   isDarkMode: false,
+  hiddenCategories: new Set<string>(),
+  targetBounds: null as [[number, number], [number, number]] | null,
 };
 
 beforeEach(() => {
@@ -116,11 +118,12 @@ describe('setSelectedPin', () => {
     expect(useMapStore.getState().selectedPin).toEqual(mockPin);
   });
 
-  it('marks the pin as selected in the pins array', () => {
+  it('does not mutate pins array (selection is tracked separately)', () => {
     useMapStore.getState().addPin(mockPin);
+    const pinsBefore = useMapStore.getState().pins;
     useMapStore.getState().setSelectedPin(mockPin);
-    const pin = useMapStore.getState().pins.find((p) => p.id === 'pin-1');
-    expect(pin?.isSelected).toBe(true);
+    // pins array should be unchanged — selection is in selectedPin, not in each pin
+    expect(useMapStore.getState().pins).toBe(pinsBefore);
   });
 
   it('clears selection when set to null', () => {
@@ -176,5 +179,55 @@ describe('toggleDarkMode', () => {
     expect(useMapStore.getState().isDarkMode).toBe(true);
     useMapStore.getState().toggleDarkMode();
     expect(useMapStore.getState().isDarkMode).toBe(false);
+  });
+});
+
+describe('toggleCategory / setHiddenCategories', () => {
+  it('toggleCategory adds a category', () => {
+    useMapStore.getState().toggleCategory('beaches');
+    expect(useMapStore.getState().hiddenCategories.has('beaches')).toBe(true);
+  });
+
+  it('toggleCategory removes when toggled again', () => {
+    useMapStore.getState().toggleCategory('beaches');
+    useMapStore.getState().toggleCategory('beaches');
+    expect(useMapStore.getState().hiddenCategories.has('beaches')).toBe(false);
+  });
+
+  it('setHiddenCategories replaces the entire set', () => {
+    useMapStore.getState().setHiddenCategories(new Set(['beaches', 'mountains']));
+    expect(useMapStore.getState().hiddenCategories.size).toBe(2);
+    useMapStore.getState().setHiddenCategories(new Set());
+    expect(useMapStore.getState().hiddenCategories.size).toBe(0);
+  });
+});
+
+describe('setTargetBounds', () => {
+  it('sets and clears bounds', () => {
+    useMapStore.getState().setTargetBounds([[-70, 8], [-62, 12]]);
+    expect(useMapStore.getState().targetBounds).toEqual([[-70, 8], [-62, 12]]);
+    useMapStore.getState().setTargetBounds(null);
+    expect(useMapStore.getState().targetBounds).toBeNull();
+  });
+});
+
+describe('store subscription', () => {
+  it('fires when hiddenCategories change', () => {
+    const changes: Set<string>[] = [];
+    const unsub = useMapStore.subscribe((state) => {
+      changes.push(state.hiddenCategories);
+    });
+    useMapStore.getState().setHiddenCategories(new Set(['beaches']));
+    expect(changes).toHaveLength(1);
+    expect(changes[0].has('beaches')).toBe(true);
+    unsub();
+  });
+
+  it('fires when pins change', () => {
+    let callCount = 0;
+    const unsub = useMapStore.subscribe(() => { callCount++; });
+    useMapStore.getState().setPins([mockPin]);
+    expect(callCount).toBe(1);
+    unsub();
   });
 });

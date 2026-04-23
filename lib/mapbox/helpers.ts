@@ -73,20 +73,6 @@ export async function getDirections(
   return response.json();
 }
 
-export function getCategoryIcon(category: string): string {
-  const icons: Record<string, string> = {
-    beaches: '🏖️',
-    mountains: '⛰️',
-    cities: '🏙️',
-    'eco-tours': '🌿',
-    gastronomy: '🍽️',
-    adventure: '🧗',
-    wellness: '🧘',
-    cultural: '🎭',
-  };
-  return icons[category] || '📍';
-}
-
 /** Single source of truth for category → color mapping */
 export const CATEGORY_COLORS: Record<string, string> = {
   accommodation: '#3B82F6',
@@ -136,6 +122,34 @@ export function getSafetyColor(level: string): string {
   return colors[level] || '#6B7280';
 }
 
+/** Build GeoJSON FeatureCollection from pins, filtering out hidden categories */
+export function buildGeoJSON(
+  pins: { id: string; lat: number; lng: number; title: string; slug?: string; category?: string; rating?: number; reviewCount?: number; city?: string; region?: string; listingId?: string; isVerified?: boolean }[],
+  hiddenCategories: Set<string>,
+) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: pins
+      .filter((pin) => !hiddenCategories.has(normalizeCategory(pin.category)))
+      .map((pin) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [pin.lng, pin.lat] },
+        properties: {
+          id: pin.id,
+          title: pin.title,
+          slug: pin.slug ?? '',
+          category: pin.category ?? 'other',
+          rating: pin.rating ?? null,
+          reviewCount: pin.reviewCount ?? 0,
+          city: pin.city ?? '',
+          region: pin.region ?? '',
+          listingId: pin.listingId ?? null,
+          isVerified: pin.isVerified ? 1 : 0,
+        },
+      })),
+  };
+}
+
 export function calculateBounds(
   coordinates: { lat: number; lng: number }[]
 ): { north: number; south: number; east: number; west: number } | null {
@@ -156,59 +170,3 @@ export function calculateBounds(
   return { north, south, east, west };
 }
 
-export function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-export function clusterPins<T extends { lat: number; lng: number; id: string }>(
-  pins: T[],
-  zoom: number
-): Array<T | { isCluster: true; lat: number; lng: number; count: number; pins: T[] }> {
-  if (zoom > 12) return pins;
-
-  const clusterRadius = zoom < 8 ? 5 : zoom < 10 ? 2 : 1;
-  const clusters: Array<{ lat: number; lng: number; pins: T[] }> = [];
-
-  for (const pin of pins) {
-    let added = false;
-    for (const cluster of clusters) {
-      const dist = haversineDistance(pin.lat, pin.lng, cluster.lat, cluster.lng);
-      if (dist < clusterRadius * 10) {
-        cluster.pins.push(pin);
-        cluster.lat = (cluster.lat + pin.lat) / 2;
-        cluster.lng = (cluster.lng + pin.lng) / 2;
-        added = true;
-        break;
-      }
-    }
-    if (!added) {
-      clusters.push({ lat: pin.lat, lng: pin.lng, pins: [pin] });
-    }
-  }
-
-  return clusters.map((cluster) => {
-    if (cluster.pins.length === 1) return cluster.pins[0];
-    return {
-      isCluster: true as const,
-      lat: cluster.lat,
-      lng: cluster.lng,
-      count: cluster.pins.length,
-      pins: cluster.pins,
-    };
-  });
-}

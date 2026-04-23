@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SlidersHorizontal, MapPin, Route, LogIn, User, Luggage, Heart, X } from 'lucide-react';
@@ -38,6 +38,49 @@ const MapContainer = dynamic(
 );
 
 const CATEGORY_FILTER_ALL = 'all';
+
+interface ListingRow {
+  id: string;
+  title: string;
+  slug: string;
+  latitude: number;
+  longitude: number;
+  category: string;
+  rating: number | null;
+  review_count: number;
+  city: string;
+  region: string;
+}
+
+/** Convert raw API listings to MapPins + compute category counts */
+function mapListingsToPins(listings: ListingRow[]): {
+  pins: MapPinType[];
+  counts: Record<string, number>;
+} {
+  const pins: MapPinType[] = listings
+    .filter((l) => Number.isFinite(l.latitude) && Number.isFinite(l.longitude))
+    .map((l) => ({
+      id: l.id,
+      lat: l.latitude,
+      lng: l.longitude,
+      title: l.title,
+      slug: l.slug,
+      category: l.category,
+      rating: l.rating ?? undefined,
+      reviewCount: l.review_count,
+      city: l.city,
+      region: l.region,
+      listingId: l.id,
+    }));
+
+  const counts: Record<string, number> = {};
+  for (const p of pins) {
+    const key = normalizeCategory(p.category);
+    counts[key] = (counts[key] || 0) + 1;
+  }
+
+  return { pins, counts };
+}
 
 export default function HomePage() {
   return (
@@ -89,6 +132,16 @@ function MapPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Shared pin loading logic used by both initial mount and retry
+  const applyPins = useCallback((listings: ListingRow[]) => {
+    const { pins, counts } = mapListingsToPins(listings);
+    setAllPins(pins);
+    setPins(pins);
+    setTotalCount(pins.length);
+    setFilteredCount(pins.length);
+    setCategoryCounts(counts);
+  }, [setPins]);
+
   // Load all scraped listings as map pins on mount
   useEffect(() => {
     const controller = new AbortController();
@@ -102,47 +155,7 @@ function MapPageContent() {
         });
         if (!res.ok) throw new Error(`API responded ${res.status}`);
         const json = await res.json();
-        const listings: {
-          id: string;
-          title: string;
-          slug: string;
-          latitude: number;
-          longitude: number;
-          category: string;
-          rating: number | null;
-          review_count: number;
-          city: string;
-          region: string;
-        }[] = json.data ?? [];
-
-        const pins: MapPinType[] = listings
-          .filter((l) => Number.isFinite(l.latitude) && Number.isFinite(l.longitude))
-          .map((l) => ({
-            id: l.id,
-            lat: l.latitude,
-            lng: l.longitude,
-            title: l.title,
-            slug: l.slug,
-            category: l.category,
-            rating: l.rating ?? undefined,
-            reviewCount: l.review_count,
-            city: l.city,
-            region: l.region,
-            listingId: l.id,
-          }));
-
-        // Compute per-category counts using normalized keys
-        const counts: Record<string, number> = {};
-        for (const p of pins) {
-          const key = normalizeCategory(p.category);
-          counts[key] = (counts[key] || 0) + 1;
-        }
-
-        setAllPins(pins);
-        setPins(pins);
-        setTotalCount(pins.length);
-        setFilteredCount(pins.length);
-        setCategoryCounts(counts);
+        applyPins(json.data ?? []);
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
         console.error('Failed to load map pins', err);
@@ -154,7 +167,7 @@ function MapPageContent() {
 
     loadPins();
     return () => controller.abort();
-  }, [setPins]);
+  }, [applyPins]);
 
   // Sync FilterOverlay filters (searchStore) → map pins
   useEffect(() => {
@@ -300,15 +313,15 @@ function MapPageContent() {
                   <p className="text-xs text-muted-foreground">{profile?.email || user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/account'}>
+                <DropdownMenuItem onClick={() => router.push('/account')}>
                   <User className="mr-2 h-4 w-4" />
                   My Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = '/trips'}>
+                <DropdownMenuItem onClick={() => router.push('/trips')}>
                   <Luggage className="mr-2 h-4 w-4" />
                   My Trips
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = '/trips#saved'}>
+                <DropdownMenuItem onClick={() => router.push('/trips#saved')}>
                   <Heart className="mr-2 h-4 w-4" />
                   Saved Places
                 </DropdownMenuItem>
@@ -455,29 +468,7 @@ function MapPageContent() {
                         if (!res.ok) throw new Error();
                         return res.json();
                       })
-                      .then((json) => {
-                        const listings = json.data ?? [];
-                        const pins: MapPinType[] = listings
-                          .filter((l: { latitude: number; longitude: number }) =>
-                            Number.isFinite(l.latitude) && Number.isFinite(l.longitude)
-                          )
-                          .map((l: { id: string; title: string; slug: string; latitude: number; longitude: number; category: string; rating: number | null; review_count: number; city: string; region: string }) => ({
-                            id: l.id, lat: l.latitude, lng: l.longitude,
-                            title: l.title, slug: l.slug, category: l.category,
-                            rating: l.rating ?? undefined, reviewCount: l.review_count,
-                            city: l.city, region: l.region, listingId: l.id,
-                          }));
-                        const counts: Record<string, number> = {};
-                        for (const p of pins) {
-                          const key = normalizeCategory(p.category);
-                          counts[key] = (counts[key] || 0) + 1;
-                        }
-                        setAllPins(pins);
-                        setPins(pins);
-                        setTotalCount(pins.length);
-                        setFilteredCount(pins.length);
-                        setCategoryCounts(counts);
-                      })
+                      .then((json) => applyPins(json.data ?? []))
                       .catch(() => setPinLoadError(true))
                       .finally(() => setPinsLoading(false));
                   }}
