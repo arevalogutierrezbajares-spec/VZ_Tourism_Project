@@ -13,6 +13,7 @@ import { hashToken } from '@/lib/whatsapp/hash';
 import { Redis } from '@upstash/redis';
 import { notifyOperatorEscalation } from '@/lib/whatsapp-escalation';
 import { rateLimit, groqRateLimit } from '@/lib/api/rate-limit';
+import { checkTopicGuard } from '@/lib/whatsapp-topic-guard';
 import type { PosadaWhatsappConfig, PosadaKnowledge, WaMessage } from '@/types/database';
 import type { ServiceClient } from '@/types/supabase-client';
 
@@ -240,10 +241,22 @@ async function handleMessage(
   }
 
   // 4. Sentiment analysis + language detection + translation (run in parallel)
-  const [sentiment, translation] = await Promise.all([
+  const [sentimentRaw, translation] = await Promise.all([
     Promise.resolve(analyzeMessage(body)),
     detectAndTranslate(body).catch(() => null),
   ]);
+
+  // Apply provider's custom sentiment threshold on top of the built-in flagging.
+  // Threats always escalate (handled by sentiment.ts), AND the provider's slider is also respected.
+  const sentiment = { ...sentimentRaw };
+  if (
+    !sentiment.flagged &&
+    typeof config.sentiment_threshold === 'number' &&
+    sentiment.score < config.sentiment_threshold
+  ) {
+    sentiment.flagged = true;
+    sentiment.flag_reason = sentiment.flag_reason ?? 'low_sentiment_score';
+  }
 
   const detectedLang = translation?.detected.language ?? null;
   const contentEn = translation?.english ?? null;
@@ -303,6 +316,30 @@ async function handleMessage(
     return;
   }
 
+  // 8b. Keyword escalation — check inbound message against provider's custom keywords
+  const escalationKeywords = config.escalation_keywords;
+  if (escalationKeywords && escalationKeywords.length > 0) {
+    const normalizedBody = body.toLowerCase();
+    const matchedKeyword = escalationKeywords.find((kw) =>
+      normalizedBody.includes(kw.toLowerCase())
+    );
+    if (matchedKeyword) {
+      await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', conv.id);
+      await supabase.from('wa_escalations').insert({
+        conversation_id: conv.id,
+        reason: `Keyword match: "${matchedKeyword}"`,
+        trigger_type: 'keyword',
+      });
+      waitUntil(notifyOperatorEscalation({
+        supabase, config, accessToken,
+        conversation: { id: conv.id, guest_name: guestName, guest_phone: from },
+        reason: `Keyword match: "${matchedKeyword}"`,
+        triggerType: 'keyword',
+      }));
+      return;
+    }
+  }
+
   // 9. If AI is disabled on this posada — skip
   if (!config.ai_enabled) return;
 
@@ -360,6 +397,7 @@ async function handleMessage(
       provider,
       accessToken,
       guestPhone: from,
+      detectedLang,
     })
   );
 }
@@ -373,6 +411,7 @@ interface DelayedReplyOpts {
   provider: { id: string; business_name: string; description: string; region: string };
   accessToken: string;
   guestPhone: string;
+  detectedLang: string | null;
 }
 
 async function scheduleDelayedReply(opts: DelayedReplyOpts) {
@@ -425,9 +464,16 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
   const lastInbound = (history ?? []).filter((m) => m.role === 'inbound').pop();
   const inboundText = lastInbound?.content ?? '';
 
-  // Detect language from the latest message
-  const translation = await detectAndTranslate(inboundText).catch(() => null);
-  const detectedLang = translation?.detected.language ?? null;
+  // Use language already detected in handleMessage (avoids duplicate Groq call)
+  const detectedLang = opts.detectedLang;
+
+  // Topic guard: block off-topic, adversarial, and harmful messages before AI
+  const guard = checkTopicGuard(inboundText, opts.provider.business_name, detectedLang);
+  if (guard.blocked) {
+    console.info(`[webhook] Topic guard blocked [${guard.category}]: ${inboundText.slice(0, 80)}`);
+    await sendAndPersist(supabase, opts.convId, opts.config, opts.accessToken, opts.guestPhone, guard.deflection!, true, detectedLang);
+    return;
+  }
 
   // Generate AI reply
   let rawReply: string;
@@ -445,15 +491,20 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
     });
   } catch (groqErr) {
     console.error('[whatsapp/webhook] Groq error — sending fallback message:', groqErr);
-    const fallbackMsg = opts.config.tone_language === 'es'
-      ? 'Estamos experimentando una breve demora. Un miembro del equipo responderá en breve.'
-      : 'We\'re experiencing a brief delay. A team member will respond shortly.';
+    const fallbackMessages: Record<string, string> = {
+      es: 'Estamos experimentando una breve demora. Un miembro del equipo responderá en breve.',
+      en: 'We\'re experiencing a brief delay. A team member will respond shortly.',
+      it: 'Stiamo riscontrando un breve ritardo. Un membro del team risponderà a breve.',
+      pt: 'Estamos com um breve atraso. Um membro da equipe responderá em breve.',
+      fr: 'Nous rencontrons un bref délai. Un membre de l\'équipe vous répondra sous peu.',
+    };
+    const fallbackMsg = fallbackMessages[detectedLang ?? ''] ?? fallbackMessages.es;
     await sendAndPersist(supabase, opts.convId, opts.config, opts.accessToken, opts.guestPhone, fallbackMsg, true);
     await supabase.from('wa_conversations').update({ status: 'escalated' }).eq('id', opts.convId);
     await supabase.from('wa_escalations').insert({
       conversation_id: opts.convId,
       reason: 'AI (Groq) timeout or error — fallback message sent',
-      trigger_type: 'sentiment',
+      trigger_type: 'ai_error',
     });
     notifyOperatorEscalation({
       supabase, config: opts.config, accessToken: opts.accessToken,
@@ -481,7 +532,7 @@ async function scheduleDelayedReply(opts: DelayedReplyOpts) {
     await supabase.from('wa_escalations').insert({
       conversation_id: opts.convId,
       reason: `AI requested human review: ${hitlReason}`,
-      trigger_type: 'sentiment',
+      trigger_type: 'hitl',
     });
     notifyOperatorEscalation({
       supabase, config: opts.config, accessToken: opts.accessToken,

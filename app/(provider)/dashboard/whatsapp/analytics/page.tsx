@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
         .order('created_at', { ascending: true }),
       supabase
         .from('wa_escalations')
-        .select('id, reason, trigger_type, created_at')
+        .select('id, conversation_id, reason, trigger_type, created_at')
         .gte('created_at', thirtyDaysAgo),
     ]);
 
@@ -103,7 +103,7 @@ export default function AnalyticsPage() {
     const allMsgs = (msgRes.data ?? []).filter((m) => convIds.has(m.conversation_id));
     const escs = (escRes.data ?? []).filter((e) => {
       // escalations don't have provider_id, match via conversation_id
-      return convIds.has(e.id) || true; // include all since we can't filter easily
+      return convIds.has(e.conversation_id);
     });
 
     const aiMsgs = allMsgs.filter((m) => m.role === 'outbound' && m.is_ai);

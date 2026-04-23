@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import { getGroqClient, GROQ_MODEL } from './groq';
+import { getGroqClient, GROQ_MODEL_LIGHT } from './groq';
 
 const DetectResultSchema = z.object({
   language: z.string().default('es'),
@@ -58,7 +58,7 @@ export async function detectLanguage(text: string): Promise<DetectResult> {
 
   try {
     const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+      model: GROQ_MODEL_LIGHT,
       messages: [
         {
           role: 'system',
@@ -119,7 +119,7 @@ export async function translateToEnglish(
   try {
     const langHint = fromLanguage ? ` (from ${COMMON_LANGUAGES[fromLanguage] ?? fromLanguage})` : '';
     const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+      model: GROQ_MODEL_LIGHT,
       messages: [
         {
           role: 'system',
@@ -159,7 +159,7 @@ export async function detectAndTranslate(text: string): Promise<{
 
   try {
     const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+      model: GROQ_MODEL_LIGHT,
       messages: [
         {
           role: 'system',

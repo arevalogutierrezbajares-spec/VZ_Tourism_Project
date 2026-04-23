@@ -567,28 +567,6 @@ function RulesTab({ cfg, onChange, onSave, saving }: {
 
         <Separator />
 
-        {/* Value threshold */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Booking value threshold</p>
-          <p className="text-xs text-muted-foreground">Escalate to human when quoted booking exceeds this amount. Set to 0 to disable.</p>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">$</span>
-            <input
-              type="number" min={0} step={50}
-              className="w-32 rounded-lg border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              value={local.value_escalation_usd}
-              onChange={(e) => setLocal((l) => ({ ...l, value_escalation_usd: parseInt(e.target.value) || 0 }))}
-              placeholder="500"
-            />
-            <span className="text-sm text-muted-foreground">USD</span>
-            {local.value_escalation_usd === 0 && (
-              <Badge variant="outline" className="text-[11px] text-muted-foreground">disabled</Badge>
-            )}
-          </div>
-        </div>
-
-        <Separator />
-
         {/* Keyword list */}
         <div className="space-y-3">
           <p className="text-sm font-medium">Escalation keywords</p>

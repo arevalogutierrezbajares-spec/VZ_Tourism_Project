@@ -26,3 +26,9 @@ if (!ALLOWED_MODELS.includes(rawModel as typeof ALLOWED_MODELS[number])) {
 export const GROQ_MODEL = ALLOWED_MODELS.includes(rawModel as typeof ALLOWED_MODELS[number])
   ? rawModel
   : 'llama-3.3-70b-versatile';
+
+// Lightweight model for translation/detection (separate rate limit pool on Groq free tier)
+export const GROQ_MODEL_LIGHT = 'llama-3.1-8b-instant';
+
+// Fallback model when primary model hits rate limits
+export const GROQ_MODEL_FALLBACK = 'llama-3.1-8b-instant';
