@@ -1,12 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, Globe, Share2, Bell, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { MapPin, Phone, Globe, Share2, Bell, ExternalLink, ImageOff } from 'lucide-react';
+import { InstagramIcon } from '@/components/common/InstagramIcon';
 import type { ScrapedListing } from '@/lib/local-listings';
 
 interface ScrapedListingViewProps {
   listing: ScrapedListing;
 }
+
 
 const REGION_LABELS: Record<string, string> = {
   caracas: 'Caracas',
@@ -59,11 +63,19 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
   );
 }
 
+const sectionAnimation = {
+  initial: { opacity: 0, y: 16 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-40px' as const },
+  transition: { duration: 0.4, ease: 'easeOut' as const },
+};
+
 export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [copyDone, setCopyDone] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const regionLabel = REGION_LABELS[listing.region?.toLowerCase()] ?? listing.region ?? 'Venezuela';
   const typeLabel = TYPE_LABELS[listing.type?.toLowerCase()] ?? listing.type ?? 'Business';
@@ -72,6 +84,10 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
   const whatsappUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi! I found your listing on VZ Tourism and would like to inquire about ${listing.name}.`)}`
     : null;
+
+  const enriched = listing as unknown as Record<string, unknown>;
+  const scrapedPhotos = (enriched.photos as string[]) ?? [];
+  const extraPhotos = scrapedPhotos.filter((p) => p !== listing.cover_image_url).slice(0, 4);
 
   async function handleNotify(e: React.FormEvent) {
     e.preventDefault();
@@ -94,62 +110,142 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
     navigator.clipboard.writeText(url).then(() => {
       setCopyDone(true);
       setTimeout(() => setCopyDone(false), 2000);
-    });
+    }).catch(() => { /* clipboard not available in this context */ });
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
+    <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
+      {/* ── Hero image ──────────────────────────────── */}
+      {listing.cover_image_url && !imgError ? (
+        <div className="mb-6 rounded-2xl overflow-hidden relative aspect-[16/7] md:aspect-[2.5/1]">
+          <Image
+            src={listing.cover_image_url}
+            alt={`Photo of ${listing.name}`}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 1100px"
+            className="object-cover"
+            onError={() => setImgError(true)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          {/* Badges on hero */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-foreground border">
+              {typeLabel}
+            </span>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent/90 backdrop-blur-sm text-accent-foreground">
+              Preview
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-6 flex items-center gap-2 flex-wrap">
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground border border-border">
             {typeLabel}
           </span>
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent/10 text-accent-foreground border border-accent/30">
-            Not yet on platform
+            Preview
           </span>
-        </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{listing.name}</h1>
-        <div className="flex items-center gap-1 text-muted-foreground text-sm">
-          <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span>{listing.address || regionLabel}</span>
-        </div>
-        {listing.avg_rating && listing.review_count > 0 && (
-          <div className="mt-3">
-            <StarRating rating={listing.avg_rating} count={listing.review_count} />
-            <p className="text-xs text-muted-foreground/60 mt-1">Google Reviews</p>
-          </div>
-        )}
-      </div>
-
-      {/* Photo */}
-      {listing.cover_image_url && (
-        <div className="mb-8 rounded-2xl overflow-hidden relative h-64 md:h-96">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={listing.cover_image_url}
-            alt={`Photo of ${listing.name}`}
-            className="w-full h-full object-cover"
-            loading="eager"
-          />
         </div>
       )}
 
+      {/* ── Header ──────────────────────────────────── */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2 leading-tight">{listing.name}</h1>
+        <div className="flex items-center gap-3 text-muted-foreground text-sm flex-wrap">
+          <span className="flex items-center gap-1">
+            <MapPin className="w-4 h-4 flex-shrink-0" />
+            {listing.address || regionLabel}
+          </span>
+          {listing.avg_rating && listing.review_count > 0 && (
+            <>
+              <span className="text-border">|</span>
+              <StarRating rating={listing.avg_rating} count={listing.review_count} />
+            </>
+          )}
+        </div>
+        {listing.avg_rating && listing.review_count > 0 && (
+          <p className="text-xs text-muted-foreground/60 mt-1">Based on Google Reviews</p>
+        )}
+      </motion.div>
+
+      {/* ── Additional photos strip ─────────────────── */}
+      {extraPhotos.length > 0 && (
+        <motion.div className="mb-8" {...sectionAnimation}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 rounded-xl overflow-hidden">
+            {extraPhotos.map((url, i) => (
+              <div key={i} className="relative aspect-[4/3]">
+                <Image
+                  src={url}
+                  alt={`${listing.name} photo ${i + 2}`}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: info */}
+        {/* ── Left: info ────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
           {listing.description && (
-            <div>
-              <h2 className="font-semibold text-foreground mb-2">About</h2>
+            <motion.div {...sectionAnimation}>
+              <h2 className="font-semibold text-foreground text-lg mb-2">About</h2>
               <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
-            </div>
+            </motion.div>
+          )}
+
+          {/* Category tags */}
+          {listing.category_tags && listing.category_tags.length > 0 && (
+            <motion.div className="flex items-center gap-1.5 flex-wrap" {...sectionAnimation}>
+              {listing.category_tags.map((tag) => (
+                <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-muted border border-border text-muted-foreground">
+                  {tag}
+                </span>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Instagram prominent section */}
+          {listing.instagram_handle && (
+            <motion.div {...sectionAnimation}>
+              <h2 className="font-semibold text-foreground text-lg mb-3">See their photos</h2>
+              <a
+                href={`https://instagram.com/${listing.instagram_handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-all duration-300"
+              >
+                <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center">
+                  <InstagramIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    @{listing.instagram_handle}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    View their latest photos and updates on Instagram
+                  </p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              </a>
+            </motion.div>
           )}
 
           {/* Contact info */}
-          <div>
-            <h2 className="font-semibold text-foreground mb-3">Contact</h2>
-            <div className="space-y-2">
+          <motion.div {...sectionAnimation}>
+            <h2 className="font-semibold text-foreground text-lg mb-3">Contact</h2>
+            <div className="space-y-2.5">
               {listing.phone && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Phone className="w-4 h-4 text-muted-foreground/60" />
@@ -158,7 +254,7 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                   </a>
                 </div>
               )}
-              {listing.website && (
+              {listing.website && /^https?:\/\//i.test(listing.website) && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Globe className="w-4 h-4 text-muted-foreground/60" />
                   <a
@@ -167,14 +263,14 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                     rel="noopener noreferrer"
                     className="hover:text-primary transition-colors flex items-center gap-1"
                   >
-                    {listing.website.replace(/^https?:\/\//, '')}
+                    {listing.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               )}
               {listing.instagram_handle && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="text-muted-foreground/60 text-base leading-none">📷</span>
+                  <InstagramIcon className="w-4 h-4 text-muted-foreground/60" />
                   <a
                     href={`https://instagram.com/${listing.instagram_handle}`}
                     target="_blank"
@@ -186,20 +282,37 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Right: action panel */}
+        {/* ── Right: action panel ───────────────────── */}
         <div className="space-y-4">
           {/* Not yet on platform notice */}
-          <div className="rounded-2xl border-2 border-dashed border-border p-5 space-y-4">
+          <motion.div
+            className="rounded-2xl border-2 border-dashed border-border p-5 space-y-4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+          >
             <div className="text-center">
-              <div className="text-3xl mb-2">🏗️</div>
               <h3 className="font-semibold text-foreground">Not on the platform yet</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                This business hasn't joined VZ Tourism. Contact them directly or get notified when they do.
+                This business hasn&#39;t joined the platform. Contact them directly or get notified when they do.
               </p>
             </div>
+
+            {/* Instagram CTA (most prominent) */}
+            {listing.instagram_handle && (
+              <a
+                href={`https://instagram.com/${listing.instagram_handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-semibold text-white transition-all duration-200 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 hover:opacity-90"
+              >
+                <InstagramIcon className="w-5 h-5" />
+                View on Instagram
+              </a>
+            )}
 
             {/* WhatsApp CTA */}
             {whatsappUrl && (
@@ -218,7 +331,7 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
               </a>
             )}
 
-            {listing.website && (
+            {listing.website && /^https?:\/\//i.test(listing.website) && (
               <a
                 href={listing.website}
                 target="_blank"
@@ -229,17 +342,22 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                 Visit Website
               </a>
             )}
-          </div>
+          </motion.div>
 
           {/* Notify me form */}
-          <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5">
+          <motion.div
+            className="rounded-2xl bg-primary/5 border border-primary/20 p-5"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <Bell className="w-4 h-4 text-primary" />
               <h3 className="font-semibold text-foreground text-sm">Get notified when they join</h3>
             </div>
             {submitted ? (
               <p className="text-sm text-primary font-medium">
-                ✓ You're on the list! We'll email you when they join.
+                You&#39;re on the list! We&#39;ll email you when they join.
               </p>
             ) : (
               <form onSubmit={handleNotify} className="space-y-2">
@@ -258,28 +376,33 @@ export function ScrapedListingView({ listing }: ScrapedListingViewProps) {
                   disabled={submitting}
                   className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  {submitting ? 'Saving…' : 'Notify Me'}
+                  {submitting ? 'Saving...' : 'Notify Me'}
                 </button>
               </form>
             )}
-          </div>
+          </motion.div>
 
           {/* Invite owner */}
-          <div className="rounded-2xl bg-muted border border-border p-5">
+          <motion.div
+            className="rounded-2xl bg-muted border border-border p-5"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35 }}
+          >
             <div className="flex items-center gap-2 mb-2">
               <Share2 className="w-4 h-4 text-muted-foreground" />
               <h3 className="font-semibold text-foreground text-sm">Know the owner?</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Share this invite link with them to join VZ Tourism as a platform partner.
+              Share this invite link with them to join as a platform partner.
             </p>
             <button
               onClick={handleCopyInvite}
               className="w-full py-2 px-4 rounded-lg text-sm font-semibold border border-border text-foreground hover:bg-background transition-colors"
             >
-              {copyDone ? '✓ Link copied!' : 'Copy Invite Link'}
+              {copyDone ? 'Link copied!' : 'Copy Invite Link'}
             </button>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

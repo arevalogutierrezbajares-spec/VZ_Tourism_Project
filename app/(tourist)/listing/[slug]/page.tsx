@@ -130,7 +130,7 @@ export default async function ListingPage({ params }: Props) {
               name: supabaseListing.title,
               description: (supabaseListing.short_description as string | null)?.slice(0, 200),
               image: (supabaseListing as Listing).cover_image_url ?? undefined,
-            }),
+            }).replace(/</g, '\\u003c'),
           }}
         />
         <ListingDetail
@@ -163,6 +163,8 @@ export default async function ListingPage({ params }: Props) {
   const selectedPhotos = (enriched.selected_photos as string[]) ?? [];
   const scrapedPhotos = (enriched.photos as string[]) ?? [];
   const photoUrls = selectedPhotos.length > 0 ? selectedPhotos : scrapedPhotos;
+
+  const whatsappNumber = (enriched.whatsapp_number as string | null) ?? scraped.phone;
 
   const listing: Listing = {
     id: scraped.id,
@@ -200,6 +202,29 @@ export default async function ListingPage({ params }: Props) {
     photos: photoUrls.map((url, i) => ({ id: `photo-${i}`, listing_id: scraped.id, url, alt: scraped.name, order: i, created_at: scraped.created_at || new Date().toISOString() })),
     created_at: scraped.created_at || new Date().toISOString(),
     updated_at: scraped.updated_at || new Date().toISOString(),
+    // Build a partial provider so ListingDetail can render IG link, WhatsApp, etc.
+    provider: (scraped.instagram_handle || whatsappNumber || scraped.website)
+      ? {
+          id: scraped.provider_id,
+          user_id: '',
+          business_name: scraped.name,
+          description: scraped.description.slice(0, 200),
+          logo_url: scraped.cover_image_url,
+          website_url: scraped.website,
+          instagram_handle: scraped.instagram_handle,
+          whatsapp_number: whatsappNumber,
+          rif: null,
+          is_verified: scraped.platform_status === 'verified' || scraped.platform_status === 'founding_partner',
+          is_approved: true,
+          stripe_account_id: null,
+          commission_rate: 0.15,
+          rating: scraped.avg_rating || 0,
+          total_reviews: scraped.review_count,
+          region: scraped.region,
+          created_at: scraped.created_at || new Date().toISOString(),
+          updated_at: scraped.updated_at || new Date().toISOString(),
+        }
+      : undefined,
   };
 
   return (
@@ -213,7 +238,7 @@ export default async function ListingPage({ params }: Props) {
             name: listing.title,
             description: listing.description?.slice(0, 200),
             image: listing.cover_image_url ?? undefined,
-          }),
+          }).replace(/</g, '\\u003c'),
         }}
       />
       <ListingDetail listing={listing} reviews={[]} />
